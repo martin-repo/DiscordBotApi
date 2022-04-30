@@ -51,6 +51,27 @@ public async Task CreateMessage(ulong guildId, ulong channelId)
 }
 ```
 
+### Create message with attachments
+```cs
+public async Task CreateMessageWithAttachments(ulong channelId, string[] filePaths)
+{
+    var botClient = new DiscordBotClient("[bot token]");
+
+    var attachments = filePaths.Select((path, index) =>
+        new DiscordMessageAttachment { Id = (ulong)index, Filename = Path.GetFileName(path) }).ToArray();
+    var files = filePaths.Select((path, index) => new DiscordMessageFile { Id = (ulong)index, FilePath = path }).ToArray();
+    var embed = new DiscordEmbed { Image = new DiscordImage { Url = $"attachment://{attachments.First().Filename}" } };
+    var args = new DiscordCreateMessageArgs
+               {
+                   Content = "Hello",
+                   Embeds = new[] { embed },
+                   Attachments = attachments,
+                   Files = files
+               };
+    _ = await botClient.CreateMessageAsync(channelId, args);
+}
+```
+
 ### Handle gateway exception
 ```cs
 public void HandleGatewayExceptions()
