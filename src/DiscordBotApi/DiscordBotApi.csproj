@@ -4,7 +4,6 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Description>A lightweight and robust C# client for Discord API.</Description>
 		<PackageProjectUrl>https://github.com/kpop-fan/DiscordBotApi</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/kpop-fan/DiscordBotApi</RepositoryUrl>
