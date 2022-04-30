@@ -4,6 +4,11 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<EmbedAllSources>true</EmbedAllSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<Authors>kpop.fan</Authors>
 		<Description>A lightweight and robust C# client for Discord API.</Description>
 		<PackageProjectUrl>https://github.com/kpop-fan/DiscordBotApi</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/kpop-fan/DiscordBotApi</RepositoryUrl>
