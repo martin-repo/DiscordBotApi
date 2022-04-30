@@ -1,6 +1,8 @@
 # DiscordBotApi
 DiscordBotApi is a minimalistic layer on top of the official Discord API.
 
+This API is not complete, and is being expanded as needed. [Create an issue](https://github.com/kpop-fan/DiscordBotApi/issues/new/choose) if you need features from Discord API that are not yet implemented.
+
 ## Getting help
 
 - [Official Discord API documentation](https://discord.com/developers/docs/intro)
