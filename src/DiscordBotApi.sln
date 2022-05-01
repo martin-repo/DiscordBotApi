@@ -5,6 +5,8 @@ VisualStudioVersion = 17.1.32414.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotApi", "DiscordBotApi\DiscordBotApi.csproj", "{7CB5AF1C-7593-4180-B700-4C3502D906BD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotApi.Samples", "DiscordBotApi.Samples\DiscordBotApi.Samples.csproj", "{6145C771-9F5F-407C-ADA5-1C64D13F2567}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{7CB5AF1C-7593-4180-B700-4C3502D906BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CB5AF1C-7593-4180-B700-4C3502D906BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CB5AF1C-7593-4180-B700-4C3502D906BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6145C771-9F5F-407C-ADA5-1C64D13F2567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6145C771-9F5F-407C-ADA5-1C64D13F2567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6145C771-9F5F-407C-ADA5-1C64D13F2567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6145C771-9F5F-407C-ADA5-1C64D13F2567}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
