@@ -92,7 +92,7 @@ namespace DiscordBotApi.Gateway
                 throw new InvalidOperationException("Not connected");
             }
 
-            await SendUpdatePresenceAsync(presenceUpdate).ConfigureAwait(false);
+            await SendPresenceUpdateAsync(presenceUpdate).ConfigureAwait(false);
         }
 
         private static float GetJitter()

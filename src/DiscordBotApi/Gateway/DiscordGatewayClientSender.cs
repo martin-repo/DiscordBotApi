@@ -81,12 +81,12 @@ namespace DiscordBotApi.Gateway
             await SendPayloadAsync(payload, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task SendUpdatePresenceAsync(DiscordPresenceUpdate presenceUpdate)
+        private async Task SendPresenceUpdateAsync(DiscordPresenceUpdate presenceUpdate)
         {
             var presenceUpdateDto = new DiscordPresenceUpdateDto(presenceUpdate);
             var presenceUpdateJson = JsonSerializer.Serialize(presenceUpdateDto);
 
-            _logger?.Debug("Gateway >> {Name}", "UpdatePresence");
+            _logger?.Debug("Gateway >> {Name}", "PresenceUpdate");
 
             var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.PresenceUpdate) { EventData = presenceUpdateJson };
             await SendPayloadAsync(payload, CancellationToken.None).ConfigureAwait(false);
