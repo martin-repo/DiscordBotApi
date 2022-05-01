@@ -53,91 +53,21 @@ namespace DiscordBotApi
             switch (eventType)
             {
                 case DiscordEventType.ApplicationCommandPermissionsUpdate:
-                    var applicationCommandPermissionsUpdateDto =
-                        JsonSerializer.Deserialize<DiscordGuildApplicationCommandPermissionsDto>(eventDataJson);
-                    ApplicationCommandPermissionsUpdate?.Invoke(
-                        this,
-                        new DiscordGuildApplicationCommandPermissions(applicationCommandPermissionsUpdateDto!));
+                    InvokeEvent<DiscordGuildApplicationCommandPermissions, DiscordGuildApplicationCommandPermissionsDto>(
+                        ApplicationCommandPermissionsUpdate,
+                        eventDataJson,
+                        dto => new(dto));
                     break;
                 case DiscordEventType.ChannelCreate:
-                    var channelCreateDto = JsonSerializer.Deserialize<DiscordChannelDto>(eventDataJson);
-                    ChannelCreate?.Invoke(this, new DiscordChannel(this, channelCreateDto!));
+                    InvokeEvent<DiscordChannel, DiscordChannelDto>(ChannelCreate, eventDataJson, dto => new(this, dto));
                     break;
                 case DiscordEventType.ChannelUpdate:
-                    var channelUpdateDto = JsonSerializer.Deserialize<DiscordChannelDto>(eventDataJson);
-                    ChannelUpdate?.Invoke(this, new DiscordChannel(this, channelUpdateDto!));
+                    InvokeEvent<DiscordChannel, DiscordChannelDto>(ChannelUpdate, eventDataJson, dto => new(this, dto));
                     break;
                 case DiscordEventType.ChannelDelete:
-                    var channelDeleteDto = JsonSerializer.Deserialize<DiscordChannelDto>(eventDataJson);
-                    ChannelDelete?.Invoke(this, new DiscordChannel(this, channelDeleteDto!));
+                    InvokeEvent<DiscordChannel, DiscordChannelDto>(ChannelDelete, eventDataJson, dto => new(this, dto));
                     break;
                 case DiscordEventType.ChannelPinsUpdate:
-                    break;
-                case DiscordEventType.GuildCreate:
-                    break;
-                case DiscordEventType.GuildUpdate:
-                    break;
-                case DiscordEventType.GuildDelete:
-                    break;
-                case DiscordEventType.GuildMemberAdd:
-                    var guildMemberAddDto = JsonSerializer.Deserialize<DiscordGuildMemberAddDto>(eventDataJson);
-                    GuildMemberAdd?.Invoke(this, new DiscordGuildMemberAdd(guildMemberAddDto!));
-                    break;
-                case DiscordEventType.GuildMemberRemove:
-                    var guildMemberRemoveDto = JsonSerializer.Deserialize<DiscordGuildMemberRemoveDto>(eventDataJson);
-                    GuildMemberRemove?.Invoke(this, new DiscordGuildMemberRemove(guildMemberRemoveDto!));
-                    break;
-                case DiscordEventType.GuildMemberUpdate:
-                    var guildMemberUpdateDto = JsonSerializer.Deserialize<DiscordGuildMemberUpdateDto>(eventDataJson);
-                    GuildMemberUpdate?.Invoke(this, new DiscordGuildMemberUpdate(guildMemberUpdateDto!));
-                    break;
-                case DiscordEventType.GuildRoleCreate:
-                    var guildRoleCreateDto = JsonSerializer.Deserialize<DiscordGuildRoleCreateDto>(eventDataJson);
-                    GuildRoleCreate?.Invoke(this, new DiscordGuildRoleCreate(this, guildRoleCreateDto!));
-                    break;
-                case DiscordEventType.GuildRoleUpdate:
-                    var guildRoleUpdateDto = JsonSerializer.Deserialize<DiscordGuildRoleUpdateDto>(eventDataJson);
-                    GuildRoleUpdate?.Invoke(this, new DiscordGuildRoleUpdate(this, guildRoleUpdateDto!));
-                    break;
-                case DiscordEventType.GuildRoleDelete:
-                    var guildRoleDeleteDto = JsonSerializer.Deserialize<DiscordGuildRoleDeleteDto>(eventDataJson);
-                    GuildRoleDelete?.Invoke(this, new DiscordGuildRoleDelete(guildRoleDeleteDto!));
-                    break;
-                case DiscordEventType.InteractionCreate:
-                    var interactionCreateDto = JsonSerializer.Deserialize<DiscordInteractionDto>(eventDataJson);
-                    InteractionCreate?.Invoke(this, new DiscordInteraction(this, interactionCreateDto!));
-                    break;
-                case DiscordEventType.MessageCreate:
-                    var messageCreateDto = JsonSerializer.Deserialize<DiscordMessageDto>(eventDataJson);
-                    MessageCreate?.Invoke(this, new DiscordMessage(this, messageCreateDto!));
-                    break;
-                case DiscordEventType.MessageUpdate:
-                    var messageUpdateDto = JsonSerializer.Deserialize<DiscordMessageDto>(eventDataJson);
-                    MessageUpdate?.Invoke(this, new DiscordMessage(this, messageUpdateDto!));
-                    break;
-                case DiscordEventType.MessageDelete:
-                    var messageDeleteDto = JsonSerializer.Deserialize<DiscordMessageDeleteDto>(eventDataJson);
-                    MessageDelete?.Invoke(this, new DiscordMessageDelete(messageDeleteDto!));
-                    break;
-                case DiscordEventType.MessageDeleteBulk:
-                    break;
-                case DiscordEventType.MessageReactionAdd:
-                    var messageReactionAddDto = JsonSerializer.Deserialize<DiscordMessageReactionAddDto>(eventDataJson);
-                    MessageReactionAdd?.Invoke(this, new DiscordMessageReactionAdd(messageReactionAddDto!));
-                    break;
-                case DiscordEventType.MessageReactionRemove:
-                    var messageReactionRemoveDto = JsonSerializer.Deserialize<DiscordMessageReactionRemoveDto>(eventDataJson);
-                    MessageReactionRemove?.Invoke(this, new DiscordMessageReactionRemove(messageReactionRemoveDto!));
-                    break;
-                case DiscordEventType.MessageReactionRemoveAll:
-                    break;
-                case DiscordEventType.MessageReactionRemoveEmoji:
-                    break;
-                case DiscordEventType.StageInstanceCreate:
-                    break;
-                case DiscordEventType.StageInstanceUpdate:
-                    break;
-                case DiscordEventType.StageInstanceDelete:
                     break;
                 case DiscordEventType.ThreadCreate:
                     break;
@@ -151,9 +81,121 @@ namespace DiscordBotApi
                     break;
                 case DiscordEventType.ThreadMembersUpdate:
                     break;
+                case DiscordEventType.GuildCreate:
+                    break;
+                case DiscordEventType.GuildUpdate:
+                    break;
+                case DiscordEventType.GuildDelete:
+                    break;
+                case DiscordEventType.GuildBanAdd:
+                    break;
+                case DiscordEventType.GuildBanRemove:
+                    break;
+                case DiscordEventType.GuildEmojisUpdate:
+                    break;
+                case DiscordEventType.GuildStickersUpdate:
+                    break;
+                case DiscordEventType.GuildIntegrationsUpdate:
+                    break;
+                case DiscordEventType.GuildMemberAdd:
+                    InvokeEvent<DiscordGuildMemberAdd, DiscordGuildMemberAddDto>(GuildMemberAdd, eventDataJson, dto => new(dto));
+                    break;
+                case DiscordEventType.GuildMemberRemove:
+                    InvokeEvent<DiscordGuildMemberRemove, DiscordGuildMemberRemoveDto>(GuildMemberRemove, eventDataJson, dto => new(dto));
+                    break;
+                case DiscordEventType.GuildMemberUpdate:
+                    InvokeEvent<DiscordGuildMemberUpdate, DiscordGuildMemberUpdateDto>(GuildMemberUpdate, eventDataJson, dto => new(dto));
+                    break;
+                case DiscordEventType.GuildMembersChunk:
+                    break;
+                case DiscordEventType.GuildRoleCreate:
+                    InvokeEvent<DiscordGuildRoleCreate, DiscordGuildRoleCreateDto>(GuildRoleCreate, eventDataJson, dto => new(this, dto));
+                    break;
+                case DiscordEventType.GuildRoleUpdate:
+                    InvokeEvent<DiscordGuildRoleUpdate, DiscordGuildRoleUpdateDto>(GuildRoleUpdate, eventDataJson, dto => new(this, dto));
+                    break;
+                case DiscordEventType.GuildRoleDelete:
+                    InvokeEvent<DiscordGuildRoleDelete, DiscordGuildRoleDeleteDto>(GuildRoleDelete, eventDataJson, dto => new(dto));
+                    break;
+                case DiscordEventType.GuildScheduledEventCreate:
+                    break;
+                case DiscordEventType.GuildScheduledEventUpdate:
+                    break;
+                case DiscordEventType.GuildScheduledEventDelete:
+                    break;
+                case DiscordEventType.GuildScheduledEventUserAdd:
+                    break;
+                case DiscordEventType.GuildScheduledEventUserRemove:
+                    break;
+                case DiscordEventType.IntegrationCreate:
+                    break;
+                case DiscordEventType.IntegrationUpdate:
+                    break;
+                case DiscordEventType.IntegrationDelete:
+                    break;
+                case DiscordEventType.InteractionCreate:
+                    InvokeEvent<DiscordInteraction, DiscordInteractionDto>(InteractionCreate, eventDataJson, dto => new(this, dto));
+                    break;
+                case DiscordEventType.InviteCreate:
+                    break;
+                case DiscordEventType.InviteDelete:
+                    break;
+                case DiscordEventType.MessageCreate:
+                    InvokeEvent<DiscordMessage, DiscordMessageDto>(MessageCreate, eventDataJson, dto => new(this, dto));
+                    break;
+                case DiscordEventType.MessageUpdate:
+                    InvokeEvent<DiscordMessage, DiscordMessageDto>(MessageUpdate, eventDataJson, dto => new(this, dto));
+                    break;
+                case DiscordEventType.MessageDelete:
+                    InvokeEvent<DiscordMessageDelete, DiscordMessageDeleteDto>(MessageDelete, eventDataJson, dto => new(dto));
+                    break;
+                case DiscordEventType.MessageDeleteBulk:
+                    break;
+                case DiscordEventType.MessageReactionAdd:
+                    InvokeEvent<DiscordMessageReactionAdd, DiscordMessageReactionAddDto>(MessageReactionAdd, eventDataJson, dto => new(dto));
+                    break;
+                case DiscordEventType.MessageReactionRemove:
+                    InvokeEvent<DiscordMessageReactionRemove, DiscordMessageReactionRemoveDto>(MessageReactionRemove, eventDataJson, dto => new(dto));
+                    break;
+                case DiscordEventType.MessageReactionRemoveAll:
+                    break;
+                case DiscordEventType.MessageReactionRemoveEmoji:
+                    break;
+                case DiscordEventType.PresenceUpdate:
+                    break;
+                case DiscordEventType.StageInstanceCreate:
+                    break;
+                case DiscordEventType.StageInstanceUpdate:
+                    break;
+                case DiscordEventType.StageInstanceDelete:
+                    break;
+                case DiscordEventType.TypingStart:
+                    break;
+                case DiscordEventType.UserUpdate:
+                    break;
+                case DiscordEventType.VoiceStateUpdate:
+                    break;
+                case DiscordEventType.VoiceServerUpdate:
+                    break;
+                case DiscordEventType.WebhooksUpdate:
+                    break;
                 default:
                     throw new NotSupportedException($"{typeof(DiscordEventType)} {eventType} is not supported");
             }
+        }
+
+        private void InvokeEvent<TModel, TDto>(EventHandler<TModel>? eventHandler, string eventDataJson, Func<TDto, TModel> modelFactory)
+            where TDto : class
+        {
+            var dto = JsonSerializer.Deserialize<TDto>(eventDataJson);
+            if (dto == null)
+            {
+                throw new JsonException($"Failed to deserialize {typeof(TDto).Name}");
+            }
+
+            var model = modelFactory(dto);
+
+            eventHandler?.Invoke(this, model);
         }
     }
 }
