@@ -6,24 +6,52 @@
 
 namespace DiscordBotApi.Models.Gateway.Events
 {
-    // https://discord.com/developers/docs/topics/gateway#commands-and-events
+    // https://discord.com/developers/docs/topics/gateway#commands-and-events-gateway-events
     internal enum DiscordEventType
     {
+        // Hello - Defined in DiscordGatewayPayloadOpcode
+        Ready,
+        Resumed,
+
+        // Reconnect - Defined in DiscordGatewayPayloadOpcode
+        // InvalidSession - Defined in DiscordGatewayPayloadOpcode
         ApplicationCommandPermissionsUpdate,
         ChannelCreate,
         ChannelUpdate,
         ChannelDelete,
         ChannelPinsUpdate,
+        ThreadCreate,
+        ThreadUpdate,
+        ThreadDelete,
+        ThreadListSync,
+        ThreadMemberUpdate,
+        ThreadMembersUpdate,
         GuildCreate,
         GuildUpdate,
         GuildDelete,
+        GuildBanAdd,
+        GuildBanRemove,
+        GuildEmojisUpdate,
+        GuildStickersUpdate,
+        GuildIntegrationsUpdate,
         GuildMemberAdd,
         GuildMemberRemove,
         GuildMemberUpdate,
+        GuildMembersChunk,
         GuildRoleCreate,
         GuildRoleUpdate,
         GuildRoleDelete,
+        GuildScheduledEventCreate,
+        GuildScheduledEventUpdate,
+        GuildScheduledEventDelete,
+        GuildScheduledEventUserAdd,
+        GuildScheduledEventUserRemove,
+        IntegrationCreate,
+        IntegrationUpdate,
+        IntegrationDelete,
         InteractionCreate,
+        InviteCreate,
+        InviteDelete,
         MessageCreate,
         MessageUpdate,
         MessageDelete,
@@ -32,17 +60,14 @@ namespace DiscordBotApi.Models.Gateway.Events
         MessageReactionRemove,
         MessageReactionRemoveAll,
         MessageReactionRemoveEmoji,
-        Ready,
-        Resumed,
+        PresenceUpdate,
         StageInstanceCreate,
         StageInstanceUpdate,
         StageInstanceDelete,
-        ThreadCreate,
-        ThreadUpdate,
-        ThreadDelete,
-        ThreadListSync,
-        ThreadMemberUpdate,
-        ThreadMembersUpdate,
-        UserUpdate
+        TypingStart,
+        UserUpdate,
+        VoiceStateUpdate,
+        VoiceServerUpdate,
+        WebhooksUpdate
     }
 }

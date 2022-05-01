@@ -6,6 +6,7 @@
 
 namespace DiscordBotApi.Models.Gateway
 {
+    // https://discord.com/developers/docs/topics/opcodes-and-status-codes#gateway-gateway-opcodes
     internal enum DiscordGatewayPayloadOpcode
     {
         Dispatch = 0,
