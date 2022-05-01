@@ -256,32 +256,29 @@ namespace DiscordBotApi.Rest
 
         private void ReservationProcessing(CancellationToken cancellationToken)
         {
+            // System clock resolution is about 15ms, but for handling rate limits add some margin
+            // https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.delay?view=net-6.0
+            var systemClockResolution = TimeSpan.FromMilliseconds(50);
+
             var delayedResources = new ConcurrentDictionary<DiscordResourceId, Task>();
 
-            void DelayResource(DiscordResource resource, TimeSpan duration)
+            async Task DelayResourceAsync(DiscordResource resource, Func<Task> taskFactory)
             {
-                _ = delayedResources.GetOrAdd(
+                var isAdded = false;
+                var delayTask = delayedResources.GetOrAdd(
                     resource.Id,
-                    _ => new Func<Task>(
-                        async () =>
-                        {
-                            await Task.Delay(duration, cancellationToken).ConfigureAwait(false);
-                            delayedResources.TryRemove(resource.Id, out var _);
-                            _reservationQueue.Add(resource, CancellationToken.None);
-                        })());
-            }
+                    _ =>
+                    {
+                        isAdded = true;
+                        return taskFactory();
+                    });
 
-            void AwaitResource(DiscordResource resource, TaskCompletionSource source)
-            {
-                _ = delayedResources.GetOrAdd(
-                    resource.Id,
-                    _ => new Func<Task>(
-                        async () =>
-                        {
-                            await source.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
-                            delayedResources.TryRemove(resource.Id, out var _);
-                            _reservationQueue.Add(resource, CancellationToken.None);
-                        })());
+                if (isAdded)
+                {
+                    await delayTask.ConfigureAwait(false);
+                    _ = delayedResources.TryRemove(resource.Id, out _);
+                    _reservationQueue.Add(resource, CancellationToken.None);
+                }
             }
 
             while (!cancellationToken.IsCancellationRequested)
@@ -307,14 +304,14 @@ namespace DiscordBotApi.Rest
                     if (resource.RateLimit.Retry != null && resource.RateLimit.Retry > utcNow)
                     {
                         // Resource is rate limited due to shared/global limit
-                        var retryAfter = resource.RateLimit.Retry.Value - utcNow;
+                        var retryAfter = (resource.RateLimit.Retry.Value - utcNow).Add(systemClockResolution);
 
                         _logger?.Debug(
-                            "Resource shared rate limit; waiting {Count:F2} seconds -- {Id}/{Resource}",
+                            "Resource shared rate limit; waiting {Count:F3} seconds -- {Id}/{Resource}",
                             retryAfter.TotalSeconds,
                             resource.RateLimit.Bucket,
                             resource.Id);
-                        DelayResource(resource, retryAfter);
+                        _ = DelayResourceAsync(resource, () => Task.Delay(retryAfter, cancellationToken));
                         continue;
                     }
 
@@ -335,7 +332,7 @@ namespace DiscordBotApi.Rest
                     {
                         // Resource is blocked due to being updated
                         _logger?.Debug("Resoure is updating; {Id}/{Resource}", resource.RateLimit.Bucket, resource.Id);
-                        AwaitResource(resource, resource.RateLimit.Updating);
+                        _ = DelayResourceAsync(resource, () => resource.RateLimit.Updating.Task.WaitAsync(cancellationToken));
                         continue;
                     }
 
@@ -355,7 +352,7 @@ namespace DiscordBotApi.Rest
                             continue;
                         }
 
-                        AwaitResource(resource, resource.RateLimit.Updating);
+                        _ = DelayResourceAsync(resource, () => resource.RateLimit.Updating.Task.WaitAsync(cancellationToken));
                         continue;
                     }
 
@@ -378,14 +375,14 @@ namespace DiscordBotApi.Rest
                     }
 
                     // Resource has no quota left
-                    var resetAfter = resource.RateLimit.Reset - utcNow;
+                    var resetAfter = (resource.RateLimit.Reset - utcNow).Add(systemClockResolution);
 
                     _logger?.Debug(
-                        "Resource endpoint rate limit; waiting {Count:F2} seconds -- {Id}/{Resource}",
+                        "Resource endpoint rate limit; waiting {Count:F3} seconds -- {Id}/{Resource}",
                         resetAfter.TotalSeconds,
                         resource.RateLimit.Bucket,
                         resource.Id);
-                    DelayResource(resource, resetAfter);
+                    _ = DelayResourceAsync(resource, () => Task.Delay(resetAfter, cancellationToken));
                 }
             }
         }
