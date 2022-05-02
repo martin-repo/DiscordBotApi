@@ -56,14 +56,25 @@ namespace DiscordBotApi.Gateway
 
         public event EventHandler<DiscordReady>? GatewayReady;
 
-        public async Task ConnectAsync(string gatewayUrl, DiscordGatewayIntent intents, DiscordShard? shard = null)
+        public async Task ConnectAsync(
+            string gatewayUrl,
+            DiscordGatewayIntent intents,
+            DiscordShard? shard = null,
+            CancellationToken cancellationToken = default)
         {
             if (_isDisposed)
             {
                 throw new ObjectDisposedException($"{nameof(DiscordGatewayClient)} has been disposed.");
             }
 
-            await ConnectAsync(gatewayUrl, intents, null, 0, shard).ConfigureAwait(false);
+            await ConnectAsync(
+                    gatewayUrl,
+                    intents,
+                    null,
+                    0,
+                    shard,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task DisconnectAsync(DiscordGatewayCloseType closeType)
@@ -85,14 +96,14 @@ namespace DiscordBotApi.Gateway
             GC.SuppressFinalize(this);
         }
 
-        public async Task UpdatePresenceAsync(DiscordPresenceUpdate presenceUpdate)
+        public async Task UpdatePresenceAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken = default)
         {
             if (_session.Status != DiscordGatewaySessionStatus.Connected)
             {
                 throw new InvalidOperationException("Not connected");
             }
 
-            await SendPresenceUpdateAsync(presenceUpdate).ConfigureAwait(false);
+            await SendPresenceUpdateAsync(presenceUpdate, cancellationToken).ConfigureAwait(false);
         }
 
         private static float GetJitter()
@@ -128,7 +139,8 @@ namespace DiscordBotApi.Gateway
             DiscordGatewayIntent intents,
             string? sessionId = null,
             int? sessionSequenceNumber = null,
-            DiscordShard? shard = null)
+            DiscordShard? shard = null,
+            CancellationToken cancellationToken = default)
         {
             if (_session.Status != DiscordGatewaySessionStatus.Disconnected)
             {
@@ -143,13 +155,21 @@ namespace DiscordBotApi.Gateway
             _logger?.Information("Gateway -- Connecting");
 
             var uri = new Uri($"{gatewayUrl}?v={DiscordBotClient.DiscordApiVersion}&encoding=json&compress=zlib-stream");
-            await _session.WebSocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
 
-            _session.PayloadLoopTask = Task.Run(async () => await PayloadLoopAsync().ConfigureAwait(false))
-                                           .ContinueWith(
-                                               async task => await HandlePayloadLoopException(task.Exception!.InnerExceptions.First())
-                                                                 .ConfigureAwait(false),
-                                               TaskContinuationOptions.OnlyOnFaulted);
+            try
+            {
+                await _session.WebSocket.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
+                _session.PayloadLoopTask = Task.Run(async () => await PayloadLoopAsync().ConfigureAwait(false), cancellationToken)
+                                               .ContinueWith(
+                                                   async task => await HandlePayloadLoopException(task.Exception!.InnerExceptions.First())
+                                                                     .ConfigureAwait(false),
+                                                   TaskContinuationOptions.OnlyOnFaulted);
+            }
+            catch
+            {
+                await DisconnectInternalAsync(DiscordGatewayCloseType.UnknownError).ConfigureAwait(false);
+                throw;
+            }
         }
 
         private async Task DisconnectInternalAsync(DiscordGatewayCloseType closeType)

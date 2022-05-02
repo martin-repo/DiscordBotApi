@@ -11,7 +11,7 @@ namespace DiscordBotApi
 
     public partial class DiscordBotClient
     {
-        public async Task<DiscordChannel> CreateDmAsync(DiscordCreateDmArgs args)
+        public async Task<DiscordChannel> CreateDmAsync(DiscordCreateDmArgs args, CancellationToken cancellationToken = default)
         {
             const string Url = "users/@me/channels";
 
@@ -22,7 +22,8 @@ namespace DiscordBotApi
                                                       var request = new HttpRequestMessage(HttpMethod.Post, Url);
                                                       request.Content = _restClient.CreateJsonContent(argsDto);
                                                       return request;
-                                                  })
+                                                  },
+                                                  cancellationToken)
                                               .ConfigureAwait(false);
 
             var channel = new DiscordChannel(this, channelDto);

@@ -16,14 +16,22 @@ namespace DiscordBotApi
 
     public partial class DiscordBotClient
     {
-        public async Task AddGuildMemberRoleAsync(ulong guildId, ulong userId, ulong roleId)
+        public async Task AddGuildMemberRoleAsync(
+            ulong guildId,
+            ulong userId,
+            ulong roleId,
+            CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/members/{userId}/roles/{roleId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task<DiscordChannel> CreateGuildChannelAsync(ulong guildId, DiscordCreateGuildChannelArgs args)
+        public async Task<DiscordChannel> CreateGuildChannelAsync(
+            ulong guildId,
+            DiscordCreateGuildChannelArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/channels";
 
@@ -34,7 +42,8 @@ namespace DiscordBotApi
                                                       var request = new HttpRequestMessage(HttpMethod.Post, url);
                                                       request.Content = _restClient.CreateJsonContent(argsDto);
                                                       return request;
-                                                  })
+                                                  },
+                                                  cancellationToken)
                                               .ConfigureAwait(false);
 
             var channel = new DiscordChannel(this, channelDto);
@@ -42,7 +51,10 @@ namespace DiscordBotApi
         }
 
         // https://discord.com/developers/docs/resources/emoji#create-guild-emoji
-        public async Task<DiscordEmoji> CreateGuildEmojiAsync(ulong guildId, DiscordCreateGuildEmojiArgs args)
+        public async Task<DiscordEmoji> CreateGuildEmojiAsync(
+            ulong guildId,
+            DiscordCreateGuildEmojiArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/emojis";
 
@@ -61,7 +73,7 @@ namespace DiscordBotApi
             }
 
             imageBuilder.Append(";base64,");
-            imageBuilder.Append(Convert.ToBase64String(await File.ReadAllBytesAsync(args.FilePath).ConfigureAwait(false)));
+            imageBuilder.Append(Convert.ToBase64String(await File.ReadAllBytesAsync(args.FilePath, cancellationToken).ConfigureAwait(false)));
 
             var argsDto = new DiscordCreateGuildEmojiArgsDto(args.Name, imageBuilder.ToString());
             var emojiDto = await _restClient.SendRequestAsync<DiscordEmojiDto>(
@@ -70,14 +82,18 @@ namespace DiscordBotApi
                                                     var request = new HttpRequestMessage(HttpMethod.Post, url);
                                                     request.Content = _restClient.CreateJsonContent(argsDto);
                                                     return request;
-                                                })
+                                                },
+                                                cancellationToken)
                                             .ConfigureAwait(false);
 
             var emoji = new DiscordEmoji(emojiDto);
             return emoji;
         }
 
-        public async Task<DiscordRole> CreateGuildRoleAsync(ulong guildId, DiscordCreateGuildRoleArgs args)
+        public async Task<DiscordRole> CreateGuildRoleAsync(
+            ulong guildId,
+            DiscordCreateGuildRoleArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/roles";
 
@@ -88,33 +104,38 @@ namespace DiscordBotApi
                                                    var request = new HttpRequestMessage(HttpMethod.Post, url);
                                                    request.Content = _restClient.CreateJsonContent(argsDto);
                                                    return request;
-                                               })
+                                               },
+                                               cancellationToken)
                                            .ConfigureAwait(false);
 
             var role = new DiscordRole(this, guildId, roleDto);
             return role;
         }
 
-        public async Task DeleteGuildEmojiAsync(ulong guildId, ulong emojiId)
+        public async Task DeleteGuildEmojiAsync(ulong guildId, ulong emojiId, CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/emojis/{emojiId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task DeleteGuildRoleAsync(ulong guildId, ulong roleId)
+        public async Task DeleteGuildRoleAsync(ulong guildId, ulong roleId, CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/roles/{roleId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task<DiscordGuild> GetGuildAsync(ulong guildId, DiscordGetGuildArgs? args = null)
+        public async Task<DiscordGuild> GetGuildAsync(ulong guildId, DiscordGetGuildArgs? args = null, CancellationToken cancellationToken = default)
         {
             var builder = new QueryBuilder($"guilds/{guildId}");
             builder.Add("with_counts", args?.WithCounts);
 
-            var guildDto = await _restClient.SendRequestAsync<DiscordGuildDto>(() => new HttpRequestMessage(HttpMethod.Get, builder.ToString()))
+            var guildDto = await _restClient.SendRequestAsync<DiscordGuildDto>(
+                                                () => new HttpRequestMessage(HttpMethod.Get, builder.ToString()),
+                                                cancellationToken)
                                             .ConfigureAwait(false);
 
             var guild = new DiscordGuild(this, guildDto);
@@ -122,52 +143,59 @@ namespace DiscordBotApi
             return guild;
         }
 
-        public async Task<IReadOnlyCollection<DiscordChannel>> GetGuildChannelsAsync(ulong guildId)
+        public async Task<IReadOnlyCollection<DiscordChannel>> GetGuildChannelsAsync(ulong guildId, CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/channels";
 
-            var channelDtos = await _restClient.SendRequestAsync<DiscordChannelDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url))
-                                               .ConfigureAwait(false);
+            var channelDtos = await _restClient
+                                    .SendRequestAsync<DiscordChannelDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken)
+                                    .ConfigureAwait(false);
 
             var channels = channelDtos.Select(c => new DiscordChannel(this, c)).ToArray();
 
             return channels;
         }
 
-        public async Task<DiscordGuildMember> GetGuildMemberAsync(ulong guildId, ulong userId)
+        public async Task<DiscordGuildMember> GetGuildMemberAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/members/{userId}";
 
-            var memberDto = await _restClient.SendRequestAsync<DiscordGuildMemberDto>(() => new HttpRequestMessage(HttpMethod.Get, url))
-                                             .ConfigureAwait(false);
+            var memberDto = await _restClient
+                                  .SendRequestAsync<DiscordGuildMemberDto>(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken)
+                                  .ConfigureAwait(false);
 
             var member = new DiscordGuildMember(memberDto);
             return member;
         }
 
-        public async Task<IReadOnlyCollection<DiscordRole>> GetGuildRolesAsync(ulong guildId)
+        public async Task<IReadOnlyCollection<DiscordRole>> GetGuildRolesAsync(ulong guildId, CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/roles";
 
-            var roleDtos = await _restClient.SendRequestAsync<DiscordRoleDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url))
+            var roleDtos = await _restClient.SendRequestAsync<DiscordRoleDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken)
                                             .ConfigureAwait(false);
 
             var roles = roleDtos.Select(r => new DiscordRole(this, guildId, r)).ToArray();
             return roles;
         }
 
-        public async Task<IReadOnlyCollection<DiscordEmoji>> ListGuildEmojisAsync(ulong guildId)
+        public async Task<IReadOnlyCollection<DiscordEmoji>> ListGuildEmojisAsync(ulong guildId, CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/emojis";
 
-            var emojiDtos = await _restClient.SendRequestAsync<DiscordEmojiDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url))
-                                             .ConfigureAwait(false);
+            var emojiDtos = await _restClient
+                                  .SendRequestAsync<DiscordEmojiDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken)
+                                  .ConfigureAwait(false);
 
             var emojis = emojiDtos.Select(e => new DiscordEmoji(e)).ToArray();
             return emojis;
         }
 
-        public async Task<DiscordRole> ModifyGuildRoleAsync(ulong guildId, ulong roleId, DiscordModifyGuildRoleArgs args)
+        public async Task<DiscordRole> ModifyGuildRoleAsync(
+            ulong guildId,
+            ulong roleId,
+            DiscordModifyGuildRoleArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/roles/{roleId}";
 
@@ -178,18 +206,24 @@ namespace DiscordBotApi
                                                    var request = new HttpRequestMessage(HttpMethod.Patch, url);
                                                    request.Content = _restClient.CreateJsonContent(argsDto);
                                                    return request;
-                                               })
+                                               },
+                                               cancellationToken)
                                            .ConfigureAwait(false);
 
             var role = new DiscordRole(this, guildId, roleDto);
             return role;
         }
 
-        public async Task RemoveGuildMemberRoleAsync(ulong guildId, ulong userId, ulong roleId)
+        public async Task RemoveGuildMemberRoleAsync(
+            ulong guildId,
+            ulong userId,
+            ulong roleId,
+            CancellationToken cancellationToken = default)
         {
             var url = $"guilds/{guildId}/members/{userId}/roles/{roleId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
     }
 }

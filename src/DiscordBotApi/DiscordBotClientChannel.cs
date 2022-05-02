@@ -17,7 +17,7 @@ namespace DiscordBotApi
 
     public partial class DiscordBotClient
     {
-        public async Task BulkDeleteMessagesAsync(ulong channelId, DiscordBulkDeleteMessagesArgs args)
+        public async Task BulkDeleteMessagesAsync(ulong channelId, DiscordBulkDeleteMessagesArgs args, CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages/bulk-delete";
 
@@ -29,11 +29,15 @@ namespace DiscordBotApi
                                      request.Content = _restClient.CreateJsonContent(argsDto);
                                      return request;
                                  },
-                                 HttpStatusCode.NoContent)
+                                 HttpStatusCode.NoContent,
+                                 cancellationToken)
                              .ConfigureAwait(false);
         }
 
-        public async Task<DiscordMessage> CreateMessageAsync(ulong channelId, DiscordCreateMessageArgs args)
+        public async Task<DiscordMessage> CreateMessageAsync(
+            ulong channelId,
+            DiscordCreateMessageArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages";
 
@@ -44,42 +48,59 @@ namespace DiscordBotApi
 
             // ReSharper disable once AccessToDisposedClosure
             var messageDto = await _restClient.SendRequestAsync<DiscordMessageDto>(
-                                                  () => new HttpRequestMessage(HttpMethod.Post, url) { Content = content })
+                                                  () => new HttpRequestMessage(HttpMethod.Post, url) { Content = content },
+                                                  cancellationToken)
                                               .ConfigureAwait(false);
 
             var message = new DiscordMessage(this, messageDto);
             return message;
         }
 
-        public async Task CreateReactionAsync(ulong channelId, ulong messageId, DiscordEmoji emoji)
+        public async Task CreateReactionAsync(
+            ulong channelId,
+            ulong messageId,
+            DiscordEmoji emoji,
+            CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages/{messageId}/reactions/{GetEncodedEmojiValue(emoji)}/@me";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task DeleteAllReactionsForEmojiAsync(ulong channelId, ulong messageId, DiscordEmoji emoji)
+        public async Task DeleteAllReactionsForEmojiAsync(
+            ulong channelId,
+            ulong messageId,
+            DiscordEmoji emoji,
+            CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages/{messageId}/reactions/{GetEncodedEmojiValue(emoji)}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task DeleteMessageAsync(ulong channelId, ulong messageId)
+        public async Task DeleteMessageAsync(ulong channelId, ulong messageId, CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages/{messageId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task DeleteOrCloseChannelAsync(ulong channelId)
+        public async Task DeleteOrCloseChannelAsync(ulong channelId, CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.OK).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.OK, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task<DiscordMessage> EditMessageAsync(ulong channelId, ulong messageId, DiscordEditMessageArgs args)
+        public async Task<DiscordMessage> EditMessageAsync(
+            ulong channelId,
+            ulong messageId,
+            DiscordEditMessageArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages/{messageId}";
 
@@ -90,36 +111,42 @@ namespace DiscordBotApi
 
             // ReSharper disable once AccessToDisposedClosure
             var messageDto = await _restClient.SendRequestAsync<DiscordMessageDto>(
-                                                  () => new HttpRequestMessage(HttpMethod.Patch, url) { Content = content })
+                                                  () => new HttpRequestMessage(HttpMethod.Patch, url) { Content = content },
+                                                  cancellationToken)
                                               .ConfigureAwait(false);
 
             var message = new DiscordMessage(this, messageDto);
             return message;
         }
 
-        public async Task<DiscordChannel> GetChannelAsync(ulong channelId)
+        public async Task<DiscordChannel> GetChannelAsync(ulong channelId, CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}";
 
-            var channelDto = await _restClient.SendRequestAsync<DiscordChannelDto>(() => new HttpRequestMessage(HttpMethod.Get, url))
-                                              .ConfigureAwait(false);
+            var channelDto = await _restClient
+                                   .SendRequestAsync<DiscordChannelDto>(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken)
+                                   .ConfigureAwait(false);
 
             var channel = new DiscordChannel(this, channelDto);
             return channel;
         }
 
-        public async Task<DiscordMessage> GetChannelMessageAsync(ulong channelId, ulong messageId)
+        public async Task<DiscordMessage> GetChannelMessageAsync(ulong channelId, ulong messageId, CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages/{messageId}";
 
-            var messageDto = await _restClient.SendRequestAsync<DiscordMessageDto>(() => new HttpRequestMessage(HttpMethod.Get, url))
-                                              .ConfigureAwait(false);
+            var messageDto = await _restClient
+                                   .SendRequestAsync<DiscordMessageDto>(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken)
+                                   .ConfigureAwait(false);
 
             var message = new DiscordMessage(this, messageDto);
             return message;
         }
 
-        public async Task<IReadOnlyCollection<DiscordMessage>> GetChannelMessagesAsync(ulong channelId, DiscordGetChannelMessagesArgs? args = null)
+        public async Task<IReadOnlyCollection<DiscordMessage>> GetChannelMessagesAsync(
+            ulong channelId,
+            DiscordGetChannelMessagesArgs? args = null,
+            CancellationToken cancellationToken = default)
         {
             var builder = new QueryBuilder($"channels/{channelId}/messages");
             builder.Add("around", args?.Around);
@@ -127,40 +154,49 @@ namespace DiscordBotApi
             builder.Add("after", args?.After);
             builder.Add("limit", args?.Limit);
 
-            var messageDtos = await _restClient
-                                    .SendRequestAsync<DiscordMessageDto[]>(() => new HttpRequestMessage(HttpMethod.Get, builder.ToString()))
-                                    .ConfigureAwait(false);
-
-            var messages = messageDtos.Select(m => new DiscordMessage(this, m)).ToArray();
-            return messages;
-        }
-
-        public async Task<IReadOnlyCollection<DiscordMessage>> GetPinnedMessagesAsync(ulong channelId)
-        {
-            var url = $"channels/{channelId}/pins";
-
-            var messageDtos = await _restClient.SendRequestAsync<DiscordMessageDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url))
+            var messageDtos = await _restClient.SendRequestAsync<DiscordMessageDto[]>(
+                                                   () => new HttpRequestMessage(HttpMethod.Get, builder.ToString()),
+                                                   cancellationToken)
                                                .ConfigureAwait(false);
 
             var messages = messageDtos.Select(m => new DiscordMessage(this, m)).ToArray();
             return messages;
         }
 
-        public async Task<DiscordThreadResponse> ListPublicArchivedThreadsAsync(ulong channelId, DiscordListPublicArchivedThreadsArgs? args = null)
+        public async Task<IReadOnlyCollection<DiscordMessage>> GetPinnedMessagesAsync(ulong channelId, CancellationToken cancellationToken = default)
+        {
+            var url = $"channels/{channelId}/pins";
+
+            var messageDtos = await _restClient
+                                    .SendRequestAsync<DiscordMessageDto[]>(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken)
+                                    .ConfigureAwait(false);
+
+            var messages = messageDtos.Select(m => new DiscordMessage(this, m)).ToArray();
+            return messages;
+        }
+
+        public async Task<DiscordThreadResponse> ListPublicArchivedThreadsAsync(
+            ulong channelId,
+            DiscordListPublicArchivedThreadsArgs? args = null,
+            CancellationToken cancellationToken = default)
         {
             var builder = new QueryBuilder($"channels/{channelId}/threads/archived/public");
             builder.Add("before", args?.Before?.ToString("O"));
             builder.Add("limit", args?.Limit);
 
-            var responseDto = await _restClient
-                                    .SendRequestAsync<DiscordThreadResponseDto>(() => new HttpRequestMessage(HttpMethod.Get, builder.ToString()))
-                                    .ConfigureAwait(false);
+            var responseDto = await _restClient.SendRequestAsync<DiscordThreadResponseDto>(
+                                                   () => new HttpRequestMessage(HttpMethod.Get, builder.ToString()),
+                                                   cancellationToken)
+                                               .ConfigureAwait(false);
 
             var response = new DiscordThreadResponse(this, responseDto);
             return response;
         }
 
-        public async Task<DiscordChannel> ModifyChannelAsync(ulong channelId, DiscordModifyGuildChannelArgs args)
+        public async Task<DiscordChannel> ModifyChannelAsync(
+            ulong channelId,
+            DiscordModifyGuildChannelArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}";
 
@@ -171,14 +207,18 @@ namespace DiscordBotApi
                                                       var request = new HttpRequestMessage(HttpMethod.Patch, url);
                                                       request.Content = _restClient.CreateJsonContent(argsDto);
                                                       return request;
-                                                  })
+                                                  },
+                                                  cancellationToken)
                                               .ConfigureAwait(false);
 
             var channel = new DiscordChannel(this, channelDto);
             return channel;
         }
 
-        public async Task<DiscordChannel> ModifyThreadAsync(ulong channelId, DiscordModifyThreadArgs args)
+        public async Task<DiscordChannel> ModifyThreadAsync(
+            ulong channelId,
+            DiscordModifyThreadArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}";
 
@@ -189,21 +229,27 @@ namespace DiscordBotApi
                                                               var request = new HttpRequestMessage(HttpMethod.Patch, url);
                                                               request.Content = _restClient.CreateJsonContent(argsDto);
                                                               return request;
-                                                          })
+                                                          },
+                                                          cancellationToken)
                                                       .ConfigureAwait(false);
 
             var modifiedChannel = new DiscordChannel(this, modifiedChannelDto);
             return modifiedChannel;
         }
 
-        public async Task PinMessageAsync(ulong channelId, ulong messageId)
+        public async Task PinMessageAsync(ulong channelId, ulong messageId, CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/pins/{messageId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
-        public async Task<DiscordChannel> StartThreadWithMessageAsync(ulong channelId, ulong messageId, DiscordStartThreadWithMessageArgs args)
+        public async Task<DiscordChannel> StartThreadWithMessageAsync(
+            ulong channelId,
+            ulong messageId,
+            DiscordStartThreadWithMessageArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/messages/{messageId}/threads";
 
@@ -214,18 +260,20 @@ namespace DiscordBotApi
                                                       var request = new HttpRequestMessage(HttpMethod.Post, url);
                                                       request.Content = _restClient.CreateJsonContent(argsDto);
                                                       return request;
-                                                  })
+                                                  },
+                                                  cancellationToken)
                                               .ConfigureAwait(false);
 
             var channel = new DiscordChannel(this, channelDto);
             return channel;
         }
 
-        public async Task UnpinMessageAsync(ulong channelId, ulong messageId)
+        public async Task UnpinMessageAsync(ulong channelId, ulong messageId, CancellationToken cancellationToken = default)
         {
             var url = $"channels/{channelId}/pins/{messageId}";
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent).ConfigureAwait(false);
+            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent, cancellationToken)
+                             .ConfigureAwait(false);
         }
 
         private static string GetContentType(string fileName)

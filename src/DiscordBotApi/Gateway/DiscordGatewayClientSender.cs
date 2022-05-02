@@ -70,6 +70,17 @@ namespace DiscordBotApi.Gateway
             await _session.WebSocket.SendAsync(payloadBytes, OutgoingWebSocketChunkLength, cancellationToken).ConfigureAwait(false);
         }
 
+        private async Task SendPresenceUpdateAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken)
+        {
+            var presenceUpdateDto = new DiscordPresenceUpdateDto(presenceUpdate);
+            var presenceUpdateJson = JsonSerializer.Serialize(presenceUpdateDto);
+
+            _logger?.Debug("Gateway >> {Name}", "PresenceUpdate");
+
+            var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.PresenceUpdate) { EventData = presenceUpdateJson };
+            await SendPayloadAsync(payload, cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task SendResumeAsync(CancellationToken cancellationToken)
         {
             var resumeDto = new DiscordResumeDto(_botToken, _session.Id, _session.SequenceNumber);
@@ -79,17 +90,6 @@ namespace DiscordBotApi.Gateway
 
             var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.Resume) { EventData = resumeJson };
             await SendPayloadAsync(payload, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task SendPresenceUpdateAsync(DiscordPresenceUpdate presenceUpdate)
-        {
-            var presenceUpdateDto = new DiscordPresenceUpdateDto(presenceUpdate);
-            var presenceUpdateJson = JsonSerializer.Serialize(presenceUpdateDto);
-
-            _logger?.Debug("Gateway >> {Name}", "PresenceUpdate");
-
-            var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.PresenceUpdate) { EventData = presenceUpdateJson };
-            await SendPayloadAsync(payload, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

@@ -19,7 +19,11 @@ namespace DiscordBotApi
 
         public event EventHandler<DiscordGatewayException>? GatewayException;
 
-        public async Task<DiscordReady> ConnectToGatewayAsync(string gatewayUrl, DiscordGatewayIntent intents, DiscordShard? shard = null)
+        public async Task<DiscordReady> ConnectToGatewayAsync(
+            string gatewayUrl,
+            DiscordGatewayIntent intents,
+            DiscordShard? shard = null,
+            CancellationToken cancellationToken = default)
         {
             var gatewayReady = new TaskCompletionSource<DiscordReady>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -31,7 +35,7 @@ namespace DiscordBotApi
             _gatewayClient.GatewayReady += OnGatewayReady;
             try
             {
-                await _gatewayClient.ConnectAsync(gatewayUrl, intents, shard).ConfigureAwait(false);
+                await _gatewayClient.ConnectAsync(gatewayUrl, intents, shard, cancellationToken).ConfigureAwait(false);
                 await gatewayReady.Task.ConfigureAwait(false);
             }
             finally
@@ -48,12 +52,13 @@ namespace DiscordBotApi
         }
 
         // https://discord.com/developers/docs/topics/gateway#get-gateway
-        public async Task<DiscordGateway> GetGatewayAsync()
+        public async Task<DiscordGateway> GetGatewayAsync(CancellationToken cancellationToken = default)
         {
             const string Url = "gateway";
 
-            var gatewayDto = await _restClient.SendRequestAsync<DiscordGatewayDto>(() => new HttpRequestMessage(HttpMethod.Get, Url))
-                                              .ConfigureAwait(false);
+            var gatewayDto = await _restClient
+                                   .SendRequestAsync<DiscordGatewayDto>(() => new HttpRequestMessage(HttpMethod.Get, Url), cancellationToken)
+                                   .ConfigureAwait(false);
 
             var gateway = new DiscordGateway(gatewayDto);
 
@@ -61,21 +66,22 @@ namespace DiscordBotApi
         }
 
         // https://discord.com/developers/docs/topics/gateway#get-gateway-bot
-        public async Task<DiscordGatewayBot> GetGatewayBotAsync()
+        public async Task<DiscordGatewayBot> GetGatewayBotAsync(CancellationToken cancellationToken = default)
         {
             const string Url = "gateway/bot";
 
-            var gatewayBotDto = await _restClient.SendRequestAsync<DiscordGatewayBotDto>(() => new HttpRequestMessage(HttpMethod.Get, Url))
-                                                 .ConfigureAwait(false);
+            var gatewayBotDto = await _restClient
+                                      .SendRequestAsync<DiscordGatewayBotDto>(() => new HttpRequestMessage(HttpMethod.Get, Url), cancellationToken)
+                                      .ConfigureAwait(false);
 
             var gatewayBot = new DiscordGatewayBot(gatewayBotDto);
 
             return gatewayBot;
         }
 
-        public async Task UpdatePresenceAsync(DiscordPresenceUpdate presenceUpdate)
+        public async Task UpdatePresenceAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken = default)
         {
-            await _gatewayClient.UpdatePresenceAsync(presenceUpdate).ConfigureAwait(false);
+            await _gatewayClient.UpdatePresenceAsync(presenceUpdate, cancellationToken).ConfigureAwait(false);
         }
     }
 }

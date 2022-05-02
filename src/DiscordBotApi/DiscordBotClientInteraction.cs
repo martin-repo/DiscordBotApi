@@ -13,7 +13,11 @@ namespace DiscordBotApi
     public partial class DiscordBotClient
     {
         // https://discord.com/developers/docs/interactions/receiving-and-responding#create-interaction-response
-        public async Task CreateInteractionResponseAsync(ulong interactionId, string interactionToken, DiscordInteractionResponseArgs args)
+        public async Task CreateInteractionResponseAsync(
+            ulong interactionId,
+            string interactionToken,
+            DiscordInteractionResponseArgs args,
+            CancellationToken cancellationToken = default)
         {
             var url = $"interactions/{interactionId}/{interactionToken}/callback";
 
@@ -25,7 +29,8 @@ namespace DiscordBotApi
                                      request.Content = _restClient.CreateJsonContent(argsDto);
                                      return request;
                                  },
-                                 HttpStatusCode.NoContent)
+                                 HttpStatusCode.NoContent,
+                                 cancellationToken)
                              .ConfigureAwait(false);
         }
     }
