@@ -49,7 +49,7 @@ namespace DiscordBotApi
 
         public event EventHandler<DiscordMessageReactionRemove>? MessageReactionRemove;
 
-        public event EventHandler<DiscordMessage>? MessageUpdate;
+        public event EventHandler<DiscordUpdatedMessage>? MessageUpdate;
 
         private void HandleGatewayDispatch(DiscordEventType eventType, string eventDataJson)
         {
@@ -148,7 +148,7 @@ namespace DiscordBotApi
                     InvokeEvent<DiscordMessage, DiscordMessageDto>(MessageCreate, eventDataJson, dto => new(this, dto));
                     break;
                 case DiscordEventType.MessageUpdate:
-                    InvokeEvent<DiscordMessage, DiscordMessageDto>(MessageUpdate, eventDataJson, dto => new(this, dto));
+                    InvokeEvent<DiscordUpdatedMessage, DiscordUpdatedMessageDto>(MessageUpdate, eventDataJson, dto => new(this, dto));
                     break;
                 case DiscordEventType.MessageDelete:
                     InvokeEvent<DiscordMessageDelete, DiscordMessageDeleteDto>(MessageDelete, eventDataJson, dto => new(dto));
