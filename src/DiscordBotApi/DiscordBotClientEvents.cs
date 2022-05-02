@@ -10,6 +10,7 @@ namespace DiscordBotApi
 
     using DiscordBotApi.Models.Gateway.Commands;
     using DiscordBotApi.Models.Gateway.Events;
+    using DiscordBotApi.Models.Guilds;
     using DiscordBotApi.Models.Guilds.Channels;
     using DiscordBotApi.Models.Guilds.Channels.Messages;
     using DiscordBotApi.Models.Interactions;
@@ -23,6 +24,8 @@ namespace DiscordBotApi
         public event EventHandler<DiscordChannel>? ChannelDelete;
 
         public event EventHandler<DiscordChannel>? ChannelUpdate;
+
+        public event EventHandler<DiscordGuild>? GuildCreate;
 
         public event EventHandler<DiscordGuildMemberAdd>? GuildMemberAdd;
 
@@ -82,6 +85,7 @@ namespace DiscordBotApi
                 case DiscordEventType.ThreadMembersUpdate:
                     break;
                 case DiscordEventType.GuildCreate:
+                    InvokeEvent<DiscordGuild, DiscordGuildDto>(GuildCreate, eventDataJson, dto => new(this, dto));
                     break;
                 case DiscordEventType.GuildUpdate:
                     break;

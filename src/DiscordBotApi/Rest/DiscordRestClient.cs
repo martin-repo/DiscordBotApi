@@ -52,7 +52,14 @@ namespace DiscordBotApi.Rest
             _httpClient.BaseAddress = new Uri(baseUrl);
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(nameof(DiscordBotClient), version!.ToString(3)));
+            if (version == null)
+            {
+                throw new InvalidOperationException("Failed to extract assembly version.");
+            }
+
+            _logger?.Debug("{Name} {Version}", nameof(DiscordBotClient), version);
+
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(nameof(DiscordBotClient), version.ToString(3)));
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bot {botToken}");
 
             _globalManager = globalManager;
@@ -82,7 +89,7 @@ namespace DiscordBotApi.Rest
         public async Task SendRequestAsync(
             Func<HttpRequestMessage> requestFactoryFunc,
             HttpStatusCode expectedResponseCode,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             using var response = await SendAndWaitIfRateLimitExceededAsync(requestFactoryFunc, cancellationToken).ConfigureAwait(false);
             if (response.StatusCode != expectedResponseCode)
@@ -93,10 +100,7 @@ namespace DiscordBotApi.Rest
             }
         }
 
-        public async Task<T>
-            SendRequestAsync<T>(
-                Func<HttpRequestMessage> requestFactoryFunc,
-                CancellationToken cancellationToken = default) // TODO: remove default in both method once ready
+        public async Task<T> SendRequestAsync<T>(Func<HttpRequestMessage> requestFactoryFunc, CancellationToken cancellationToken)
             where T : class
         {
             using var response = await SendAndWaitIfRateLimitExceededAsync(requestFactoryFunc, cancellationToken).ConfigureAwait(false);
