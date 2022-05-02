@@ -39,7 +39,7 @@ namespace DiscordBotApi.Gateway
                 {
                     if (++connectAttempts >= MaxConnectAttempts)
                     {
-                        GatewayException?.Invoke(this, new DiscordGatewayException($"{nameof(ConnectAsync)} failed", exception));
+                        GatewayException?.Invoke(this, new DiscordGatewayException($"{nameof(ConnectAsync)} failed", true, exception));
                         return;
                     }
 
@@ -47,7 +47,7 @@ namespace DiscordBotApi.Gateway
                 }
                 catch (Exception exception)
                 {
-                    GatewayException?.Invoke(this, new DiscordGatewayException($"{nameof(ConnectAsync)} failed", exception));
+                    GatewayException?.Invoke(this, new DiscordGatewayException($"{nameof(ConnectAsync)} failed", true, exception));
                     return;
                 }
             }
@@ -67,7 +67,9 @@ namespace DiscordBotApi.Gateway
             {
                 _logger?.Debug("Will not reconnect (reason: {Reason})", closedException.CloseType);
 
-                GatewayDisconnected?.Invoke(this, new DiscordGatewayDisconnect(closedException.CloseType, closedException.CloseStatusDescription));
+                GatewayException?.Invoke(
+                    this,
+                    new DiscordGatewayException($"Disconnected: {closedException.CloseType} ({closedException.CloseStatusDescription})", true));
             }
         }
 
@@ -113,7 +115,15 @@ namespace DiscordBotApi.Gateway
                 case DiscordEventType.ThreadListSync:
                 case DiscordEventType.ThreadMemberUpdate:
                 case DiscordEventType.ThreadMembersUpdate:
-                    GatewayDispatchReceived?.Invoke(this, new DiscordGatewayDispatch(eventType.Value, payload.EventData!));
+                    try
+                    {
+                        GatewayDispatchReceived?.Invoke(this, new DiscordGatewayDispatch(eventType.Value, payload.EventData!));
+                    }
+                    catch (NullReferenceException nullReferenceException)
+                    {
+                        GatewayException?.Invoke(this, new DiscordGatewayException($"Failed to dispatch {eventType}", false, nullReferenceException));
+                    }
+
                     break;
                 case DiscordEventType.Ready:
                     var readyDto = JsonSerializer.Deserialize<DiscordReadyDto>(payload.EventData!)!;
@@ -239,7 +249,7 @@ namespace DiscordBotApi.Gateway
                 // ReSharper disable once ConvertTypeCheckPatternToNullCheck
                 case Exception exception:
                     _logger?.Debug("Gateway -- Unhandled Exception ({Type})", exception.GetType().Name);
-                    var gatewayException = new DiscordGatewayException("Unhandled exception", exception);
+                    var gatewayException = new DiscordGatewayException("Unhandled exception", true, exception);
                     GatewayException?.Invoke(this, gatewayException);
                     break;
             }

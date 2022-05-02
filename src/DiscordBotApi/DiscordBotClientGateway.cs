@@ -15,8 +15,6 @@ namespace DiscordBotApi
     {
         private readonly DiscordGatewayClient _gatewayClient;
 
-        public event EventHandler<DiscordGatewayDisconnect>? GatewayDisconnected;
-
         public event EventHandler<DiscordGatewayException>? GatewayException;
 
         public async Task<DiscordReady> ConnectToGatewayAsync(

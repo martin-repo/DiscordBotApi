@@ -8,9 +8,18 @@ namespace DiscordBotApi.Gateway
 {
     public class DiscordGatewayException : ApplicationException
     {
-        public DiscordGatewayException(string message, Exception innerException)
+        public DiscordGatewayException(string message, bool isDisconnected)
+            : base(message)
+        {
+            IsDisconnected = isDisconnected;
+        }
+
+        public DiscordGatewayException(string message, bool isDisconnected, Exception innerException)
             : base(message, innerException)
         {
+            IsDisconnected = isDisconnected;
         }
+
+        public bool IsDisconnected { get; }
     }
 }
