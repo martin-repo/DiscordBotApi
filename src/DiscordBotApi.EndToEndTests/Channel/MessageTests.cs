@@ -56,7 +56,7 @@ namespace DiscordBotApi.EndToEndTests.Channel
 
             var createdMessage = await _client.CreateMessageAsync(channel.Id, createArgs);
 
-            attachments = new[] { createdMessage.Attachments.First(), new DiscordMessageAttachment { Id = 0, Filename = "file3.png" } };
+            attachments = new[] { createdMessage.Attachments!.First(), new DiscordMessageAttachment { Id = 0, Filename = "file3.png" } };
             files = new[] { new DiscordMessageFile { Id = 0, FilePath = "file3.png" } };
             var editArgs = new DiscordEditMessageArgs { Attachments = attachments, Files = files };
 
@@ -89,7 +89,7 @@ namespace DiscordBotApi.EndToEndTests.Channel
             var createdMessage = await _client.CreateMessageAsync(channel.Id, createArgs);
 
             // Due to an issue in Discord api, attachments are "hidden" when they are "consumed" by an embed.
-            createdMessage.Attachments.Count.Should().Be(1);
+            createdMessage.Attachments!.Count.Should().Be(1);
         }
 
         [Theory]
@@ -126,7 +126,7 @@ namespace DiscordBotApi.EndToEndTests.Channel
             var createdMessage = await _client.CreateMessageAsync(channel.Id, createArgs);
 
             // Due to an issue in Discord api, attachments are "hidden" when they are "consumed" by an embed.
-            createdMessage.Attachments.Count.Should().Be(0);
+            createdMessage.Attachments!.Count.Should().Be(0);
         }
     }
 }
