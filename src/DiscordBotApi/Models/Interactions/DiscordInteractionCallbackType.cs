@@ -6,6 +6,7 @@
 
 namespace DiscordBotApi.Models.Interactions
 {
+    // https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-interaction-callback-type
     public enum DiscordInteractionCallbackType
     {
         Pong = 1,

@@ -8,7 +8,7 @@ namespace DiscordBotApi.Models.Guilds
 {
     using DiscordBotApi.Models.Guilds.Emojis;
 
-    public partial record DiscordGuild
+    public record DiscordGuild
     {
         private readonly DiscordBotClient _botClient;
 
@@ -21,6 +21,8 @@ namespace DiscordBotApi.Models.Guilds
             Name = dto.Name;
             Roles = dto.Roles.Select(r => new DiscordRole(botClient, guildId, r)).ToArray();
             Emojis = dto.Emojis.Select(e => new DiscordEmoji(e)).ToArray();
+            MemberCount = dto.MemberCount;
+            Members = dto.Members?.Select(m => new DiscordGuildMember(m)).ToArray();
             PremiumTier = (DiscordGuildPremiumTier)dto.PremiumTier;
             PremiumTierSubscriptionCount = dto.PremiumTierSubscriptionCount;
             ApproximateMemberCount = dto.ApproximateMemberCount;
@@ -31,6 +33,10 @@ namespace DiscordBotApi.Models.Guilds
         public IReadOnlyCollection<DiscordEmoji> Emojis { get; init; }
 
         public ulong Id { get; init; }
+
+        public int? MemberCount { get; init; }
+
+        public IReadOnlyCollection<DiscordGuildMember>? Members { get; init; }
 
         public string Name { get; init; }
 
