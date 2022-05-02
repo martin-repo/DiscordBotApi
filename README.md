@@ -35,6 +35,83 @@ public async Task ConnectingToGateway()
 }
 ```
 
+### Create and handle chat command
+```cs
+public async Task CreateCommandAsync(ulong applicationId, ulong guildId)
+{
+    var command = await _botClient.CreateGuildApplicationCommandAsync(
+                      applicationId,
+                      guildId,
+                      new()
+                      {
+                          Name = "blep",
+                          Description = "Send a random adorable animal photo",
+                          Options = new DiscordApplicationCommandOption[]
+                                    {
+                                        new()
+                                        {
+                                            Name = "animal",
+                                            Description = "The type of animal",
+                                            Type = DiscordApplicationCommandOptionType.String,
+                                            Required = true,
+                                            Choices = new DiscordApplicationCommandOptionChoice[]
+                                                      {
+                                                          new() { Name = "Dog", Value = "animal_dog" },
+                                                          new() { Name = "Cat", Value = "animal_cat" },
+                                                          new() { Name = "Penguin", Value = "animal_penguin" }
+                                                      }
+                                        },
+                                        new()
+                                        {
+                                            Name = "only_smol",
+                                            Description = "Whether to show only baby animals",
+                                            Type = DiscordApplicationCommandOptionType.Boolean,
+                                            Required = false
+                                        }
+                                    }
+                      });
+}
+
+public void HandleCommand()
+{
+    _botClient.InteractionCreate += async (_, interaction) =>
+    {
+        if (interaction.Type != DiscordInteractionType.ApplicationCommand)
+        {
+            // Not an application command
+            return;
+        }
+
+        if (interaction.Data!.Type != DiscordApplicationCommandType.ChatInput)
+        {
+            // Not chat input
+            return;
+        }
+
+        if (interaction.Data.Name != "blep")
+        {
+            // Not the command we're looking for
+            return;
+        }
+
+        var isInvokedInGuild = interaction.Member != null;
+        var user = isInvokedInGuild ? interaction.Member!.User! : interaction.User!;
+
+        var animalOption = interaction.Data.Options!.First(o => o.Name == "animal");
+        var animalValue = (string)animalOption.Value;
+
+        await _botClient.CreateInteractionResponseAsync(
+            interaction.Id,
+            interaction.Token,
+            new()
+            {
+                Type = DiscordInteractionCallbackType.ChannelMessageWithSource,
+                Data = new DiscordInteractionCallbackMessage { Content = $"{user.Username}, you picked {animalValue}", Flags = DiscordMessageFlags.Ephemeral }
+            });
+    };
+}
+```
+
 ### Create message
 ```cs
 public async Task CreateMessage(ulong guildId, ulong channelId)
