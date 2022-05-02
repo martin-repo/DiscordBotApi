@@ -17,7 +17,7 @@ namespace DiscordBotApi.Models.Applications
         [property: JsonPropertyName("name")] string Name,
         [property: JsonPropertyName("description")] string Description,
         [property: JsonPropertyName("options")] DiscordApplicationCommandOptionDto[]? Options,
-        [property: JsonPropertyName("default_member_permissions")] string DefaultMemberPermissions,
-        [property: JsonPropertyName("dm_permission")] bool DmPermission,
+        [property: JsonPropertyName("default_member_permissions")] string? DefaultMemberPermissions,
+        [property: JsonPropertyName("dm_permission")] bool? DmPermission,
         [property: JsonPropertyName("version")] string Version);
 }

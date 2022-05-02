@@ -19,18 +19,18 @@ namespace DiscordBotApi.Models.Applications
             Name = dto.Name;
             Description = dto.Description;
             Options = dto.Options?.Select(o => new DiscordApplicationCommandOption(o)).ToArray();
-            DefaultMemberPermissions = (DiscordPermissions)ulong.Parse(dto.DefaultMemberPermissions);
+            DefaultMemberPermissions = dto.DefaultMemberPermissions != null ? (DiscordPermissions)ulong.Parse(dto.DefaultMemberPermissions) : null;
             DmPermission = dto.DmPermission;
             Version = ulong.Parse(dto.Version);
         }
 
         public ulong ApplicationId { get; init; }
 
-        public DiscordPermissions DefaultMemberPermissions { get; init; }
+        public DiscordPermissions? DefaultMemberPermissions { get; init; }
 
         public string Description { get; init; }
 
-        public bool DmPermission { get; init; }
+        public bool? DmPermission { get; init; }
 
         public ulong? GuildId { get; init; }
 
