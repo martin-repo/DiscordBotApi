@@ -119,9 +119,9 @@ namespace DiscordBotApi.Gateway
                     {
                         GatewayDispatchReceived?.Invoke(this, new DiscordGatewayDispatch(eventType.Value, payload.EventData!));
                     }
-                    catch (NullReferenceException nullReferenceException)
+                    catch (Exception exception)
                     {
-                        GatewayException?.Invoke(this, new DiscordGatewayException($"Failed to dispatch {eventType}", false, nullReferenceException));
+                        GatewayException?.Invoke(this, new DiscordGatewayException($"Failed to dispatch {eventType}", false, exception));
                     }
 
                     break;
