@@ -11,6 +11,7 @@ namespace DiscordBotApi.Models.Rest
         public DiscordRateLimit(string bucket)
         {
             Bucket = bucket;
+            UpdateTask = Task.CompletedTask;
         }
 
         public string Bucket { get; }
@@ -23,6 +24,6 @@ namespace DiscordBotApi.Models.Rest
 
         public DateTime? Retry { get; set; }
 
-        public TaskCompletionSource? Updating { get; set; }
+        public Task UpdateTask { get; set; }
     }
 }

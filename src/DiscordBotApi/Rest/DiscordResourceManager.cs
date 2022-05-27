@@ -161,21 +161,10 @@ namespace DiscordBotApi.Rest
             void SignalAvailable()
             {
                 // This is run when reservation is disposing.
-                // RateLimit property value may have been swapped out by now;
-                // eg. because a shared rate limit was found.
-                // Only set to null if it is the same one that was created.
-                lock (resource)
-                {
-                    if (resource.RateLimit.Updating == updating)
-                    {
-                        resource.RateLimit.Updating = null;
-                    }
-                }
-
                 updating.SetResult();
             }
 
-            resource.RateLimit.Updating = updating;
+            resource.RateLimit.UpdateTask = updating.Task;
 
             return new ResourceReservation(SignalAvailable);
         }
@@ -328,11 +317,11 @@ namespace DiscordBotApi.Rest
                         continue;
                     }
 
-                    if (resource.RateLimit.Updating != null)
+                    if (!resource.RateLimit.UpdateTask.IsCompleted)
                     {
                         // Resource is blocked due to being updated
                         _logger?.Debug("Resoure is updating; {Id}/{Resource}", resource.RateLimit.Bucket, resource.Id);
-                        _ = DelayResourceAsync(resource, () => resource.RateLimit.Updating.Task.WaitAsync(cancellationToken));
+                        _ = DelayResourceAsync(resource, () => resource.RateLimit.UpdateTask.WaitAsync(cancellationToken));
                         continue;
                     }
 
@@ -346,13 +335,7 @@ namespace DiscordBotApi.Rest
                             reservationRequest.ReservationReady.SetResult(CreateReservationWithUpdate(resource));
                         }
 
-                        if (resource.RateLimit.Updating == null)
-                        {
-                            _logger?.Error("Resource.Updating is null after creating reservation.");
-                            continue;
-                        }
-
-                        _ = DelayResourceAsync(resource, () => resource.RateLimit.Updating.Task.WaitAsync(cancellationToken));
+                        _ = DelayResourceAsync(resource, () => resource.RateLimit.UpdateTask.WaitAsync(cancellationToken));
                         continue;
                     }
 
