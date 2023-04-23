@@ -27,7 +27,6 @@ namespace DiscordBotApi
             var zlibContextActivator = new Func<IZlibContext>(() => new ZlibContext());
             _gatewayClient = new DiscordGatewayClient(logger, webSocketActivator, zlibContextActivator, botToken);
             _gatewayClient.GatewayDispatchReceived += (_, eventArgs) => HandleGatewayDispatch(eventArgs.EventType, eventArgs.EventDataJson);
-            _gatewayClient.GatewayDisconnected += (_, eventArgs) => GatewayDisconnected?.Invoke(this, eventArgs);
             _gatewayClient.GatewayException += (_, eventArgs) => GatewayException?.Invoke(this, eventArgs);
 
             var globalManager = new DiscordGlobalManager(MaxRequestsPerSecond, logger);

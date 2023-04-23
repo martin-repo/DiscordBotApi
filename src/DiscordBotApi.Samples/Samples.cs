@@ -56,20 +56,16 @@ namespace DiscordBotApi.Samples
         {
             var botClient = new DiscordBotClient("[bot token]");
 
-            botClient.GatewayDisconnected += (_, eventArgs) =>
-            {
-                var (type, description) = eventArgs;
-
-                // DiscordBotApi will attempt to keep the gateway connection
-                // up as much as possible. But in rare occations it may fail.
-                // Handle when gateway is disconnected.
-                // ...
-            };
-
             botClient.GatewayException += (_, gatewayException) =>
             {
-                // Handle when there was an unhandled exception in the gateway logic.
-                // ...
+                // DiscordBotApi will attempt to keep the gateway connection
+                // up as much as possible. But in rare occations it may fail.
+
+                if (gatewayException.IsDisconnected)
+                {
+                    // Handle when gateway is disconnected.
+                    // ...
+                }
             };
         }
 

@@ -48,8 +48,6 @@ namespace DiscordBotApi.Gateway
                        };
         }
 
-        public event EventHandler<DiscordGatewayDisconnect>? GatewayDisconnected;
-
         public event EventHandler<DiscordGatewayDispatch>? GatewayDispatchReceived;
 
         public event EventHandler<DiscordGatewayException>? GatewayException;
@@ -275,7 +273,7 @@ namespace DiscordBotApi.Gateway
                     .ContinueWith(
                         task =>
                         {
-                            var gatewayException = new DiscordGatewayException("Reconnect failed", task.Exception!.InnerExceptions.First());
+                            var gatewayException = new DiscordGatewayException("Reconnect failed", true, task.Exception!.InnerExceptions.First());
                             GatewayException?.Invoke(this, gatewayException);
                         },
                         TaskContinuationOptions.OnlyOnFaulted);
