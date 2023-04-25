@@ -6,8 +6,17 @@
 
 namespace DiscordBotApi.Models.Guilds.Channels;
 
+// https://discord.com/developers/docs/resources/channel#modify-channel-json-params-guild-channel
 public record DiscordModifyGuildChannelArgs
 {
+	public IReadOnlyCollection<DiscordForumTag>? AvailableTags { get; init; }
+
+	public DiscordForumLayoutType? DefaultForumLayout { get; init; }
+
+	public DiscordDefaultReaction? DefaultReactionEmoji { get; init; }
+
+	public DiscordSortOrderType? DefaultSortOrder { get; init; }
+
 	public string? Name { get; init; }
 
 	public ulong? ParentId { get; init; }

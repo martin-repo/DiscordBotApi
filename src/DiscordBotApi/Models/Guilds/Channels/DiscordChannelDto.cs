@@ -26,5 +26,13 @@ internal record DiscordChannelDto(
 	[property: JsonPropertyName(name: "parent_id")]
 	string? ParentId,
 	[property: JsonPropertyName(name: "thread_metadata")]
-	DiscordThreadMetadataDto? ThreadMetadata
+	DiscordThreadMetadataDto? ThreadMetadata,
+	[property: JsonPropertyName(name: "available_tags")]
+	DiscordForumTagDto[]? AvailableTags,
+	[property: JsonPropertyName(name: "default_reaction_emoji")]
+	DiscordDefaultReactionDto? DefaultReactionEmoji,
+	[property: JsonPropertyName(name: "default_sort_order")]
+	int? DefaultSortOrder,
+	[property: JsonPropertyName(name: "default_forum_layout")]
+	int? DefaultForumLayout
 );

@@ -8,6 +8,7 @@ using DiscordBotApi.Models.Guilds.Channels.Messages;
 
 namespace DiscordBotApi.Models.Guilds.Channels;
 
+// https://discord.com/developers/docs/resources/channel#channel-object
 public record DiscordChannel
 {
 	private readonly DiscordBotClient _botClient;
@@ -18,7 +19,7 @@ public record DiscordChannel
 
 		Id = ulong.Parse(s: dto.Id);
 		Type = (DiscordChannelType)dto.Type;
-		GuildId = dto.GuildId != null
+		GuildId = dto.GuildId is not null
 			? ulong.Parse(s: dto.GuildId)
 			: null;
 		Position = dto.Position;
@@ -26,13 +27,32 @@ public record DiscordChannel
 			.ToArray();
 		Name = dto.Name;
 		Topic = dto.Topic;
-		ParentId = dto.ParentId != null
+		ParentId = dto.ParentId is not null
 			? ulong.Parse(s: dto.ParentId)
 			: null;
-		ThreadMetadata = dto.ThreadMetadata != null
+		ThreadMetadata = dto.ThreadMetadata is not null
 			? new DiscordThreadMetadata(dto: dto.ThreadMetadata)
 			: null;
+		AvailableTags = dto.AvailableTags?.Select(selector: t => new DiscordForumTag(dto: t))
+			.ToArray();
+		DefaultReactionEmoji = dto.DefaultReactionEmoji is not null
+			? new DiscordDefaultReaction(dto: dto.DefaultReactionEmoji)
+			: null;
+		DefaultSortOrder = dto.DefaultSortOrder is not null
+			? (DiscordSortOrderType)dto.DefaultSortOrder
+			: null;
+		DefaultForumLayout = dto.DefaultForumLayout is not null
+			? (DiscordForumLayoutType)dto.DefaultForumLayout
+			: null;
 	}
+
+	public IReadOnlyCollection<DiscordForumTag>? AvailableTags { get; init; }
+
+	public DiscordForumLayoutType? DefaultForumLayout { get; init; }
+
+	public DiscordDefaultReaction? DefaultReactionEmoji { get; init; }
+
+	public DiscordSortOrderType? DefaultSortOrder { get; init; }
 
 	public ulong? GuildId { get; init; }
 

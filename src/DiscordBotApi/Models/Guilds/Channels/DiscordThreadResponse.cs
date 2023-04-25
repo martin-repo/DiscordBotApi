@@ -6,6 +6,7 @@
 
 namespace DiscordBotApi.Models.Guilds.Channels;
 
+// https://discord.com/developers/docs/resources/channel#list-public-archived-threads-response-body
 public record DiscordThreadResponse
 {
 	internal DiscordThreadResponse(DiscordBotClient botClient, DiscordThreadResponseDto dto)

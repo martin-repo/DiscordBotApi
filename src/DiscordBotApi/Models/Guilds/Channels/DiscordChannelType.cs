@@ -6,6 +6,7 @@
 
 namespace DiscordBotApi.Models.Guilds.Channels;
 
+// https://discord.com/developers/docs/resources/channel#channel-object-channel-types
 public enum DiscordChannelType
 {
 	GuildText = 0,
@@ -13,11 +14,11 @@ public enum DiscordChannelType
 	GuildVoice = 2,
 	GroupDm = 3,
 	GuildCategory = 4,
-	GuildNews = 5,
-	GuildStore = 6,
-	GuildNewsThread = 10,
-	GuildPublicThread = 11,
-	GuildPrivateThread = 12,
+	GuildAnnouncement = 5,
+	AnnouncementThread = 10,
+	PublicThread = 11,
+	PrivateThread = 12,
 	GuildStageVoice = 13,
-	GuildDirectory = 14
+	GuildDirectory = 14,
+	GuildForum = 15
 }

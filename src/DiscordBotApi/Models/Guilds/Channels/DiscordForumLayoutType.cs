@@ -1,16 +1,15 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordThreadResponseDto.cs" company="Martin Karlsson">
+// <copyright file="DiscordForumLayoutType.cs" company="Martin Karlsson">
 //   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-using System.Text.Json.Serialization;
-
 namespace DiscordBotApi.Models.Guilds.Channels;
 
-internal record DiscordThreadResponseDto(
-	[property: JsonPropertyName(name: "threads")]
-	DiscordChannelDto[] Threads,
-	[property: JsonPropertyName(name: "has_more")]
-	bool HasMore
-);
+// https://discord.com/developers/docs/resources/channel#channel-object-forum-layout-types
+public enum DiscordForumLayoutType
+{
+	NotSet = 0,
+	ListView = 1,
+	GalleryView = 2
+}
