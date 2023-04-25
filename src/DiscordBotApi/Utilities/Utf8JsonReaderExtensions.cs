@@ -125,7 +125,7 @@ internal static class Utf8JsonReaderExtensions
 				var encodedString = JsonSerializer.Serialize(value: stringValue);
 				return encodedString;
 			case JsonTokenType.Number:
-				return reader.GetInt32()
+				return reader.GetInt64()
 					.ToString(provider: CultureInfo.InvariantCulture);
 			case JsonTokenType.True:
 				return "true";
