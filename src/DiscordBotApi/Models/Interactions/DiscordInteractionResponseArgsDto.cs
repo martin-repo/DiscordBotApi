@@ -1,36 +1,40 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionResponseArgsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordInteractionResponseArgsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Interactions
+using System.Text.Json.Serialization;
+
+namespace DiscordBotApi.Models.Interactions;
+
+internal record DiscordInteractionResponseArgsDto(
+	[property: JsonPropertyName(name: "type")]
+	int Type,
+	[property: JsonPropertyName(name: "data")]
+	DiscordInteractionCallbackDataDto? Data
+)
 {
-    using System.Text.Json.Serialization;
+	internal DiscordInteractionResponseArgsDto(DiscordInteractionResponseArgs model) : this(
+		Type: (int)model.Type,
+		Data: ConvertToDto(model: model.Data))
+	{
+	}
 
-    internal record DiscordInteractionResponseArgsDto(
-        [property: JsonPropertyName("type")] int Type,
-        [property: JsonPropertyName("data")] DiscordInteractionCallbackDataDto? Data)
-    {
-        internal DiscordInteractionResponseArgsDto(DiscordInteractionResponseArgs model)
-            : this((int)model.Type, ConvertToDto(model.Data))
-        {
-        }
+	private static DiscordInteractionCallbackDataDto? ConvertToDto(DiscordInteractionCallbackData? model)
+	{
+		if (model == null)
+		{
+			return null;
+		}
 
-        private static DiscordInteractionCallbackDataDto? ConvertToDto(DiscordInteractionCallbackData? model)
-        {
-            if (model == null)
-            {
-                return null;
-            }
-
-            switch (model)
-            {
-                case DiscordInteractionCallbackMessage message:
-                    return new DiscordInteractionCallbackMessageDto(message);
-                default:
-                    throw new NotSupportedException($"{typeof(DiscordInteractionCallbackData)} {model.GetType().Name} is not supported");
-            }
-        }
-    }
+		switch (model)
+		{
+			case DiscordInteractionCallbackMessage message:
+				return new DiscordInteractionCallbackMessageDto(model: message);
+			default:
+				throw new NotSupportedException(
+					message: $"{typeof(DiscordInteractionCallbackData)} {model.GetType().Name} is not supported");
+		}
+	}
 }

@@ -1,15 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordRateLimitScope.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordRateLimitScope.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Rest
+namespace DiscordBotApi.Models.Rest;
+
+public enum DiscordRateLimitScope
 {
-    public enum DiscordRateLimitScope
-    {
-        User,
-        Global,
-        Shared
-    }
+	User,
+	Global,
+	Shared
 }

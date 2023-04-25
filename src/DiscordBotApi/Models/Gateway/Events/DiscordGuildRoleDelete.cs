@@ -1,21 +1,20 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildRoleDelete.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildRoleDelete.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Events
+namespace DiscordBotApi.Models.Gateway.Events;
+
+public record DiscordGuildRoleDelete
 {
-    public record DiscordGuildRoleDelete
-    {
-        internal DiscordGuildRoleDelete(DiscordGuildRoleDeleteDto dto)
-        {
-            GuildId = ulong.Parse(dto.GuildId);
-            RoleId = ulong.Parse(dto.RoleId);
-        }
+	internal DiscordGuildRoleDelete(DiscordGuildRoleDeleteDto dto)
+	{
+		GuildId = ulong.Parse(s: dto.GuildId);
+		RoleId = ulong.Parse(s: dto.RoleId);
+	}
 
-        public ulong GuildId { get; init; }
+	public ulong GuildId { get; init; }
 
-        public ulong RoleId { get; init; }
-    }
+	public ulong RoleId { get; init; }
 }

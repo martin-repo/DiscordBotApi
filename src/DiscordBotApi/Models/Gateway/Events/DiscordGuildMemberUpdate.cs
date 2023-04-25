@@ -1,29 +1,29 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildMemberUpdate.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildMemberUpdate.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Events
+using DiscordBotApi.Models.Users;
+
+namespace DiscordBotApi.Models.Gateway.Events;
+
+public record DiscordGuildMemberUpdate
 {
-    using DiscordBotApi.Models.Users;
+	internal DiscordGuildMemberUpdate(DiscordGuildMemberUpdateDto dto)
+	{
+		GuildId = ulong.Parse(s: dto.GuildId);
+		Roles = dto.Roles.Select(selector: ulong.Parse)
+			.ToArray();
+		User = new DiscordUser(dto: dto.User);
+		Nick = dto.Nick;
+	}
 
-    public record DiscordGuildMemberUpdate
-    {
-        internal DiscordGuildMemberUpdate(DiscordGuildMemberUpdateDto dto)
-        {
-            GuildId = ulong.Parse(dto.GuildId);
-            Roles = dto.Roles.Select(ulong.Parse).ToArray();
-            User = new DiscordUser(dto.User);
-            Nick = dto.Nick;
-        }
+	public ulong GuildId { get; init; }
 
-        public ulong GuildId { get; init; }
+	public string? Nick { get; init; }
 
-        public string? Nick { get; init; }
+	public IReadOnlyCollection<ulong> Roles { get; init; }
 
-        public IReadOnlyCollection<ulong> Roles { get; init; }
-
-        public DiscordUser User { get; init; }
-    }
+	public DiscordUser User { get; init; }
 }

@@ -1,29 +1,35 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordEditMessageArgsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordEditMessageArgsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
+using System.Text.Json.Serialization;
+
+using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+internal record DiscordEditMessageArgsDto(
+	[property: JsonPropertyName(name: "content")]
+	string? Content,
+	[property: JsonPropertyName(name: "embeds")]
+	DiscordEmbedDto[]? Embeds,
+	[property: JsonPropertyName(name: "components")]
+	DiscordMessageComponentDto[]? Components,
+	[property: JsonPropertyName(name: "attachments")]
+	DiscordMessageAttachmentDto[]? Attachments
+)
 {
-    using System.Text.Json.Serialization;
-
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
-
-    internal record DiscordEditMessageArgsDto(
-        [property: JsonPropertyName("content")] string? Content,
-        [property: JsonPropertyName("embeds")] DiscordEmbedDto[]? Embeds,
-        [property: JsonPropertyName("components")] DiscordMessageComponentDto[]? Components,
-        [property: JsonPropertyName("attachments")] DiscordMessageAttachmentDto[]? Attachments)
-    {
-        internal DiscordEditMessageArgsDto(DiscordEditMessageArgs model)
-            : this(
-                model.Content,
-                model.Embeds?.Select(e => new DiscordEmbedDto(e)).ToArray(),
-                model.Components?.Select(DiscordMessageComponent.ConvertToDto).ToArray(),
-                model.Attachments?.Select(a => new DiscordMessageAttachmentDto(a)).ToArray())
-        {
-        }
-    }
+	internal DiscordEditMessageArgsDto(DiscordEditMessageArgs model) : this(
+		Content: model.Content,
+		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
+			.ToArray(),
+		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
+			.ToArray(),
+		Attachments: model.Attachments?.Select(selector: a => new DiscordMessageAttachmentDto(model: a))
+			.ToArray())
+	{
+	}
 }

@@ -1,12 +1,11 @@
 // -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayClientTests.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayClientTests.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Tests.Gateway
+namespace DiscordBotApi.Tests.Gateway;
+
+public class DiscordGatewayClientTests
 {
-    public class DiscordGatewayClientTests
-    {
-    }
 }

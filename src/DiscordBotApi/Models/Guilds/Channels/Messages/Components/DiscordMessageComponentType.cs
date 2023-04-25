@@ -1,16 +1,15 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageComponentType.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordMessageComponentType.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components
+namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+
+public enum DiscordMessageComponentType
 {
-    public enum DiscordMessageComponentType
-    {
-        ActionRow = 1,
-        Button = 2,
-        SelectMenu = 3,
-        TextInput = 4
-    }
+	ActionRow = 1,
+	Button = 2,
+	SelectMenu = 3,
+	TextInput = 4
 }

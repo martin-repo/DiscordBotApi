@@ -1,21 +1,19 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildMemberAdd.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildMemberAdd.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Events
+using DiscordBotApi.Models.Guilds;
+
+namespace DiscordBotApi.Models.Gateway.Events;
+
+public record DiscordGuildMemberAdd : DiscordGuildMember
 {
-    using DiscordBotApi.Models.Guilds;
+	internal DiscordGuildMemberAdd(DiscordGuildMemberAddDto dto) : base(dto: dto)
+	{
+		GuildId = ulong.Parse(s: dto.GuildId);
+	}
 
-    public record DiscordGuildMemberAdd : DiscordGuildMember
-    {
-        internal DiscordGuildMemberAdd(DiscordGuildMemberAddDto dto)
-            : base(dto)
-        {
-            GuildId = ulong.Parse(dto.GuildId);
-        }
-
-        public ulong GuildId { get; init; }
-    }
+	public ulong GuildId { get; init; }
 }

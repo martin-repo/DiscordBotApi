@@ -1,18 +1,17 @@
 // -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordRestClientTests.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordRestClientTests.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Tests.Rest
-{
-    using Xunit;
+using Xunit;
 
-    public class DiscordRestClientTests
-    {
-        [Fact]
-        public void Test()
-        {
-        }
-    }
+namespace DiscordBotApi.Tests.Rest;
+
+public class DiscordRestClientTests
+{
+	[Fact]
+	public void Test()
+	{
+	}
 }

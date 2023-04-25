@@ -1,44 +1,43 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="JsonParseUtils.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="JsonParseUtils.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Utilities
+using System.Text.Json;
+
+using DiscordBotApi.Models.Applications;
+
+namespace DiscordBotApi.Utilities;
+
+internal static class JsonParseUtils
 {
-    using System.Text.Json;
+	public static object ToObject(DiscordApplicationCommandOptionType type, object jsonValue)
+	{
+		var jsonElement = (JsonElement)jsonValue;
 
-    using DiscordBotApi.Models.Applications;
+		switch (type)
+		{
+			case DiscordApplicationCommandOptionType.String:
+				return jsonElement.ToString();
 
-    internal static class JsonParseUtils
-    {
-        public static object ToObject(DiscordApplicationCommandOptionType type, object jsonValue)
-        {
-            var jsonElement = (JsonElement)jsonValue;
+			case DiscordApplicationCommandOptionType.Integer:
+				return jsonElement.GetInt32();
 
-            switch (type)
-            {
-                case DiscordApplicationCommandOptionType.String:
-                    return jsonElement.ToString();
+			case DiscordApplicationCommandOptionType.Boolean:
+				return jsonElement.GetBoolean();
 
-                case DiscordApplicationCommandOptionType.Integer:
-                    return jsonElement.GetInt32();
+			case DiscordApplicationCommandOptionType.User:
+			case DiscordApplicationCommandOptionType.Channel:
+			case DiscordApplicationCommandOptionType.Role:
+			case DiscordApplicationCommandOptionType.Mentionable:
+				return jsonElement.GetUInt64();
 
-                case DiscordApplicationCommandOptionType.Boolean:
-                    return jsonElement.GetBoolean();
+			case DiscordApplicationCommandOptionType.Number:
+				return jsonElement.GetDouble();
 
-                case DiscordApplicationCommandOptionType.User:
-                case DiscordApplicationCommandOptionType.Channel:
-                case DiscordApplicationCommandOptionType.Role:
-                case DiscordApplicationCommandOptionType.Mentionable:
-                    return jsonElement.GetUInt64();
-
-                case DiscordApplicationCommandOptionType.Number:
-                    return jsonElement.GetDouble();
-
-                default:
-                    throw new NotSupportedException($"{nameof(DiscordApplicationCommandOptionType)} {type} is not supported");
-            }
-        }
-    }
+			default:
+				throw new NotSupportedException(message: $"{nameof(DiscordApplicationCommandOptionType)} {type} is not supported");
+		}
+	}
 }

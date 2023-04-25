@@ -1,28 +1,26 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordPermissionOverwrite.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordPermissionOverwrite.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
+namespace DiscordBotApi.Models.Guilds;
+
+public record DiscordPermissionOverwrite()
 {
-    public record DiscordPermissionOverwrite()
-    {
-        internal DiscordPermissionOverwrite(DiscordPermissionOverwriteDto dto)
-            : this()
-        {
-            Id = ulong.Parse(dto.Id);
-            Type = (DiscordPermissionOverwriteType)dto.Type;
-            Allow = (DiscordPermissions)ulong.Parse(dto.Allow);
-            Deny = (DiscordPermissions)ulong.Parse(dto.Deny);
-        }
+	internal DiscordPermissionOverwrite(DiscordPermissionOverwriteDto dto) : this()
+	{
+		Id = ulong.Parse(s: dto.Id);
+		Type = (DiscordPermissionOverwriteType)dto.Type;
+		Allow = (DiscordPermissions)ulong.Parse(s: dto.Allow);
+		Deny = (DiscordPermissions)ulong.Parse(s: dto.Deny);
+	}
 
-        public DiscordPermissions Allow { get; init; }
+	public DiscordPermissions Allow { get; init; }
 
-        public DiscordPermissions Deny { get; init; }
+	public DiscordPermissions Deny { get; init; }
 
-        public ulong Id { get; init; }
+	public ulong Id { get; init; }
 
-        public DiscordPermissionOverwriteType Type { get; init; }
-    }
+	public DiscordPermissionOverwriteType Type { get; init; }
 }

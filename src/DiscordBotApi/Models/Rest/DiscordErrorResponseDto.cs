@@ -1,17 +1,20 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordErrorResponseDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordErrorResponseDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Rest
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Models.Gateway;
 
-    internal record DiscordErrorResponseDto(
-        [property: JsonPropertyName("code")] int Code,
-        [property: JsonPropertyName("message")] string Message,
-        [property: JsonPropertyName("errors")] JsonData? JsonKey);
-}
+namespace DiscordBotApi.Models.Rest;
+
+internal record DiscordErrorResponseDto(
+	[property: JsonPropertyName(name: "code")]
+	int Code,
+	[property: JsonPropertyName(name: "message")]
+	string Message,
+	[property: JsonPropertyName(name: "errors")]
+	JsonData? JsonKey
+);

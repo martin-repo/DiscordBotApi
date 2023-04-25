@@ -1,20 +1,21 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildMemberAddDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildMemberAddDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Events
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    using DiscordBotApi.Models.Guilds;
-    using DiscordBotApi.Models.Users;
+using DiscordBotApi.Models.Guilds;
+using DiscordBotApi.Models.Users;
 
-    // https://discord.com/developers/docs/topics/gateway#guild-member-add
-    internal record DiscordGuildMemberAddDto(
-        DiscordUserDto? User,
-        string? Nick,
-        string[] Roles,
-        [property: JsonPropertyName("guild_id")] string GuildId) : DiscordGuildMemberDto(User, Nick, Roles);
-}
+namespace DiscordBotApi.Models.Gateway.Events;
+
+// https://discord.com/developers/docs/topics/gateway#guild-member-add
+internal record DiscordGuildMemberAddDto(
+	DiscordUserDto? User,
+	string? Nick,
+	string[] Roles,
+	[property: JsonPropertyName(name: "guild_id")]
+	string GuildId
+) : DiscordGuildMemberDto(User: User, Nick: Nick, Roles: Roles);

@@ -1,26 +1,25 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordReaction.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordReaction.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
+using DiscordBotApi.Models.Guilds.Emojis;
+
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+public record DiscordReaction
 {
-    using DiscordBotApi.Models.Guilds.Emojis;
+	internal DiscordReaction(DiscordReactionDto dto)
+	{
+		Count = dto.Count;
+		Me = dto.Me;
+		Emoji = new DiscordEmoji(dto: dto.Emoji);
+	}
 
-    public record DiscordReaction
-    {
-        internal DiscordReaction(DiscordReactionDto dto)
-        {
-            Count = dto.Count;
-            Me = dto.Me;
-            Emoji = new DiscordEmoji(dto.Emoji);
-        }
+	public int Count { get; init; }
 
-        public int Count { get; init; }
+	public DiscordEmoji Emoji { get; init; }
 
-        public DiscordEmoji Emoji { get; init; }
-
-        public bool Me { get; init; }
-    }
+	public bool Me { get; init; }
 }

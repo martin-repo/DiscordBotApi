@@ -1,15 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionResponseArgs.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordInteractionResponseArgs.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Interactions
-{
-    public record DiscordInteractionResponseArgs
-    {
-        public DiscordInteractionCallbackData? Data { get; init; }
+namespace DiscordBotApi.Models.Interactions;
 
-        public DiscordInteractionCallbackType Type { get; init; }
-    }
+public record DiscordInteractionResponseArgs
+{
+	public DiscordInteractionCallbackData? Data { get; init; }
+
+	public DiscordInteractionCallbackType Type { get; init; }
 }

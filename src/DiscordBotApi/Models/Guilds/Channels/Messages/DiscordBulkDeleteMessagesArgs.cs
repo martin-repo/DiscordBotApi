@@ -1,13 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordBulkDeleteMessagesArgs.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordBulkDeleteMessagesArgs.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+public record DiscordBulkDeleteMessagesArgs
 {
-    public record DiscordBulkDeleteMessagesArgs
-    {
-        public IReadOnlyCollection<ulong> Messages { get; set; } = Array.Empty<ulong>();
-    }
+	public IReadOnlyCollection<ulong> Messages { get; set; } = Array.Empty<ulong>();
 }

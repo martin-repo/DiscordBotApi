@@ -1,53 +1,64 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessage.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordMessage.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
+using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+using DiscordBotApi.Models.Users;
+
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+public record DiscordMessage : DiscordMessageBase
 {
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
-    using DiscordBotApi.Models.Users;
+	internal DiscordMessage(DiscordBotClient botClient, DiscordMessageDto dto) : base(
+		botClient: botClient,
+		id: dto.Id,
+		channelId: dto.ChannelId)
+	{
+		GuildId = dto.GuildId != null
+			? ulong.Parse(s: dto.GuildId)
+			: null;
+		Author = new DiscordUser(dto: dto.Author);
+		Content = dto.Content;
+		Timestamp = DateTime.Parse(s: dto.Timestamp);
+		EditedTimestamp = dto.EditedTimestamp != null
+			? DateTime.Parse(s: dto.EditedTimestamp)
+			: null;
+		Attachments = dto.Attachments.Select(selector: a => new DiscordMessageAttachment(dto: a))
+			.ToArray();
+		Embeds = dto.Embeds.Select(selector: e => new DiscordEmbed(dto: e))
+			.ToArray();
+		Reactions = dto.Reactions?.Select(selector: r => new DiscordReaction(dto: r))
+			.ToArray();
+		Pinned = dto.Pinned;
+		Thread = dto.Thread != null
+			? new DiscordChannel(botClient: botClient, dto: dto.Thread)
+			: null;
+		Components = dto.Components?.Select(selector: c => new DiscordMessageActionRow(dto: c))
+			.ToArray();
+	}
 
-    public record DiscordMessage : DiscordMessageBase
-    {
-        internal DiscordMessage(DiscordBotClient botClient, DiscordMessageDto dto)
-            : base(botClient, dto.Id, dto.ChannelId)
-        {
-            GuildId = dto.GuildId != null ? ulong.Parse(dto.GuildId) : null;
-            Author = new DiscordUser(dto.Author);
-            Content = dto.Content;
-            Timestamp = DateTime.Parse(dto.Timestamp);
-            EditedTimestamp = dto.EditedTimestamp != null ? DateTime.Parse(dto.EditedTimestamp) : null;
-            Attachments = dto.Attachments.Select(a => new DiscordMessageAttachment(a)).ToArray();
-            Embeds = dto.Embeds.Select(e => new DiscordEmbed(e)).ToArray();
-            Reactions = dto.Reactions?.Select(r => new DiscordReaction(r)).ToArray();
-            Pinned = dto.Pinned;
-            Thread = dto.Thread != null ? new DiscordChannel(botClient, dto.Thread) : null;
-            Components = dto.Components?.Select(c => new DiscordMessageActionRow(c)).ToArray();
-        }
+	public IReadOnlyCollection<DiscordMessageAttachment> Attachments { get; init; }
 
-        public IReadOnlyCollection<DiscordMessageAttachment> Attachments { get; init; }
+	public DiscordUser Author { get; init; }
 
-        public DiscordUser Author { get; init; }
+	public IReadOnlyCollection<DiscordMessageActionRow>? Components { get; init; }
 
-        public IReadOnlyCollection<DiscordMessageActionRow>? Components { get; init; }
+	public string Content { get; init; }
 
-        public string Content { get; init; }
+	public DateTime? EditedTimestamp { get; init; }
 
-        public DateTime? EditedTimestamp { get; init; }
+	public IReadOnlyCollection<DiscordEmbed> Embeds { get; init; }
 
-        public IReadOnlyCollection<DiscordEmbed> Embeds { get; init; }
+	public ulong? GuildId { get; init; }
 
-        public ulong? GuildId { get; init; }
+	public bool Pinned { get; init; }
 
-        public bool Pinned { get; init; }
+	public IReadOnlyCollection<DiscordReaction>? Reactions { get; init; }
 
-        public IReadOnlyCollection<DiscordReaction>? Reactions { get; init; }
+	public DiscordChannel? Thread { get; init; }
 
-        public DiscordChannel? Thread { get; init; }
-
-        public DateTime Timestamp { get; init; }
-    }
+	public DateTime Timestamp { get; init; }
 }

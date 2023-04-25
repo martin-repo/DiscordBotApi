@@ -1,23 +1,22 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildMemberRemove.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildMemberRemove.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Events
+using DiscordBotApi.Models.Users;
+
+namespace DiscordBotApi.Models.Gateway.Events;
+
+public record DiscordGuildMemberRemove
 {
-    using DiscordBotApi.Models.Users;
+	internal DiscordGuildMemberRemove(DiscordGuildMemberRemoveDto dto)
+	{
+		GuildId = ulong.Parse(s: dto.GuildId);
+		User = new DiscordUser(dto: dto.User);
+	}
 
-    public record DiscordGuildMemberRemove
-    {
-        internal DiscordGuildMemberRemove(DiscordGuildMemberRemoveDto dto)
-        {
-            GuildId = ulong.Parse(dto.GuildId);
-            User = new DiscordUser(dto.User);
-        }
+	public ulong GuildId { get; init; }
 
-        public ulong GuildId { get; init; }
-
-        public DiscordUser User { get; init; }
-    }
+	public DiscordUser User { get; init; }
 }

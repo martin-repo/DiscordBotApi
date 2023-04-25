@@ -1,21 +1,20 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="IBinaryWebSocket.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="IBinaryWebSocket.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway
+using DiscordBotApi.Models.Gateway;
+
+namespace DiscordBotApi.Gateway;
+
+internal interface IBinaryWebSocket : IDisposable
 {
-    using DiscordBotApi.Models.Gateway;
+	Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
 
-    internal interface IBinaryWebSocket : IDisposable
-    {
-        Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
+	Task DisconnectAsync(DiscordGatewayCloseType closeType);
 
-        Task DisconnectAsync(DiscordGatewayCloseType closeType);
+	Task<byte[]> ReceiveAsync(CancellationToken cancellationToken);
 
-        Task<byte[]> ReceiveAsync(CancellationToken cancellationToken);
-
-        Task SendAsync(byte[] bytes, int chunkLength, CancellationToken cancellationToken);
-    }
+	Task SendAsync(byte[] bytes, int chunkLength, CancellationToken cancellationToken);
 }

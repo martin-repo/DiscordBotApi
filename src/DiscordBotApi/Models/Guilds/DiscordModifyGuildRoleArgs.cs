@@ -1,15 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordModifyGuildRoleArgs.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordModifyGuildRoleArgs.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    public record DiscordModifyGuildRoleArgs
-    {
-        public string? Name { get; init; }
+namespace DiscordBotApi.Models.Guilds;
 
-        public DiscordPermissions? Permissions { get; init; }
-    }
+public record DiscordModifyGuildRoleArgs
+{
+	public string? Name { get; init; }
+
+	public DiscordPermissions? Permissions { get; init; }
 }

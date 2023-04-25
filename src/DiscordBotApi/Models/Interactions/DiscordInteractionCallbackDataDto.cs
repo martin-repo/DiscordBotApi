@@ -1,13 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionCallbackDataDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordInteractionCallbackDataDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Interactions
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    [JsonConverter(typeof(DiscordInteractionCallbackDataDtoConverter))]
-    internal abstract record DiscordInteractionCallbackDataDto;
-}
+namespace DiscordBotApi.Models.Interactions;
+
+[JsonConverter(converterType: typeof(DiscordInteractionCallbackDataDtoConverter))]
+internal abstract record DiscordInteractionCallbackDataDto;

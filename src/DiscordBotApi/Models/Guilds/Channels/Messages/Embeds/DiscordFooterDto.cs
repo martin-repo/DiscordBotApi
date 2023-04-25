@@ -1,18 +1,21 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordFooterDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordFooterDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordFooterDto([property: JsonPropertyName("text")] string Text, [property: JsonPropertyName("icon_url")] string? IconUrl)
-    {
-        internal DiscordFooterDto(DiscordFooter model)
-            : this(model.Text, model.IconUrl)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+
+internal record DiscordFooterDto(
+	[property: JsonPropertyName(name: "text")]
+	string Text,
+	[property: JsonPropertyName(name: "icon_url")]
+	string? IconUrl
+)
+{
+	internal DiscordFooterDto(DiscordFooter model) : this(Text: model.Text, IconUrl: model.IconUrl)
+	{
+	}
 }

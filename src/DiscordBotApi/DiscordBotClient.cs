@@ -1,58 +1,63 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordBotClient.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordBotClient.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi
+using DiscordBotApi.Gateway;
+using DiscordBotApi.Rest;
+
+using Serilog;
+
+namespace DiscordBotApi;
+
+public partial class DiscordBotClient : IAsyncDisposable
 {
-    using DiscordBotApi.Gateway;
-    using DiscordBotApi.Rest;
+	// https://discord.com/developers/docs/reference
+	public const string DiscordApiVersion = "9";
 
-    using Serilog;
+	private const string DiscordApiBaseUrl = "https://discord.com/api/v" + DiscordApiVersion + "/";
+	private const int MaxRequestsPerSecond = 50;
 
-    public partial class DiscordBotClient : IAsyncDisposable
-    {
-        // https://discord.com/developers/docs/reference
-        public const string DiscordApiVersion = "9";
+	private readonly DiscordRestClient _restClient;
 
-        private const string DiscordApiBaseUrl = "https://discord.com/api/v" + DiscordApiVersion + "/";
-        private const int MaxRequestsPerSecond = 50;
+	public DiscordBotClient(string botToken, ILogger? logger = null)
+	{
+		var webSocketActivator = new Func<IBinaryWebSocket>(() => new BinaryWebSocket());
+		var zlibContextActivator = new Func<IZlibContext>(() => new ZlibContext());
+		_gatewayClient = new DiscordGatewayClient(
+			logger: logger,
+			webSocketActivator: webSocketActivator,
+			zlibContextActivator: zlibContextActivator,
+			botToken: botToken);
+		_gatewayClient.GatewayDispatchReceived += (_, eventArgs) =>
+			HandleGatewayDispatch(eventType: eventArgs.EventType, eventDataJson: eventArgs.EventDataJson);
+		_gatewayClient.GatewayException += (_, eventArgs) => GatewayException?.Invoke(sender: this, e: eventArgs);
 
-        private readonly DiscordRestClient _restClient;
+		var globalManager = new DiscordGlobalManager(globalLimit: MaxRequestsPerSecond, logger: logger);
+		globalManager.Start();
 
-        public DiscordBotClient(string botToken, ILogger? logger = null)
-        {
-            var webSocketActivator = new Func<IBinaryWebSocket>(() => new BinaryWebSocket());
-            var zlibContextActivator = new Func<IZlibContext>(() => new ZlibContext());
-            _gatewayClient = new DiscordGatewayClient(logger, webSocketActivator, zlibContextActivator, botToken);
-            _gatewayClient.GatewayDispatchReceived += (_, eventArgs) => HandleGatewayDispatch(eventArgs.EventType, eventArgs.EventDataJson);
-            _gatewayClient.GatewayException += (_, eventArgs) => GatewayException?.Invoke(this, eventArgs);
+		var resourceManager = new DiscordResourceManager(logger: logger);
+		resourceManager.Start();
 
-            var globalManager = new DiscordGlobalManager(MaxRequestsPerSecond, logger);
-            globalManager.Start();
+		_restClient = new DiscordRestClient(
+			logger: logger,
+			httpClient: new HttpClient(),
+			globalManager: globalManager,
+			resourceManager: resourceManager,
+			baseUrl: DiscordApiBaseUrl,
+			botToken: botToken);
+		_restClient.RateLimitExceeded += (_, args) => RestRateLimitExceeded?.Invoke(sender: this, e: args);
+	}
 
-            var resourceManager = new DiscordResourceManager(logger);
-            resourceManager.Start();
+	public event EventHandler<DiscordRateLimitExceeded>? RestRateLimitExceeded;
 
-            _restClient = new DiscordRestClient(
-                logger,
-                new HttpClient(),
-                globalManager,
-                resourceManager,
-                DiscordApiBaseUrl,
-                botToken);
-            _restClient.RateLimitExceeded += (_, args) => RestRateLimitExceeded?.Invoke(this, args);
-        }
+	public async ValueTask DisposeAsync()
+	{
+		await _gatewayClient.DisposeAsync()
+			.ConfigureAwait(continueOnCapturedContext: false);
+		_restClient.Dispose();
 
-        public event EventHandler<DiscordRateLimitExceeded>? RestRateLimitExceeded;
-
-        public async ValueTask DisposeAsync()
-        {
-            await _gatewayClient.DisposeAsync().ConfigureAwait(false);
-            _restClient.Dispose();
-
-            GC.SuppressFinalize(this);
-        }
-    }
+		GC.SuppressFinalize(obj: this);
+	}
 }

@@ -1,66 +1,67 @@
 // -------------------------------------------------------------------------------------------------
-// <copyright file="CategoryTests.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="CategoryTests.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.EndToEndTests.Guild
+using System.Threading.Tasks;
+
+using AutoFixture.Xunit2;
+
+using DiscordBotApi.Models.Guilds;
+using DiscordBotApi.Models.Guilds.Channels;
+
+using FluentAssertions;
+
+using Xunit;
+
+namespace DiscordBotApi.EndToEndTests.Guild;
+
+[Collection(name: "DiscordBotClient collection")]
+public class CategoryTests
 {
-    using System.Threading.Tasks;
+	private readonly DiscordBotClient _client;
+	private readonly ulong _guildId;
 
-    using AutoFixture.Xunit2;
+	public CategoryTests(DiscordBotClientFixture fixture)
+	{
+		_client = fixture.BotClient;
+		_guildId = fixture.GuildId;
+	}
 
-    using DiscordBotApi.Models.Guilds;
-    using DiscordBotApi.Models.Guilds.Channels;
+	[Theory]
+	[AutoData]
+	private async Task CreateGuildRoleAsync(string name)
+	{
+		var completion = TaskCompletionSourceCreator.Create<DiscordChannel>();
 
-    using FluentAssertions;
+		void OnChannelCreate(object? sender, DiscordChannel eventArgs) => completion.SetResult(result: eventArgs);
 
-    using Xunit;
+		void ValidateChannel(DiscordChannel channel) =>
+			channel.Name.Should()
+				.Be(expected: name);
 
-    [Collection("DiscordBotClient collection")]
-    public class CategoryTests
-    {
-        private readonly DiscordBotClient _client;
-        private readonly ulong _guildId;
+		_client.ChannelCreate += OnChannelCreate;
+		try
+		{
+			var channelFromRest = await _client.CreateGuildChannelAsync(
+				guildId: _guildId,
+				args: new DiscordCreateGuildChannelArgs
+				{
+					Name = name,
+					Type = DiscordChannelType.GuildCategory
+				});
+			var channelFromGateway = await completion.Task;
 
-        public CategoryTests(DiscordBotClientFixture fixture)
-        {
-            _client = fixture.BotClient;
-            _guildId = fixture.GuildId;
-        }
-
-        [Theory]
-        [AutoData]
-        private async Task CreateGuildRoleAsync(string name)
-        {
-            var completion = TaskCompletionSourceCreator.Create<DiscordChannel>();
-
-            void OnChannelCreate(object? sender, DiscordChannel eventArgs)
-            {
-                completion.SetResult(eventArgs);
-            }
-
-            void ValidateChannel(DiscordChannel channel)
-            {
-                channel.Name.Should().Be(name);
-            }
-
-            _client.ChannelCreate += OnChannelCreate;
-            try
-            {
-                var channelFromRest = await _client.CreateGuildChannelAsync(
-                                          _guildId,
-                                          new DiscordCreateGuildChannelArgs { Name = name, Type = DiscordChannelType.GuildCategory });
-                var channelFromGateway = await completion.Task;
-
-                typeof(DiscordChannel).GetProperties().Length.Should().Be(9);
-                ValidateChannel(channelFromRest);
-                ValidateChannel(channelFromGateway);
-            }
-            finally
-            {
-                _client.ChannelCreate -= OnChannelCreate;
-            }
-        }
-    }
+			typeof(DiscordChannel).GetProperties()
+				.Length.Should()
+				.Be(expected: 9);
+			ValidateChannel(channel: channelFromRest);
+			ValidateChannel(channel: channelFromGateway);
+		}
+		finally
+		{
+			_client.ChannelCreate -= OnChannelCreate;
+		}
+	}
 }

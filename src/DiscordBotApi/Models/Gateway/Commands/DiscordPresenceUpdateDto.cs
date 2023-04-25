@@ -1,47 +1,53 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordPresenceUpdateDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordPresenceUpdateDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Commands
+using System.Text.Json.Serialization;
+
+using DiscordBotApi.Utilities;
+
+namespace DiscordBotApi.Models.Gateway.Commands;
+
+internal record DiscordPresenceUpdateDto(
+	[property: JsonPropertyName(name: "since")]
+	int? Since,
+	[property: JsonPropertyName(name: "activities")]
+	DiscordActivityUpdateDto[] Activities,
+	[property: JsonPropertyName(name: "status")]
+	string Status,
+	[property: JsonPropertyName(name: "afk")]
+	bool Afk
+)
 {
-    using System.Text.Json.Serialization;
+	internal DiscordPresenceUpdateDto(DiscordPresenceUpdate model) : this(
+		Since: model.Since != null
+			? DateTimeUtils.ToEpochTimeMilliseconds(datetime: model.Since.Value)
+			: null,
+		Activities: model.Activities.Select(selector: a => new DiscordActivityUpdateDto(model: a))
+			.ToArray(),
+		Status: GetStatusString(status: model.Status),
+		Afk: model.Afk)
+	{
+	}
 
-    using DiscordBotApi.Utilities;
-
-    internal record DiscordPresenceUpdateDto(
-        [property: JsonPropertyName("since")] int? Since,
-        [property: JsonPropertyName("activities")] DiscordActivityUpdateDto[] Activities,
-        [property: JsonPropertyName("status")] string Status,
-        [property: JsonPropertyName("afk")] bool Afk)
-    {
-        internal DiscordPresenceUpdateDto(DiscordPresenceUpdate model)
-            : this(
-                model.Since != null ? DateTimeUtils.ToEpochTimeMilliseconds(model.Since.Value) : null,
-                model.Activities.Select(a => new DiscordActivityUpdateDto(a)).ToArray(),
-                GetStatusString(model.Status),
-                model.Afk)
-        {
-        }
-
-        private static string GetStatusString(DiscordPresenceStatus status)
-        {
-            switch (status)
-            {
-                case DiscordPresenceStatus.Online:
-                    return "online";
-                case DiscordPresenceStatus.DoNotDisturb:
-                    return "dnd";
-                case DiscordPresenceStatus.Idle:
-                    return "idle";
-                case DiscordPresenceStatus.Invisible:
-                    return "invisible";
-                case DiscordPresenceStatus.Offline:
-                    return "offline";
-                default:
-                    throw new NotSupportedException($"{nameof(DiscordPresenceStatus)} {status} is not supported");
-            }
-        }
-    }
+	private static string GetStatusString(DiscordPresenceStatus status)
+	{
+		switch (status)
+		{
+			case DiscordPresenceStatus.Online:
+				return "online";
+			case DiscordPresenceStatus.DoNotDisturb:
+				return "dnd";
+			case DiscordPresenceStatus.Idle:
+				return "idle";
+			case DiscordPresenceStatus.Invisible:
+				return "invisible";
+			case DiscordPresenceStatus.Offline:
+				return "offline";
+			default:
+				throw new NotSupportedException(message: $"{nameof(DiscordPresenceStatus)} {status} is not supported");
+		}
+	}
 }

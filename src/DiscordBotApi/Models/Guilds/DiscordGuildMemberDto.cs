@@ -1,17 +1,20 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildMemberDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildMemberDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    using DiscordBotApi.Models.Users;
+using DiscordBotApi.Models.Users;
 
-    internal record DiscordGuildMemberDto(
-        [property: JsonPropertyName("user")] DiscordUserDto? User,
-        [property: JsonPropertyName("nick")] string? Nick,
-        [property: JsonPropertyName("roles")] string[] Roles);
-}
+namespace DiscordBotApi.Models.Guilds;
+
+internal record DiscordGuildMemberDto(
+	[property: JsonPropertyName(name: "user")]
+	DiscordUserDto? User,
+	[property: JsonPropertyName(name: "nick")]
+	string? Nick,
+	[property: JsonPropertyName(name: "roles")]
+	string[] Roles
+);

@@ -1,25 +1,24 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayException.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayException.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway
+namespace DiscordBotApi.Gateway;
+
+public class DiscordGatewayException : ApplicationException
 {
-    public class DiscordGatewayException : ApplicationException
-    {
-        public DiscordGatewayException(string message, bool isDisconnected)
-            : base(message)
-        {
-            IsDisconnected = isDisconnected;
-        }
+	public DiscordGatewayException(string message, bool isDisconnected) : base(message: message)
+	{
+		IsDisconnected = isDisconnected;
+	}
 
-        public DiscordGatewayException(string message, bool isDisconnected, Exception innerException)
-            : base(message, innerException)
-        {
-            IsDisconnected = isDisconnected;
-        }
+	public DiscordGatewayException(string message, bool isDisconnected, Exception innerException) : base(
+		message: message,
+		innerException: innerException)
+	{
+		IsDisconnected = isDisconnected;
+	}
 
-        public bool IsDisconnected { get; }
-    }
+	public bool IsDisconnected { get; }
 }

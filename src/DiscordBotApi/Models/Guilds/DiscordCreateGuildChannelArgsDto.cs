@@ -1,28 +1,37 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordCreateGuildChannelArgsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordCreateGuildChannelArgsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordCreateGuildChannelArgsDto(
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("type")] int? Type,
-        [property: JsonPropertyName("topic")] string? Topic,
-        [property: JsonPropertyName("permission_overwrites")] DiscordPermissionOverwriteDto[]? PermissionOverwrites,
-        [property: JsonPropertyName("parent_id")] string? ParentId)
-    {
-        internal DiscordCreateGuildChannelArgsDto(DiscordCreateGuildChannelArgs model)
-            : this(
-                model.Name,
-                model.Type != null ? (int)model.Type : null,
-                model.Topic,
-                model.PermissionOverwrites?.Select(po => new DiscordPermissionOverwriteDto(po)).ToArray(),
-                model.ParentId != null ? model.ParentId.ToString() : null)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds;
+
+internal record DiscordCreateGuildChannelArgsDto(
+	[property: JsonPropertyName(name: "name")]
+	string Name,
+	[property: JsonPropertyName(name: "type")]
+	int? Type,
+	[property: JsonPropertyName(name: "topic")]
+	string? Topic,
+	[property: JsonPropertyName(name: "permission_overwrites")]
+	DiscordPermissionOverwriteDto[]? PermissionOverwrites,
+	[property: JsonPropertyName(name: "parent_id")]
+	string? ParentId
+)
+{
+	internal DiscordCreateGuildChannelArgsDto(DiscordCreateGuildChannelArgs model) : this(
+		Name: model.Name,
+		Type: model.Type != null
+			? (int)model.Type
+			: null,
+		Topic: model.Topic,
+		PermissionOverwrites: model.PermissionOverwrites?.Select(selector: po => new DiscordPermissionOverwriteDto(model: po))
+			.ToArray(),
+		ParentId: model.ParentId != null
+			? model.ParentId.ToString()
+			: null)
+	{
+	}
 }

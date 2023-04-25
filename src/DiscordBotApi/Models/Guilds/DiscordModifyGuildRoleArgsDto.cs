@@ -1,20 +1,25 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordModifyGuildRoleArgsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordModifyGuildRoleArgsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordModifyGuildRoleArgsDto(
-        [property: JsonPropertyName("name")] string? Name,
-        [property: JsonPropertyName("permissions")] string? Permissions)
-    {
-        internal DiscordModifyGuildRoleArgsDto(DiscordModifyGuildRoleArgs model)
-            : this(model.Name, model.Permissions != null ? ((ulong)model.Permissions).ToString() : null)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds;
+
+internal record DiscordModifyGuildRoleArgsDto(
+	[property: JsonPropertyName(name: "name")]
+	string? Name,
+	[property: JsonPropertyName(name: "permissions")]
+	string? Permissions
+)
+{
+	internal DiscordModifyGuildRoleArgsDto(DiscordModifyGuildRoleArgs model) : this(
+		Name: model.Name,
+		Permissions: model.Permissions != null
+			? ((ulong)model.Permissions).ToString()
+			: null)
+	{
+	}
 }

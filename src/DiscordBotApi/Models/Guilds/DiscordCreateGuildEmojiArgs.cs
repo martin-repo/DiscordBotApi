@@ -1,15 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordCreateGuildEmojiArgs.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordCreateGuildEmojiArgs.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    public record DiscordCreateGuildEmojiArgs
-    {
-        public string FilePath { get; init; } = "";
+namespace DiscordBotApi.Models.Guilds;
 
-        public string Name { get; init; } = "";
-    }
+public record DiscordCreateGuildEmojiArgs
+{
+	public string FilePath { get; init; } = "";
+
+	public string Name { get; init; } = "";
 }

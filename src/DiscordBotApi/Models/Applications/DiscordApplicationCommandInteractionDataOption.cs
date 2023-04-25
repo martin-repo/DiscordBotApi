@@ -1,32 +1,32 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordApplicationCommandInteractionDataOption.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordApplicationCommandInteractionDataOption.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Applications
+using DiscordBotApi.Utilities;
+
+namespace DiscordBotApi.Models.Applications;
+
+public record DiscordApplicationCommandInteractionDataOption
 {
-    using DiscordBotApi.Utilities;
+	internal DiscordApplicationCommandInteractionDataOption(DiscordApplicationCommandInteractionDataOptionDto dto)
+	{
+		Name = dto.Name;
+		Type = (DiscordApplicationCommandOptionType)dto.Type;
+		Value = JsonParseUtils.ToObject(type: (DiscordApplicationCommandOptionType)dto.Type, jsonValue: dto.Value);
+		Options = dto.Options?.Select(selector: o => new DiscordApplicationCommandInteractionDataOption(dto: o))
+			.ToArray();
+		Focused = dto.Focused;
+	}
 
-    public record DiscordApplicationCommandInteractionDataOption
-    {
-        internal DiscordApplicationCommandInteractionDataOption(DiscordApplicationCommandInteractionDataOptionDto dto)
-        {
-            Name = dto.Name;
-            Type = (DiscordApplicationCommandOptionType)dto.Type;
-            Value = JsonParseUtils.ToObject((DiscordApplicationCommandOptionType)dto.Type, dto.Value);
-            Options = dto.Options?.Select(o => new DiscordApplicationCommandInteractionDataOption(o)).ToArray();
-            Focused = dto.Focused;
-        }
+	public bool? Focused { get; init; }
 
-        public bool? Focused { get; init; }
+	public string Name { get; init; }
 
-        public string Name { get; init; }
+	public IReadOnlyCollection<DiscordApplicationCommandInteractionDataOption>? Options { get; init; }
 
-        public IReadOnlyCollection<DiscordApplicationCommandInteractionDataOption>? Options { get; init; }
+	public DiscordApplicationCommandOptionType Type { get; init; }
 
-        public DiscordApplicationCommandOptionType Type { get; init; }
-
-        public object Value { get; init; }
-    }
+	public object Value { get; init; }
 }

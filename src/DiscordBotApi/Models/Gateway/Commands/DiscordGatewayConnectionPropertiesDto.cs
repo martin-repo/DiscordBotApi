@@ -1,21 +1,26 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayConnectionPropertiesDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayConnectionPropertiesDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Commands
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordGatewayConnectionPropertiesDto(
-        [property: JsonPropertyName("$os")] string OperatingSystem,
-        [property: JsonPropertyName("$browser")] string BrowserName,
-        [property: JsonPropertyName("$device")] string DeviceName)
-    {
-        internal DiscordGatewayConnectionPropertiesDto(DiscordGatewayConnectionProperties model)
-            : this(model.OperatingSystem, model.BrowserName, model.DeviceName)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Gateway.Commands;
+
+internal record DiscordGatewayConnectionPropertiesDto(
+	[property: JsonPropertyName(name: "$os")]
+	string OperatingSystem,
+	[property: JsonPropertyName(name: "$browser")]
+	string BrowserName,
+	[property: JsonPropertyName(name: "$device")]
+	string DeviceName
+)
+{
+	internal DiscordGatewayConnectionPropertiesDto(DiscordGatewayConnectionProperties model) : this(
+		OperatingSystem: model.OperatingSystem,
+		BrowserName: model.BrowserName,
+		DeviceName: model.DeviceName)
+	{
+	}
 }

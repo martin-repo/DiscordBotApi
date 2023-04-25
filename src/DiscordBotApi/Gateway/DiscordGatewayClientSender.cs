@@ -1,95 +1,111 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayClientSender.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayClientSender.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Models.Gateway.Commands;
+
+namespace DiscordBotApi.Gateway;
+
+internal partial class DiscordGatewayClient
 {
-    using System.Runtime.InteropServices;
-    using System.Text;
-    using System.Text.Json;
-    using System.Text.Json.Serialization;
+	private static string GetOperatingSystemName()
+	{
+		if (RuntimeInformation.IsOSPlatform(osPlatform: OSPlatform.Windows))
+		{
+			return $"Windows {Environment.OSVersion.Version.Major}";
+		}
 
-    using DiscordBotApi.Models.Gateway;
-    using DiscordBotApi.Models.Gateway.Commands;
+		if (RuntimeInformation.IsOSPlatform(osPlatform: OSPlatform.Linux))
+		{
+			return "Linux";
+		}
 
-    internal partial class DiscordGatewayClient
-    {
-        private static string GetOperatingSystemName()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return $"Windows {Environment.OSVersion.Version.Major}";
-            }
+		if (RuntimeInformation.IsOSPlatform(osPlatform: OSPlatform.OSX))
+		{
+			return "OSX";
+		}
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return "Linux";
-            }
+		return "Other";
+	}
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return "OSX";
-            }
+	private async Task SendHeartbeatAsync(CancellationToken cancellationToken)
+	{
+		_session.HeartbeatAckReceived = false;
 
-            return "Other";
-        }
+		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Heartbeat");
 
-        private async Task SendHeartbeatAsync(CancellationToken cancellationToken)
-        {
-            _session.HeartbeatAckReceived = false;
+		var payload =
+			new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.Heartbeat) { SequenceNumber = _session.SequenceNumber };
+		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-            _logger?.Debug("Gateway >> {Name}", "Heartbeat");
+	private async Task SendIdentifyAsync(CancellationToken cancellationToken)
+	{
+		var properties = new DiscordGatewayConnectionProperties(
+			OperatingSystem: GetOperatingSystemName(),
+			BrowserName: nameof(DiscordBotApi),
+			DeviceName: nameof(DiscordBotApi));
+		var identify = new DiscordIdentify(
+			Token: _botToken,
+			Properties: properties,
+			Shard: _session.Shard,
+			Intents: (int)_session.Intents);
+		var identifyDto = new DiscordIdentifyDto(model: identify);
+		var identifyJson = JsonSerializer.Serialize(
+			value: identifyDto,
+			options: new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
 
-            var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.Heartbeat) { SequenceNumber = _session.SequenceNumber };
-            await SendPayloadAsync(payload, cancellationToken).ConfigureAwait(false);
-        }
+		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Identify");
 
-        private async Task SendIdentifyAsync(CancellationToken cancellationToken)
-        {
-            var properties = new DiscordGatewayConnectionProperties(GetOperatingSystemName(), nameof(DiscordBotApi), nameof(DiscordBotApi));
-            var identify = new DiscordIdentify(_botToken, properties, _session.Shard, (int)_session.Intents);
-            var identifyDto = new DiscordIdentifyDto(identify);
-            var identifyJson = JsonSerializer.Serialize(
-                identifyDto,
-                new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+		var payload = new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.Identify) { EventData = identifyJson };
+		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-            _logger?.Debug("Gateway >> {Name}", "Identify");
+	private async Task SendPayloadAsync(DiscordGatewayPayload payload, CancellationToken cancellationToken)
+	{
+		var payloadDto = new DiscordGatewayPayloadDto(model: payload);
+		var payloadJson = JsonSerializer.Serialize(value: payloadDto);
+		var payloadBytes = Encoding.UTF8.GetBytes(s: payloadJson);
 
-            var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.Identify) { EventData = identifyJson };
-            await SendPayloadAsync(payload, cancellationToken).ConfigureAwait(false);
-        }
+		await _session.WebSocket.SendAsync(
+				bytes: payloadBytes,
+				chunkLength: OutgoingWebSocketChunkLength,
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-        private async Task SendPayloadAsync(DiscordGatewayPayload payload, CancellationToken cancellationToken)
-        {
-            var payloadDto = new DiscordGatewayPayloadDto(payload);
-            var payloadJson = JsonSerializer.Serialize(payloadDto);
-            var payloadBytes = Encoding.UTF8.GetBytes(payloadJson);
+	private async Task SendPresenceUpdateAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken)
+	{
+		var presenceUpdateDto = new DiscordPresenceUpdateDto(model: presenceUpdate);
+		var presenceUpdateJson = JsonSerializer.Serialize(value: presenceUpdateDto);
 
-            await _session.WebSocket.SendAsync(payloadBytes, OutgoingWebSocketChunkLength, cancellationToken).ConfigureAwait(false);
-        }
+		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "PresenceUpdate");
 
-        private async Task SendPresenceUpdateAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken)
-        {
-            var presenceUpdateDto = new DiscordPresenceUpdateDto(presenceUpdate);
-            var presenceUpdateJson = JsonSerializer.Serialize(presenceUpdateDto);
+		var payload =
+			new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.PresenceUpdate) { EventData = presenceUpdateJson };
+		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-            _logger?.Debug("Gateway >> {Name}", "PresenceUpdate");
+	private async Task SendResumeAsync(CancellationToken cancellationToken)
+	{
+		var resumeDto = new DiscordResumeDto(Token: _botToken, SessionId: _session.Id, SequenceNumber: _session.SequenceNumber);
+		var resumeJson = JsonSerializer.Serialize(value: resumeDto);
 
-            var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.PresenceUpdate) { EventData = presenceUpdateJson };
-            await SendPayloadAsync(payload, cancellationToken).ConfigureAwait(false);
-        }
+		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Resume");
 
-        private async Task SendResumeAsync(CancellationToken cancellationToken)
-        {
-            var resumeDto = new DiscordResumeDto(_botToken, _session.Id, _session.SequenceNumber);
-            var resumeJson = JsonSerializer.Serialize(resumeDto);
-
-            _logger?.Debug("Gateway >> {Name}", "Resume");
-
-            var payload = new DiscordGatewayPayload(DiscordGatewayPayloadOpcode.Resume) { EventData = resumeJson };
-            await SendPayloadAsync(payload, cancellationToken).ConfigureAwait(false);
-        }
-    }
+		var payload = new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.Resume) { EventData = resumeJson };
+		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 }

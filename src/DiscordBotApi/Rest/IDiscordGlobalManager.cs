@@ -1,15 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="IDiscordGlobalManager.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="IDiscordGlobalManager.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Rest
-{
-    using DiscordBotApi.Models.Rest;
+using DiscordBotApi.Models.Rest;
 
-    internal interface IDiscordGlobalManager
-    {
-        Task GetReservationAsync(DiscordResourceId resourceId, CancellationToken cancellationToken);
-    }
+namespace DiscordBotApi.Rest;
+
+internal interface IDiscordGlobalManager
+{
+	Task GetReservationAsync(DiscordResourceId resourceId, CancellationToken cancellationToken);
 }

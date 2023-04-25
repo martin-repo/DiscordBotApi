@@ -1,13 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGetGuildArgs.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGetGuildArgs.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
+namespace DiscordBotApi.Models.Guilds;
+
+public record DiscordGetGuildArgs
 {
-    public record DiscordGetGuildArgs
-    {
-        public bool? WithCounts { get; init; }
-    }
+	public bool? WithCounts { get; init; }
 }

@@ -1,17 +1,21 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildApplicationCommandPermissionsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildApplicationCommandPermissionsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Commands
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    // https://discord.com/developers/docs/interactions/application-commands#application-command-permissions-object-guild-application-command-permissions-structure
-    internal record DiscordGuildApplicationCommandPermissionsDto(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("application_id")] string ApplicationId,
-        [property: JsonPropertyName("guild_id")] string GuildId,
-        [property: JsonPropertyName("permissions")] DiscordApplicationCommandPermissionsDto[] Permissions);
-}
+namespace DiscordBotApi.Models.Gateway.Commands;
+
+// https://discord.com/developers/docs/interactions/application-commands#application-command-permissions-object-guild-application-command-permissions-structure
+internal record DiscordGuildApplicationCommandPermissionsDto(
+	[property: JsonPropertyName(name: "id")]
+	string Id,
+	[property: JsonPropertyName(name: "application_id")]
+	string ApplicationId,
+	[property: JsonPropertyName(name: "guild_id")]
+	string GuildId,
+	[property: JsonPropertyName(name: "permissions")]
+	DiscordApplicationCommandPermissionsDto[] Permissions
+);

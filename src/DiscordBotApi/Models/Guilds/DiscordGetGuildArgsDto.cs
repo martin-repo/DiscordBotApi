@@ -1,18 +1,19 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGetGuildArgsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGetGuildArgsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordGetGuildArgsDto([property: JsonPropertyName("with_counts")] bool? WithCounts)
-    {
-        internal DiscordGetGuildArgsDto(DiscordGetGuildArgs model)
-            : this(model.WithCounts)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds;
+
+internal record DiscordGetGuildArgsDto(
+	[property: JsonPropertyName(name: "with_counts")]
+	bool? WithCounts
+)
+{
+	internal DiscordGetGuildArgsDto(DiscordGetGuildArgs model) : this(WithCounts: model.WithCounts)
+	{
+	}
 }

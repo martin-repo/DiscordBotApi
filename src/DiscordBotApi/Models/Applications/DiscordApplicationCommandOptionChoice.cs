@@ -1,24 +1,25 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordApplicationCommandOptionChoice.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordApplicationCommandOptionChoice.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Applications
+using DiscordBotApi.Utilities;
+
+namespace DiscordBotApi.Models.Applications;
+
+public record DiscordApplicationCommandOptionChoice()
 {
-    using DiscordBotApi.Utilities;
+	internal DiscordApplicationCommandOptionChoice(
+		DiscordApplicationCommandOptionType type,
+		DiscordApplicationCommandOptionChoiceDto dto
+	) : this()
+	{
+		Name = dto.Name;
+		Value = JsonParseUtils.ToObject(type: type, jsonValue: dto.Value);
+	}
 
-    public record DiscordApplicationCommandOptionChoice()
-    {
-        internal DiscordApplicationCommandOptionChoice(DiscordApplicationCommandOptionType type, DiscordApplicationCommandOptionChoiceDto dto)
-            : this()
-        {
-            Name = dto.Name;
-            Value = JsonParseUtils.ToObject(type, dto.Value);
-        }
+	public string Name { get; init; } = "";
 
-        public string Name { get; init; } = "";
-
-        public object Value { get; init; } = "";
-    }
+	public object Value { get; init; } = "";
 }

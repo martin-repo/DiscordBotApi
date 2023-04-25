@@ -1,21 +1,30 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordChannelDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordChannelDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordChannelDto(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("type")] int Type,
-        [property: JsonPropertyName("guild_id")] string? GuildId,
-        [property: JsonPropertyName("position")] int? Position,
-        [property: JsonPropertyName("permission_overwrites")] DiscordPermissionOverwriteDto[]? PermissionOverwrites,
-        [property: JsonPropertyName("name")] string? Name,
-        [property: JsonPropertyName("topic")] string? Topic,
-        [property: JsonPropertyName("parent_id")] string? ParentId,
-        [property: JsonPropertyName("thread_metadata")] DiscordThreadMetadataDto? ThreadMetadata);
-}
+namespace DiscordBotApi.Models.Guilds.Channels;
+
+internal record DiscordChannelDto(
+	[property: JsonPropertyName(name: "id")]
+	string Id,
+	[property: JsonPropertyName(name: "type")]
+	int Type,
+	[property: JsonPropertyName(name: "guild_id")]
+	string? GuildId,
+	[property: JsonPropertyName(name: "position")]
+	int? Position,
+	[property: JsonPropertyName(name: "permission_overwrites")]
+	DiscordPermissionOverwriteDto[]? PermissionOverwrites,
+	[property: JsonPropertyName(name: "name")]
+	string? Name,
+	[property: JsonPropertyName(name: "topic")]
+	string? Topic,
+	[property: JsonPropertyName(name: "parent_id")]
+	string? ParentId,
+	[property: JsonPropertyName(name: "thread_metadata")]
+	DiscordThreadMetadataDto? ThreadMetadata
+);

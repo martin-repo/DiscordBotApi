@@ -1,12 +1,11 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayDispatch.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayDispatch.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway
-{
-    using DiscordBotApi.Models.Gateway.Events;
+using DiscordBotApi.Models.Gateway.Events;
 
-    internal record DiscordGatewayDispatch(DiscordEventType EventType, string EventDataJson);
-}
+namespace DiscordBotApi.Gateway;
+
+internal record DiscordGatewayDispatch(DiscordEventType EventType, string EventDataJson);

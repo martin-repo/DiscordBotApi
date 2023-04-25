@@ -1,23 +1,33 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordApplicationCommandDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordApplicationCommandDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Applications
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-structure
-    internal record DiscordApplicationCommandDto(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("type")] int? Type,
-        [property: JsonPropertyName("application_id")] string ApplicationId,
-        [property: JsonPropertyName("guild_id")] string? GuildId,
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("description")] string Description,
-        [property: JsonPropertyName("options")] DiscordApplicationCommandOptionDto[]? Options,
-        [property: JsonPropertyName("default_member_permissions")] string? DefaultMemberPermissions,
-        [property: JsonPropertyName("dm_permission")] bool? DmPermission,
-        [property: JsonPropertyName("version")] string Version);
-}
+namespace DiscordBotApi.Models.Applications;
+
+// https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-structure
+internal record DiscordApplicationCommandDto(
+	[property: JsonPropertyName(name: "id")]
+	string Id,
+	[property: JsonPropertyName(name: "type")]
+	int? Type,
+	[property: JsonPropertyName(name: "application_id")]
+	string ApplicationId,
+	[property: JsonPropertyName(name: "guild_id")]
+	string? GuildId,
+	[property: JsonPropertyName(name: "name")]
+	string Name,
+	[property: JsonPropertyName(name: "description")]
+	string Description,
+	[property: JsonPropertyName(name: "options")]
+	DiscordApplicationCommandOptionDto[]? Options,
+	[property: JsonPropertyName(name: "default_member_permissions")]
+	string? DefaultMemberPermissions,
+	[property: JsonPropertyName(name: "dm_permission")]
+	bool? DmPermission,
+	[property: JsonPropertyName(name: "version")]
+	string Version
+);

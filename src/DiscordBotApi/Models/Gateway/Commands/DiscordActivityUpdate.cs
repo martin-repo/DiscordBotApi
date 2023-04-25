@@ -1,17 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordActivityUpdate.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordActivityUpdate.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Commands
+namespace DiscordBotApi.Models.Gateway.Commands;
+
+public record DiscordActivityUpdate
 {
-    public record DiscordActivityUpdate
-    {
-        public string Name { get; init; } = "";
+	public string Name { get; init; } = "";
 
-        public DiscordActivityType Type { get; init; }
+	public DiscordActivityType Type { get; init; }
 
-        public string? Url { get; init; }
-    }
+	public string? Url { get; init; }
 }

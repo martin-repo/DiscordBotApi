@@ -1,27 +1,29 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageComponentDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordMessageComponentDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    [JsonConverter(typeof(DiscordMessageComponentDtoConverter))]
-    internal abstract record DiscordMessageComponentDto([property: JsonPropertyName("type")] int Type)
-    {
-        internal static DiscordMessageComponent ConvertToModel(DiscordMessageComponentDto dto)
-        {
-            switch (dto)
-            {
-                case DiscordMessageActionRowDto actionRowDto:
-                    return new DiscordMessageActionRow(actionRowDto);
-                case DiscordMessageButtonDto buttonDto:
-                    return new DiscordMessageButton(buttonDto);
-                default:
-                    throw new NotSupportedException($"{typeof(DiscordMessageComponent)} {dto.GetType().Name} is not supported");
-            }
-        }
-    }
+namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+
+[JsonConverter(converterType: typeof(DiscordMessageComponentDtoConverter))]
+internal abstract record DiscordMessageComponentDto(
+	[property: JsonPropertyName(name: "type")]
+	int Type
+)
+{
+	internal static DiscordMessageComponent ConvertToModel(DiscordMessageComponentDto dto)
+	{
+		switch (dto)
+		{
+			case DiscordMessageActionRowDto actionRowDto:
+				return new DiscordMessageActionRow(dto: actionRowDto);
+			case DiscordMessageButtonDto buttonDto:
+				return new DiscordMessageButton(dto: buttonDto);
+			default:
+				throw new NotSupportedException(message: $"{typeof(DiscordMessageComponent)} {dto.GetType().Name} is not supported");
+		}
+	}
 }

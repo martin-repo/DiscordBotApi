@@ -1,22 +1,20 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordAuthor.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordAuthor.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds
+namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+
+public record DiscordAuthor()
 {
-    public record DiscordAuthor()
-    {
-        internal DiscordAuthor(DiscordAuthorDto dto)
-            : this()
-        {
-            Name = dto.Name;
-            IconUrl = dto.IconUrl;
-        }
+	internal DiscordAuthor(DiscordAuthorDto dto) : this()
+	{
+		Name = dto.Name;
+		IconUrl = dto.IconUrl;
+	}
 
-        public string? IconUrl { get; init; }
+	public string? IconUrl { get; init; }
 
-        public string Name { get; init; } = "";
-    }
+	public string Name { get; init; } = "";
 }

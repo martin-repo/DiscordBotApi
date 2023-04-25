@@ -1,18 +1,21 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordBulkDeleteMessagesArgsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordBulkDeleteMessagesArgsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordBulkDeleteMessagesArgsDto([property: JsonPropertyName("messages")] string[] Messages)
-    {
-        internal DiscordBulkDeleteMessagesArgsDto(DiscordBulkDeleteMessagesArgs model)
-            : this(model.Messages.Select(m => m.ToString()).ToArray())
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+internal record DiscordBulkDeleteMessagesArgsDto(
+	[property: JsonPropertyName(name: "messages")]
+	string[] Messages
+)
+{
+	internal DiscordBulkDeleteMessagesArgsDto(DiscordBulkDeleteMessagesArgs model) : this(
+		Messages: model.Messages.Select(selector: m => m.ToString())
+			.ToArray())
+	{
+	}
 }

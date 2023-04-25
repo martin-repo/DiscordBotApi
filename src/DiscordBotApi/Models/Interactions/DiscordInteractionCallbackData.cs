@@ -1,10 +1,9 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionCallbackData.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordInteractionCallbackData.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Interactions
-{
-    public abstract record DiscordInteractionCallbackData;
-}
+namespace DiscordBotApi.Models.Interactions;
+
+public abstract record DiscordInteractionCallbackData;

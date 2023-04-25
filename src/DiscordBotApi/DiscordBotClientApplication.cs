@@ -1,92 +1,100 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordBotClientApplication.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordBotClientApplication.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi
+using System.Net;
+
+using DiscordBotApi.Models.Applications;
+using DiscordBotApi.Rest;
+
+namespace DiscordBotApi;
+
+public partial class DiscordBotClient
 {
-    using System.Net;
+	// https://discord.com/developers/docs/interactions/application-commands#create-guild-application-command
+	public async Task<DiscordApplicationCommand> CreateGuildApplicationCommandAsync(
+		ulong applicationId,
+		ulong guildId,
+		DiscordCreateGuildApplicationCommandArgs args,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var url = $"applications/{applicationId}/guilds/{guildId}/commands";
 
-    using DiscordBotApi.Models.Applications;
-    using DiscordBotApi.Rest;
+		var argsDto = new DiscordCreateGuildApplicationCommandArgsDto(model: args);
+		var applicationCommandDto = await _restClient.SendRequestAsync<DiscordApplicationCommandDto>(
+				requestFactoryFunc: () =>
+				{
+					var request = new HttpRequestMessage(method: HttpMethod.Post, requestUri: url);
+					request.Content = _restClient.CreateJsonContent(value: argsDto);
+					return request;
+				},
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-    public partial class DiscordBotClient
-    {
-        // https://discord.com/developers/docs/interactions/application-commands#create-guild-application-command
-        public async Task<DiscordApplicationCommand> CreateGuildApplicationCommandAsync(
-            ulong applicationId,
-            ulong guildId,
-            DiscordCreateGuildApplicationCommandArgs args,
-            CancellationToken cancellationToken = default)
-        {
-            var url = $"applications/{applicationId}/guilds/{guildId}/commands";
+		var applicationCommand = new DiscordApplicationCommand(dto: applicationCommandDto);
+		return applicationCommand;
+	}
 
-            var argsDto = new DiscordCreateGuildApplicationCommandArgsDto(args);
-            var applicationCommandDto = await _restClient.SendRequestAsync<DiscordApplicationCommandDto>(
-                                                             () =>
-                                                             {
-                                                                 var request = new HttpRequestMessage(HttpMethod.Post, url);
-                                                                 request.Content = _restClient.CreateJsonContent(argsDto);
-                                                                 return request;
-                                                             },
-                                                             cancellationToken)
-                                                         .ConfigureAwait(false);
+	// https://discord.com/developers/docs/interactions/application-commands#delete-guild-application-command
+	public async Task DeleteGuildApplicationCommandAsync(
+		ulong applicationId,
+		ulong guildId,
+		ulong commandId,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var url = $"applications/{applicationId}/guilds/{guildId}/commands/{commandId}";
 
-            var applicationCommand = new DiscordApplicationCommand(applicationCommandDto);
-            return applicationCommand;
-        }
+		await _restClient.SendRequestAsync(
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Delete, requestUri: url),
+				expectedResponseCode: HttpStatusCode.NoContent,
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-        // https://discord.com/developers/docs/interactions/application-commands#delete-guild-application-command
-        public async Task DeleteGuildApplicationCommandAsync(
-            ulong applicationId,
-            ulong guildId,
-            ulong commandId,
-            CancellationToken cancellationToken = default)
-        {
-            var url = $"applications/{applicationId}/guilds/{guildId}/commands/{commandId}";
+	// https://discord.com/developers/docs/interactions/application-commands#get-global-application-commands
+	public async Task<IReadOnlyCollection<DiscordApplicationCommand>> GetGlobalApplicationCommandsAsync(
+		ulong applicationId,
+		DiscordGetApplicationCommandsArgs? args = null,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var builder = new QueryBuilder(pathWithoutQuery: $"applications/{applicationId}/commands");
+		builder.Add(key: "with_localizations", value: args?.WithLocalizations);
 
-            await _restClient.SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Delete, url), HttpStatusCode.NoContent, cancellationToken)
-                             .ConfigureAwait(false);
-        }
+		var applicationCommandDtos = await _restClient.SendRequestAsync<DiscordApplicationCommandDto[]>(
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Get, requestUri: builder.ToString()),
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-        // https://discord.com/developers/docs/interactions/application-commands#get-global-application-commands
-        public async Task<IReadOnlyCollection<DiscordApplicationCommand>> GetGlobalApplicationCommandsAsync(
-            ulong applicationId,
-            DiscordGetApplicationCommandsArgs? args = null,
-            CancellationToken cancellationToken = default)
-        {
-            var builder = new QueryBuilder($"applications/{applicationId}/commands");
-            builder.Add("with_localizations", args?.WithLocalizations);
+		var applicationCommands = applicationCommandDtos.Select(selector: c => new DiscordApplicationCommand(dto: c))
+			.ToArray();
 
-            var applicationCommandDtos = await _restClient.SendRequestAsync<DiscordApplicationCommandDto[]>(
-                                                              () => new HttpRequestMessage(HttpMethod.Get, builder.ToString()),
-                                                              cancellationToken)
-                                                          .ConfigureAwait(false);
+		return applicationCommands;
+	}
 
-            var applicationCommands = applicationCommandDtos.Select(c => new DiscordApplicationCommand(c)).ToArray();
+	// https://discord.com/developers/docs/interactions/application-commands#get-guild-application-commands
+	public async Task<IReadOnlyCollection<DiscordApplicationCommand>> GetGuildApplicationCommandsAsync(
+		ulong applicationId,
+		ulong guildId,
+		DiscordGetApplicationCommandsArgs? args = null,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var builder = new QueryBuilder(pathWithoutQuery: $"applications/{applicationId}/guilds/{guildId}/commands");
+		builder.Add(key: "with_localizations", value: args?.WithLocalizations);
 
-            return applicationCommands;
-        }
+		var applicationCommandDtos = await _restClient.SendRequestAsync<DiscordApplicationCommandDto[]>(
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Get, requestUri: builder.ToString()),
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-        // https://discord.com/developers/docs/interactions/application-commands#get-guild-application-commands
-        public async Task<IReadOnlyCollection<DiscordApplicationCommand>> GetGuildApplicationCommandsAsync(
-            ulong applicationId,
-            ulong guildId,
-            DiscordGetApplicationCommandsArgs? args = null,
-            CancellationToken cancellationToken = default)
-        {
-            var builder = new QueryBuilder($"applications/{applicationId}/guilds/{guildId}/commands");
-            builder.Add("with_localizations", args?.WithLocalizations);
+		var applicationCommands = applicationCommandDtos.Select(selector: c => new DiscordApplicationCommand(dto: c))
+			.ToArray();
 
-            var applicationCommandDtos = await _restClient.SendRequestAsync<DiscordApplicationCommandDto[]>(
-                                                              () => new HttpRequestMessage(HttpMethod.Get, builder.ToString()),
-                                                              cancellationToken)
-                                                          .ConfigureAwait(false);
-
-            var applicationCommands = applicationCommandDtos.Select(c => new DiscordApplicationCommand(c)).ToArray();
-
-            return applicationCommands;
-        }
-    }
+		return applicationCommands;
+	}
 }

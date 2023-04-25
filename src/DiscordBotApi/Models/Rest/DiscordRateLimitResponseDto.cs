@@ -1,15 +1,18 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordRateLimitResponseDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordRateLimitResponseDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Rest
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordRateLimitResponseDto(
-        [property: JsonPropertyName("message")] string Message,
-        [property: JsonPropertyName("retry_after")] double RetryAfter,
-        [property: JsonPropertyName("global")] bool Global);
-}
+namespace DiscordBotApi.Models.Rest;
+
+internal record DiscordRateLimitResponseDto(
+	[property: JsonPropertyName(name: "message")]
+	string Message,
+	[property: JsonPropertyName(name: "retry_after")]
+	double RetryAfter,
+	[property: JsonPropertyName(name: "global")]
+	bool Global
+);
