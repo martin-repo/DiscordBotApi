@@ -23,13 +23,15 @@ public partial class DiscordBotClient
 		var url = $"interactions/{interactionId}/{interactionToken}/callback";
 
 		var argsDto = new DiscordInteractionResponseArgsDto(model: args);
+		var payloadJson = _restClient.CreateJsonContent(value: argsDto);
+
+		using var content = args.Data is DiscordInteractionCallbackMessage message
+			? CreateContentForMessage(attachments: message.Attachments, files: message.Files, payloadJson: payloadJson)
+			: payloadJson;
+
+		// ReSharper disable once AccessToDisposedClosure
 		await _restClient.SendRequestAsync(
-				requestFactoryFunc: () =>
-				{
-					var request = new HttpRequestMessage(method: HttpMethod.Post, requestUri: url);
-					request.Content = _restClient.CreateJsonContent(value: argsDto);
-					return request;
-				},
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Post, requestUri: url) { Content = content },
 				expectedResponseCode: HttpStatusCode.NoContent,
 				cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
