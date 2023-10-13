@@ -6,6 +6,7 @@
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
@@ -19,7 +20,9 @@ internal record DiscordInteractionCallbackMessageDto(
 	[property: JsonPropertyName(name: "flags")]
 	ulong? Flags,
 	[property: JsonPropertyName(name: "components")]
-	DiscordMessageComponentDto[]? Components
+	DiscordMessageComponentDto[]? Components,
+	[property: JsonPropertyName(name: "attachments")]
+	DiscordMessageAttachmentDto[]? Attachments
 ) : DiscordInteractionCallbackDataDto
 {
 	internal DiscordInteractionCallbackMessageDto(DiscordInteractionCallbackMessage model) : this(
@@ -30,6 +33,8 @@ internal record DiscordInteractionCallbackMessageDto(
 			? (ulong)model.Flags
 			: null,
 		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
+			.ToArray(),
+		Attachments: model.Attachments?.Select(selector: a => new DiscordMessageAttachmentDto(model: a))
 			.ToArray())
 	{
 	}
