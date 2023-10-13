@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -10,9 +10,10 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <Authors>kpop.fan</Authors>
         <Description>A lightweight and robust C# client for Discord API.</Description>
-        <PackageProjectUrl>https://github.com/kpop-fan/DiscordBotApi</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/kpop-fan/DiscordBotApi</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/martin-repo/DiscordBotApi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/martin-repo/DiscordBotApi</RepositoryUrl>
         <PackageTags>discord;bot;api;rest;gateway</PackageTags>
+        <VersionPrefix>9.3</VersionPrefix>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
