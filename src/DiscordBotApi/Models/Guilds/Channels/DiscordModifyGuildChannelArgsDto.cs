@@ -21,6 +21,8 @@ internal record DiscordModifyGuildChannelArgsDto(
 	DiscordPermissionOverwriteDto[]? PermissionOverwrites,
 	[property: JsonPropertyName(name: "parent_id")]
 	string? ParentId,
+	[property: JsonPropertyName(name: "default_auto_archive_duration")]
+	int? DefaultAutoArchiveDuration,
 	[property: JsonPropertyName(name: "available_tags")]
 	DiscordForumTagDto[]? AvailableTags,
 	[property: JsonPropertyName(name: "default_reaction_emoji")]
@@ -43,6 +45,7 @@ internal record DiscordModifyGuildChannelArgsDto(
 		ParentId: model.ParentId is not null
 			? model.ParentId.ToString()
 			: null,
+		DefaultAutoArchiveDuration: model.DefaultAutoArchiveDuration,
 		AvailableTags: model.AvailableTags?.Select(selector: at => new DiscordForumTagDto(model: at))
 			.ToArray(),
 		DefaultReactionEmoji: model.DefaultReactionEmoji is not null

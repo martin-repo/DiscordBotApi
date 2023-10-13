@@ -35,6 +35,7 @@ public record DiscordChannel
 			: null;
 		AvailableTags = dto.AvailableTags?.Select(selector: t => new DiscordForumTag(dto: t))
 			.ToArray();
+		DefaultAutoArchiveDuration = dto.DefaultAutoArchiveDuration;
 		DefaultReactionEmoji = dto.DefaultReactionEmoji is not null
 			? new DiscordDefaultReaction(dto: dto.DefaultReactionEmoji)
 			: null;
@@ -47,6 +48,8 @@ public record DiscordChannel
 	}
 
 	public IReadOnlyCollection<DiscordForumTag>? AvailableTags { get; init; }
+
+	public int? DefaultAutoArchiveDuration { get; init; }
 
 	public DiscordForumLayoutType? DefaultForumLayout { get; init; }
 

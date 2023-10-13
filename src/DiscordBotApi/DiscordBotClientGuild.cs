@@ -217,6 +217,22 @@ public partial class DiscordBotClient
 		return roles;
 	}
 
+	public async Task<DiscordActiveThreadResponse> ListActiveGuildThreadsAsync(
+		ulong guildId,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var url = $"guilds/{guildId}/threads/active";
+
+		var responseDto = await _restClient.SendRequestAsync<DiscordActiveThreadResponseDto>(
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Get, requestUri: url),
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+
+		var response = new DiscordActiveThreadResponse(botClient: this, dto: responseDto);
+		return response;
+	}
+
 	public async Task<IReadOnlyCollection<DiscordEmoji>> ListGuildEmojisAsync(
 		ulong guildId,
 		CancellationToken cancellationToken = default

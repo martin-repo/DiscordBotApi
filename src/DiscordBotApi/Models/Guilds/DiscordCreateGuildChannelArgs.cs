@@ -13,6 +13,8 @@ public record DiscordCreateGuildChannelArgs
 {
 	public IReadOnlyCollection<DiscordForumTag>? AvailableTags { get; init; }
 
+	public int? DefaultAutoArchiveDuration { get; init; }
+
 	public DiscordForumLayoutType? DefaultForumLayout { get; init; }
 
 	public DiscordDefaultReaction? DefaultReactionEmoji { get; init; }

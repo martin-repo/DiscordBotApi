@@ -142,6 +142,24 @@ internal class DiscordRestClient : IDisposable
 		return content;
 	}
 
+	public async Task<string> SendRequestAsync(Func<HttpRequestMessage> requestFactoryFunc, CancellationToken cancellationToken)
+	{
+		using var response = await SendAndWaitIfRateLimitExceededAsync(
+				requestFactoryFunc: requestFactoryFunc,
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+		var contentJson = await response.Content.ReadAsStringAsync(cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+
+		if (response.IsSuccessStatusCode)
+		{
+			return contentJson;
+		}
+
+		var errorResponse = ParseDiscordErrorResponse(json: contentJson);
+		throw new DiscordRestException(statusCode: response.StatusCode, errorResponse: errorResponse);
+	}
+
 	private static string? GetHeaderValue(HttpResponseHeaders headers, string key)
 	{
 		if (!headers.TryGetValues(name: key, values: out var values))

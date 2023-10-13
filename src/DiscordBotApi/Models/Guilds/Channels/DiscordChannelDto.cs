@@ -29,6 +29,8 @@ internal record DiscordChannelDto(
 	DiscordThreadMetadataDto? ThreadMetadata,
 	[property: JsonPropertyName(name: "available_tags")]
 	DiscordForumTagDto[]? AvailableTags,
+	[property: JsonPropertyName(name: "default_auto_archive_duration")]
+	int? DefaultAutoArchiveDuration,
 	[property: JsonPropertyName(name: "default_reaction_emoji")]
 	DiscordDefaultReactionDto? DefaultReactionEmoji,
 	[property: JsonPropertyName(name: "default_sort_order")]

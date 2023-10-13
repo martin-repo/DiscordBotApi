@@ -5,6 +5,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Net;
+using System.Runtime.Serialization;
+using System.Text.Json;
 
 using DiscordBotApi.Models.Guilds.Channels;
 using DiscordBotApi.Models.Guilds.Channels.Messages;
@@ -36,6 +38,42 @@ public partial class DiscordBotClient
 				expectedResponseCode: HttpStatusCode.NoContent,
 				cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
+	}
+
+	public async Task<(DiscordChannel Channel, DiscordMessage Message)> CreateForumThreadAsync(
+		ulong channelId,
+		DiscordCreateForumThreadArgs args,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var url = $"channels/{channelId}/threads";
+
+		var argsDto = new DiscordCreateForumThreadArgsDto(model: args);
+		var payloadJson = _restClient.CreateJsonContent(value: argsDto);
+
+		using var content = CreateContentForMessage(
+			attachments: args.Message.Attachments,
+			files: args.Message.Files,
+			payloadJson: payloadJson);
+
+		// ReSharper disable once AccessToDisposedClosure
+		var responseJson = await _restClient.SendRequestAsync(
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Post, requestUri: url) { Content = content },
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+
+		var channelDto = JsonSerializer.Deserialize<DiscordChannelDto>(json: responseJson) ??
+			throw new SerializationException(message: "Failed to deserialize Json.");
+
+		using var container = JsonDocument.Parse(json: responseJson) ??
+			throw new SerializationException(message: "Failed to deserialize Json.");
+		var messageJson = JsonSerializer.Serialize(value: container.RootElement.GetProperty(propertyName: "message"));
+		var messageDto = JsonSerializer.Deserialize<DiscordMessageDto>(json: messageJson) ??
+			throw new SerializationException(message: "Failed to deserialize Json.");
+
+		var channel = new DiscordChannel(botClient: this, dto: channelDto);
+		var message = new DiscordMessage(botClient: this, dto: messageDto);
+		return (channel, message);
 	}
 
 	public async Task<DiscordMessage> CreateMessageAsync(
