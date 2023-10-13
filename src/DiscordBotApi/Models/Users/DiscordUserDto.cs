@@ -15,6 +15,8 @@ internal record DiscordUserDto(
 	string Username,
 	[property: JsonPropertyName(name: "discriminator")]
 	string Discriminator,
+	[property: JsonPropertyName(name: "global_name")]
+	string? GlobalName,
 	[property: JsonPropertyName(name: "avatar")]
 	string? Avatar,
 	[property: JsonPropertyName(name: "bot")]

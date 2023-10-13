@@ -13,6 +13,7 @@ public record DiscordUser
 		Id = ulong.Parse(s: dto.Id);
 		Username = dto.Username;
 		Discriminator = dto.Discriminator;
+		GlobalName = dto.GlobalName;
 		Avatar = dto.Avatar;
 		Bot = dto.Bot;
 	}
@@ -22,6 +23,8 @@ public record DiscordUser
 	public bool? Bot { get; init; }
 
 	public string Discriminator { get; init; }
+
+	public string? GlobalName { get; init; }
 
 	public ulong Id { get; init; }
 
