@@ -13,7 +13,7 @@
         <PackageProjectUrl>https://github.com/martin-repo/DiscordBotApi</PackageProjectUrl>
         <RepositoryUrl>https://github.com/martin-repo/DiscordBotApi</RepositoryUrl>
         <PackageTags>discord;bot;api;rest;gateway</PackageTags>
-        <VersionPrefix>9.3</VersionPrefix>
+        <Version>9.3.$(BuildId)</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

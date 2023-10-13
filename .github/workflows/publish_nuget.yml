@@ -21,7 +21,7 @@ jobs:
       run: dotnet build src/DiscordBotApi/DiscordBotApi.csproj --configuration Release
 
     - name: Pack
-      run: dotnet pack src/DiscordBotApi/DiscordBotApi.csproj --configuration Release --no-build --version-suffix .${{ github.run_id }}
+      run: dotnet pack src/DiscordBotApi/DiscordBotApi.csproj --configuration Release --no-build /p:BuildId=${{ github.run_number }}
 
     - name: Push
       run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
