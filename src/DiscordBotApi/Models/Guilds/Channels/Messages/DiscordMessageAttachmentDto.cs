@@ -1,40 +1,49 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageAttachmentDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordMessageAttachmentDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
+using System.Text.Json.Serialization;
+
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+// https://discord.com/developers/docs/resources/channel#attachment-object-attachment-structure
+internal record DiscordMessageAttachmentDto(
+	[property: JsonPropertyName(name: "id")]
+	string Id,
+	[property: JsonPropertyName(name: "filename")]
+	string? Filename,
+	[property: JsonPropertyName(name: "description")]
+	string? Description,
+	[property: JsonPropertyName(name: "content_type")]
+	string? ContentType,
+	[property: JsonPropertyName(name: "size")]
+	int? Size,
+	[property: JsonPropertyName(name: "url")]
+	string? Url,
+	[property: JsonPropertyName(name: "proxy_url")]
+	string? ProxyUrl,
+	[property: JsonPropertyName(name: "height")]
+	int? Height,
+	[property: JsonPropertyName(name: "width")]
+	int? Width,
+	[property: JsonPropertyName(name: "ephemeral")]
+	bool? Ephemeral
+)
+
 {
-    using System.Text.Json.Serialization;
-
-    // https://discord.com/developers/docs/resources/channel#attachment-object-attachment-structure
-    internal record DiscordMessageAttachmentDto(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("filename")] string? Filename,
-        [property: JsonPropertyName("description")] string? Description,
-        [property: JsonPropertyName("content_type")] string? ContentType,
-        [property: JsonPropertyName("size")] int? Size,
-        [property: JsonPropertyName("url")] string? Url,
-        [property: JsonPropertyName("proxy_url")] string? ProxyUrl,
-        [property: JsonPropertyName("height")] int? Height,
-        [property: JsonPropertyName("width")] int? Width,
-        [property: JsonPropertyName("ephemeral")] bool? Ephemeral)
-
-    {
-        internal DiscordMessageAttachmentDto(DiscordMessageAttachment model)
-            : this(
-                model.Id.ToString(),
-                model.Filename,
-                model.Description,
-                model.ContentType,
-                model.Size,
-                model.Url,
-                model.ProxyUrl,
-                model.Height,
-                model.Width,
-                model.Ephemeral)
-        {
-        }
-    }
+	internal DiscordMessageAttachmentDto(DiscordMessageAttachment model) : this(
+		Id: model.Id.ToString(),
+		Filename: model.Filename,
+		Description: model.Description,
+		ContentType: model.ContentType,
+		Size: model.Size,
+		Url: model.Url,
+		ProxyUrl: model.ProxyUrl,
+		Height: model.Height,
+		Width: model.Width,
+		Ephemeral: model.Ephemeral)
+	{
+	}
 }

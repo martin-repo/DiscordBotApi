@@ -1,13 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGetApplicationCommandsArgs.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGetApplicationCommandsArgs.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Applications
+namespace DiscordBotApi.Models.Applications;
+
+public record DiscordGetApplicationCommandsArgs
 {
-    public record DiscordGetApplicationCommandsArgs
-    {
-        public bool? WithLocalizations { get; init; }
-    }
+	public bool? WithLocalizations { get; init; }
 }

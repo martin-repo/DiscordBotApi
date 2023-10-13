@@ -1,15 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewaySessionStatus.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewaySessionStatus.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway
+namespace DiscordBotApi.Gateway;
+
+internal enum DiscordGatewaySessionStatus
 {
-    internal enum DiscordGatewaySessionStatus
-    {
-        Connected,
-        Disconnecting,
-        Disconnected
-    }
+	Connected,
+	Disconnecting,
+	Disconnected
 }

@@ -1,15 +1,18 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordResumeDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordResumeDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Commands
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordResumeDto(
-        [property: JsonPropertyName("token")] string Token,
-        [property: JsonPropertyName("session_id")] string SessionId,
-        [property: JsonPropertyName("seq")] int SequenceNumber);
-}
+namespace DiscordBotApi.Models.Gateway.Commands;
+
+internal record DiscordResumeDto(
+	[property: JsonPropertyName(name: "token")]
+	string Token,
+	[property: JsonPropertyName(name: "session_id")]
+	string SessionId,
+	[property: JsonPropertyName(name: "seq")]
+	int SequenceNumber
+);

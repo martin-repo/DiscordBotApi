@@ -1,29 +1,36 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionCallbackMessageDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordInteractionCallbackMessageDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Interactions
+using System.Text.Json.Serialization;
+
+using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+
+namespace DiscordBotApi.Models.Interactions;
+
+internal record DiscordInteractionCallbackMessageDto(
+	[property: JsonPropertyName(name: "content")]
+	string? Content,
+	[property: JsonPropertyName(name: "embeds")]
+	DiscordEmbedDto[]? Embeds,
+	[property: JsonPropertyName(name: "flags")]
+	ulong? Flags,
+	[property: JsonPropertyName(name: "components")]
+	DiscordMessageComponentDto[]? Components
+) : DiscordInteractionCallbackDataDto
 {
-    using System.Text.Json.Serialization;
-
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
-
-    internal record DiscordInteractionCallbackMessageDto(
-        [property: JsonPropertyName("content")] string? Content,
-        [property: JsonPropertyName("embeds")] DiscordEmbedDto[]? Embeds,
-        [property: JsonPropertyName("flags")] ulong? Flags,
-        [property: JsonPropertyName("components")] DiscordMessageComponentDto[]? Components) : DiscordInteractionCallbackDataDto
-    {
-        internal DiscordInteractionCallbackMessageDto(DiscordInteractionCallbackMessage model)
-            : this(
-                model.Content,
-                model.Embeds?.Select(e => new DiscordEmbedDto(e)).ToArray(),
-                model.Flags != null ? (ulong)model.Flags : null,
-                model.Components?.Select(DiscordMessageComponent.ConvertToDto).ToArray()) 
-        {
-        }
-    }
+	internal DiscordInteractionCallbackMessageDto(DiscordInteractionCallbackMessage model) : this(
+		Content: model.Content,
+		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
+			.ToArray(),
+		Flags: model.Flags != null
+			? (ulong)model.Flags
+			: null,
+		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
+			.ToArray())
+	{
+	}
 }

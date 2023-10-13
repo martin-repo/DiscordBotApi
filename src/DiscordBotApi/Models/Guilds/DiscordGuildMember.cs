@@ -1,26 +1,28 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildMember.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildMember.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
+using DiscordBotApi.Models.Users;
+
+namespace DiscordBotApi.Models.Guilds;
+
+public record DiscordGuildMember
 {
-    using DiscordBotApi.Models.Users;
+	internal DiscordGuildMember(DiscordGuildMemberDto dto)
+	{
+		User = dto.User != null
+			? new DiscordUser(dto: dto.User)
+			: null;
+		Nick = dto.Nick;
+		Roles = dto.Roles.Select(selector: ulong.Parse)
+			.ToArray();
+	}
 
-    public record DiscordGuildMember
-    {
-        internal DiscordGuildMember(DiscordGuildMemberDto dto)
-        {
-            User = dto.User != null ? new DiscordUser(dto.User) : null;
-            Nick = dto.Nick;
-            Roles = dto.Roles.Select(ulong.Parse).ToArray();
-        }
+	public string? Nick { get; init; }
 
-        public string? Nick { get; init; }
+	public IReadOnlyCollection<ulong> Roles { get; init; }
 
-        public IReadOnlyCollection<ulong> Roles { get; init; }
-
-        public DiscordUser? User { get; init; }
-    }
+	public DiscordUser? User { get; init; }
 }

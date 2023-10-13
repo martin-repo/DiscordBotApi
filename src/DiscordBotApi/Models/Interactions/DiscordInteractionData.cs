@@ -1,36 +1,42 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionData.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordInteractionData.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Interactions
+using DiscordBotApi.Models.Applications;
+using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+
+namespace DiscordBotApi.Models.Interactions;
+
+public record DiscordInteractionData
 {
-    using DiscordBotApi.Models.Applications;
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+	internal DiscordInteractionData(DiscordInteractionDataDto dto)
+	{
+		Id = dto.Id != null
+			? ulong.Parse(s: dto.Id)
+			: null;
+		Name = dto.Name;
+		Type = dto.Type != null
+			? (DiscordApplicationCommandType)dto.Type
+			: null;
+		Options = dto.Options?.Select(selector: o => new DiscordApplicationCommandInteractionDataOption(dto: o))
+			.ToArray();
+		CustomId = dto.CustomId;
+		ComponentType = dto.ComponentType != null
+			? (DiscordMessageComponentType)dto.ComponentType
+			: null;
+	}
 
-    public record DiscordInteractionData
-    {
-        internal DiscordInteractionData(DiscordInteractionDataDto dto)
-        {
-            Id = dto.Id != null ? ulong.Parse(dto.Id) : null;
-            Name = dto.Name;
-            Type = dto.Type != null ? (DiscordApplicationCommandType)dto.Type : null;
-            Options = dto.Options?.Select(o => new DiscordApplicationCommandInteractionDataOption(o)).ToArray();
-            CustomId = dto.CustomId;
-            ComponentType = dto.ComponentType != null ? (DiscordMessageComponentType)dto.ComponentType : null;
-        }
+	public DiscordMessageComponentType? ComponentType { get; init; }
 
-        public DiscordMessageComponentType? ComponentType { get; init; }
+	public string? CustomId { get; init; }
 
-        public string? CustomId { get; init; }
+	public ulong? Id { get; init; }
 
-        public ulong? Id { get; init; }
+	public string? Name { get; init; }
 
-        public string? Name { get; init; }
+	public IReadOnlyCollection<DiscordApplicationCommandInteractionDataOption>? Options { get; init; }
 
-        public IReadOnlyCollection<DiscordApplicationCommandInteractionDataOption>? Options { get; init; }
-
-        public DiscordApplicationCommandType? Type { get; init; }
-    }
+	public DiscordApplicationCommandType? Type { get; init; }
 }

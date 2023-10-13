@@ -1,90 +1,90 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordBotClientFixture.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordBotClientFixture.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.EndToEndTests
+using System;
+using System.Threading.Tasks;
+
+using DiscordBotApi.Models.Gateway;
+
+using Microsoft.Extensions.Configuration;
+
+using Serilog;
+
+using Xunit;
+
+namespace DiscordBotApi.EndToEndTests;
+
+public class DiscordBotClientFixture : IDisposable
 {
-    using System;
-    using System.Threading.Tasks;
+	public DiscordBotClientFixture()
+	{
+		Log.Logger = new LoggerConfiguration().MinimumLevel.Debug()
+			.WriteTo.Debug(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+			.CreateLogger();
+		Log.Logger.Information(messageTemplate: $"{nameof(DiscordBotClientFixture)} created");
 
-    using DiscordBotApi.Models.Gateway;
+		var configuration = new ConfigurationBuilder().SetBasePath(basePath: AppContext.BaseDirectory)
+			.AddJsonFile(path: "appsettings.json", optional: false)
+			.AddJsonFile(path: "appsettings.development.json", optional: true)
+			.Build();
+		var settingsSection = configuration.GetSection(key: "Settings");
 
-    using Microsoft.Extensions.Configuration;
+		GuildId = settingsSection.GetValue<ulong>(key: "GuildId");
+		BotRoleId = settingsSection.GetValue<ulong>(key: "BotRoleId");
 
-    using Serilog;
+		var discordBotToken = settingsSection.GetValue<string>(key: "DiscordBotToken");
+		BotClient = new DiscordBotClient(botToken: discordBotToken, logger: Log.Logger);
 
-    using Xunit;
+		CleanupAsync()
+			.Wait();
 
-    public class DiscordBotClientFixture : IDisposable
-    {
-        public DiscordBotClientFixture()
-        {
-            Log.Logger = new LoggerConfiguration().MinimumLevel.Debug()
-                                                  .WriteTo.Debug(
-                                                      outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-                                                  .CreateLogger();
-            Log.Logger.Information($"{nameof(DiscordBotClientFixture)} created");
+		var gatewayUrl = settingsSection.GetValue<string>(key: "GatewayUrl");
+		BotClient.ConnectToGatewayAsync(
+				gatewayUrl: gatewayUrl,
+				intents: DiscordGatewayIntent.Guilds |
+				DiscordGatewayIntent.GuildMembers |
+				DiscordGatewayIntent.GuildMessages |
+				DiscordGatewayIntent.GuildMessageReactions)
+			.Wait();
+	}
 
-            var configuration = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
-                                                          .AddJsonFile("appsettings.json", false)
-                                                          .AddJsonFile("appsettings.development.json", true)
-                                                          .Build();
-            var settingsSection = configuration.GetSection("Settings");
+	public DiscordBotClient BotClient { get; }
 
-            GuildId = settingsSection.GetValue<ulong>("GuildId");
-            BotRoleId = settingsSection.GetValue<ulong>("BotRoleId");
+	public ulong BotRoleId { get; }
 
-            var discordBotToken = settingsSection.GetValue<string>("DiscordBotToken");
-            BotClient = new DiscordBotClient(discordBotToken, Log.Logger);
+	public ulong GuildId { get; }
 
-            CleanupAsync().Wait();
+	public void Dispose() =>
+		BotClient.DisposeAsync()
+			.AsTask()
+			.Wait();
 
-            var gatewayUrl = settingsSection.GetValue<string>("GatewayUrl");
-            BotClient.ConnectToGatewayAsync(
-                         gatewayUrl,
-                         DiscordGatewayIntent.Guilds
-                         | DiscordGatewayIntent.GuildMembers
-                         | DiscordGatewayIntent.GuildMessages
-                         | DiscordGatewayIntent.GuildMessageReactions)
-                     .Wait();
-        }
+	private async Task CleanupAsync()
+	{
+		foreach (var role in await BotClient.GetGuildRolesAsync(guildId: GuildId))
+		{
+			if (role.Id == GuildId ||
+				role.Id == BotRoleId)
+			{
+				// Ignore @everyone role
+				// Ignore bot role (should persist between test sessions)
+				continue;
+			}
 
-        public DiscordBotClient BotClient { get; }
+			await role.DeleteAsync();
+		}
 
-        public ulong BotRoleId { get; }
+		foreach (var channel in await BotClient.GetGuildChannelsAsync(guildId: GuildId))
+		{
+			await channel.DeleteOrCloseAsync();
+		}
+	}
+}
 
-        public ulong GuildId { get; }
-
-        public void Dispose()
-        {
-            BotClient.DisposeAsync().AsTask().Wait();
-        }
-
-        private async Task CleanupAsync()
-        {
-            foreach (var role in await BotClient.GetGuildRolesAsync(GuildId))
-            {
-                if (role.Id == GuildId || role.Id == BotRoleId)
-                {
-                    // Ignore @everyone role
-                    // Ignore bot role (should persist between test sessions)
-                    continue;
-                }
-
-                await role.DeleteAsync();
-            }
-
-            foreach (var channel in await BotClient.GetGuildChannelsAsync(GuildId))
-            {
-                await channel.DeleteOrCloseAsync();
-            }
-        }
-    }
-
-    [CollectionDefinition("DiscordBotClient collection")]
-    public class DiscordBotClientCollection : ICollectionFixture<DiscordBotClientFixture>
-    {
-    }
+[CollectionDefinition(name: "DiscordBotClient collection")]
+public class DiscordBotClientCollection : ICollectionFixture<DiscordBotClientFixture>
+{
 }

@@ -1,22 +1,31 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayPayloadDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayPayloadDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordGatewayPayloadDto(
-        [property: JsonPropertyName("op")] int Opcode,
-        [property: JsonPropertyName("s")] int? SequenceNumber,
-        [property: JsonPropertyName("t")] string? EventName,
-        [property: JsonPropertyName("d")] JsonData? EventData)
-    {
-        internal DiscordGatewayPayloadDto(DiscordGatewayPayload model)
-            : this((int)model.Opcode, model.SequenceNumber, model.EventName, model.EventData != null ? new JsonData(model.EventData) : null)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Gateway;
+
+internal record DiscordGatewayPayloadDto(
+	[property: JsonPropertyName(name: "op")]
+	int Opcode,
+	[property: JsonPropertyName(name: "s")]
+	int? SequenceNumber,
+	[property: JsonPropertyName(name: "t")]
+	string? EventName,
+	[property: JsonPropertyName(name: "d")]
+	JsonData? EventData
+)
+{
+	internal DiscordGatewayPayloadDto(DiscordGatewayPayload model) : this(
+		Opcode: (int)model.Opcode,
+		SequenceNumber: model.SequenceNumber,
+		EventName: model.EventName,
+		EventData: model.EventData != null
+			? new JsonData(Json: model.EventData)
+			: null)
+	{
+	}
 }

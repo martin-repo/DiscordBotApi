@@ -1,14 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordThreadMetadataDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordThreadMetadataDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordThreadMetadataDto(
-        [property: JsonPropertyName("archived")] bool Archived,
-        [property: JsonPropertyName("archive_timestamp")] string ArchiveTimestamp);
-}
+namespace DiscordBotApi.Models.Guilds.Channels;
+
+internal record DiscordThreadMetadataDto(
+	[property: JsonPropertyName(name: "archived")]
+	bool Archived,
+	[property: JsonPropertyName(name: "archive_timestamp")]
+	string ArchiveTimestamp
+);

@@ -1,113 +1,120 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGlobalManager.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGlobalManager.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Rest
+using System.Collections.Concurrent;
+
+using DiscordBotApi.Models.Rest;
+
+using Serilog;
+
+namespace DiscordBotApi.Rest;
+
+internal class DiscordGlobalManager : IDiscordGlobalManager
 {
-    using System.Collections.Concurrent;
+	private const int MaxQueuedReservations = 200;
 
-    using DiscordBotApi.Models.Rest;
+	private readonly int _globalLimit;
+	private readonly ILogger? _logger;
 
-    using Serilog;
+	private BlockingCollection<TaskCompletionSource>? _globalQueue;
 
-    internal class DiscordGlobalManager : IDiscordGlobalManager
-    {
-        private const int MaxQueuedReservations = 200;
+	public DiscordGlobalManager(int globalLimit, ILogger? logger)
+	{
+		_globalLimit = globalLimit;
+		_logger = logger?.ForContext<DiscordGlobalManager>();
+	}
 
-        private readonly int _globalLimit;
-        private readonly ILogger? _logger;
+	public async Task GetReservationAsync(DiscordResourceId resourceId, CancellationToken cancellationToken)
+	{
+		if (resourceId.Path.StartsWith(value: "interactions", comparisonType: StringComparison.Ordinal))
+		{
+			return;
+		}
 
-        private BlockingCollection<TaskCompletionSource>? _globalQueue;
+		if (_globalQueue == null)
+		{
+			throw new InvalidOperationException(message: "Not started");
+		}
 
-        public DiscordGlobalManager(int globalLimit, ILogger? logger)
-        {
-            _globalLimit = globalLimit;
-            _logger = logger?.ForContext<DiscordGlobalManager>();
-        }
+		if (_globalQueue.Count > MaxQueuedReservations)
+		{
+			throw new InvalidOperationException(message: "Too many requests");
+		}
 
-        public async Task GetReservationAsync(DiscordResourceId resourceId, CancellationToken cancellationToken)
-        {
-            if (resourceId.Path.StartsWith("interactions", StringComparison.Ordinal))
-            {
-                return;
-            }
+		var ready = new TaskCompletionSource(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
+		_globalQueue.Add(item: ready, cancellationToken: cancellationToken);
 
-            if (_globalQueue == null)
-            {
-                throw new InvalidOperationException("Not started");
-            }
+		await ready.Task.WaitAsync(cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-            if (_globalQueue.Count > MaxQueuedReservations)
-            {
-                throw new InvalidOperationException("Too many requests");
-            }
+	public void Start()
+	{
+		if (_globalQueue != null)
+		{
+			throw new InvalidOperationException(message: "Already started");
+		}
 
-            var ready = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            _globalQueue.Add(ready, cancellationToken);
+		var queue = _globalQueue =
+			new BlockingCollection<TaskCompletionSource>(collection: new ConcurrentQueue<TaskCompletionSource>());
+		new TaskFactory().StartNew(
+			function: async () => await GlobalProcessingAsync(queue: queue)
+				.ConfigureAwait(continueOnCapturedContext: false),
+			creationOptions: TaskCreationOptions.LongRunning);
+	}
 
-            await ready.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
-        }
+	public void Stop()
+	{
+		if (_globalQueue == null)
+		{
+			throw new InvalidOperationException(message: "Already stopped");
+		}
 
-        public void Start()
-        {
-            if (_globalQueue != null)
-            {
-                throw new InvalidOperationException("Already started");
-            }
+		_globalQueue.CompleteAdding();
+		_globalQueue = null;
+	}
 
-            var queue = _globalQueue = new BlockingCollection<TaskCompletionSource>(new ConcurrentQueue<TaskCompletionSource>());
-            new TaskFactory().StartNew(async () => await GlobalProcessingAsync(queue).ConfigureAwait(false), TaskCreationOptions.LongRunning);
-        }
+	private async Task GlobalProcessingAsync(BlockingCollection<TaskCompletionSource> queue)
+	{
+		var globalCount = 0;
+		var globalEnding = DateTime.MinValue;
 
-        public void Stop()
-        {
-            if (_globalQueue == null)
-            {
-                throw new InvalidOperationException("Already stopped");
-            }
+		while (!queue.IsCompleted)
+		{
+			if (!queue.TryTake(item: out var item, millisecondsTimeout: Timeout.Infinite))
+			{
+				continue;
+			}
 
-            _globalQueue.CompleteAdding();
-            _globalQueue = null;
-        }
+			var utcNow = DateTime.UtcNow;
+			if (globalEnding < utcNow)
+			{
+				globalEnding = utcNow.AddSeconds(value: 1);
+				globalCount = _globalLimit - 1;
+				item.SetResult();
+				continue;
+			}
 
-        private async Task GlobalProcessingAsync(BlockingCollection<TaskCompletionSource> queue)
-        {
-            var globalCount = 0;
-            var globalEnding = DateTime.MinValue;
+			if (globalCount > 0)
+			{
+				globalCount--;
+				item.SetResult();
+				continue;
+			}
 
-            while (!queue.IsCompleted)
-            {
-                if (!queue.TryTake(out var item, Timeout.Infinite))
-                {
-                    continue;
-                }
+			var retryAfter = globalEnding - utcNow;
+			_logger?.Debug(
+				messageTemplate: "Discord preemptive rate limit; waiting {Count:F2} seconds",
+				propertyValue: retryAfter.TotalSeconds);
+			await Task.Delay(delay: retryAfter)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
-                var utcNow = DateTime.UtcNow;
-                if (globalEnding < utcNow)
-                {
-                    globalEnding = utcNow.AddSeconds(1);
-                    globalCount = _globalLimit - 1;
-                    item.SetResult();
-                    continue;
-                }
-
-                if (globalCount > 0)
-                {
-                    globalCount--;
-                    item.SetResult();
-                    continue;
-                }
-
-                var retryAfter = globalEnding - utcNow;
-                _logger?.Debug("Discord preemptive rate limit; waiting {Count:F2} seconds", retryAfter.TotalSeconds);
-                await Task.Delay(retryAfter).ConfigureAwait(false);
-
-                globalEnding = utcNow.AddSeconds(1);
-                globalCount = _globalLimit - 1;
-                item.SetResult();
-            }
-        }
-    }
+			globalEnding = utcNow.AddSeconds(value: 1);
+			globalCount = _globalLimit - 1;
+			item.SetResult();
+		}
+	}
 }

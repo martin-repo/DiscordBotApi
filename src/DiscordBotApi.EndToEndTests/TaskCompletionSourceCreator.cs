@@ -1,30 +1,29 @@
 // -------------------------------------------------------------------------------------------------
-// <copyright file="TaskCompletionSourceCreator.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="TaskCompletionSourceCreator.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.EndToEndTests
+using System;
+using System.Threading.Tasks;
+
+namespace DiscordBotApi.EndToEndTests;
+
+public static class TaskCompletionSourceCreator
 {
-    using System;
-    using System.Threading.Tasks;
+	public static TaskCompletionSource<TResult> Create<TResult>(TimeSpan? lifetime = null)
+	{
+		lifetime ??= TimeSpan.FromSeconds(value: 5);
 
-    public static class TaskCompletionSourceCreator
-    {
-        public static TaskCompletionSource<TResult> Create<TResult>(TimeSpan? lifetime = null)
-        {
-            lifetime ??= TimeSpan.FromSeconds(5);
+		var completion = new TaskCompletionSource<TResult>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var completion = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+		_ = Task.Run(
+			function: async () =>
+			{
+				await Task.Delay(delay: lifetime.Value);
+				completion.TrySetCanceled();
+			});
 
-            _ = Task.Run(
-                async () =>
-                {
-                    await Task.Delay(lifetime.Value);
-                    completion.TrySetCanceled();
-                });
-
-            return completion;
-        }
-    }
+		return completion;
+	}
 }

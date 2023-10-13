@@ -1,213 +1,258 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="RateLimitTests.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="RateLimitTests.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.EndToEndTests.Rest
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using AutoFixture.Xunit2;
+
+using DiscordBotApi.Models.Gateway.Events;
+using DiscordBotApi.Models.Guilds;
+using DiscordBotApi.Models.Guilds.Channels;
+using DiscordBotApi.Models.Guilds.Channels.Messages;
+using DiscordBotApi.Models.Guilds.Emojis;
+using DiscordBotApi.Rest;
+
+using FluentAssertions;
+
+using Xunit;
+
+namespace DiscordBotApi.EndToEndTests.Rest;
+
+[Collection(name: "DiscordBotClient collection")]
+public class RateLimitTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+	private readonly DiscordBotClient _client;
+	private readonly ulong _guildId;
 
-    using AutoFixture.Xunit2;
+	public RateLimitTests(DiscordBotClientFixture fixture)
+	{
+		_client = fixture.BotClient;
+		_guildId = fixture.GuildId;
+	}
 
-    using DiscordBotApi.Models.Gateway.Events;
-    using DiscordBotApi.Models.Guilds;
-    using DiscordBotApi.Models.Guilds.Channels;
-    using DiscordBotApi.Models.Guilds.Channels.Messages;
-    using DiscordBotApi.Models.Guilds.Emojis;
-    using DiscordBotApi.Rest;
+	[Theory]
+	[AutoData]
+	private async Task BulkDeleteMessageAsync(string categoryName, string channelName, string messageContent)
+	{
+		var category = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = categoryName,
+				Type = DiscordChannelType.GuildCategory
+			});
+		var channel = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = channelName,
+				Type = DiscordChannelType.GuildText,
+				ParentId = category.Id
+			});
 
-    using FluentAssertions;
+		for (var i = 0; i < 20; i++)
+		{
+			await channel.CreateMessageAsync(args: new DiscordCreateMessageArgs { Content = messageContent });
+		}
 
-    using Xunit;
+		var rateLimitHit = false;
 
-    [Collection("DiscordBotClient collection")]
-    public class RateLimitTests
-    {
-        private readonly DiscordBotClient _client;
-        private readonly ulong _guildId;
+		void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs) => rateLimitHit = true;
 
-        public RateLimitTests(DiscordBotClientFixture fixture)
-        {
-            _client = fixture.BotClient;
-            _guildId = fixture.GuildId;
-        }
+		_client.RestRateLimitExceeded += OnRestRateLimitHit;
+		try
+		{
+			var messages = await channel.GetMessagesAsync();
+			await channel.BulkDeleteMessagesAsync(
+				args: new DiscordBulkDeleteMessagesArgs
+				{
+					Messages = messages.Select(selector: m => m.Id)
+						.ToArray()
+				});
+		}
+		finally
+		{
+			_client.RestRateLimitExceeded -= OnRestRateLimitHit;
+		}
 
-        [Theory]
-        [AutoData]
-        private async Task BulkDeleteMessageAsync(string categoryName, string channelName, string messageContent)
-        {
-            var category = await _client.CreateGuildChannelAsync(
-                               _guildId,
-                               new DiscordCreateGuildChannelArgs { Name = categoryName, Type = DiscordChannelType.GuildCategory });
-            var channel = await _client.CreateGuildChannelAsync(
-                              _guildId,
-                              new DiscordCreateGuildChannelArgs { Name = channelName, Type = DiscordChannelType.GuildText, ParentId = category.Id });
+		rateLimitHit.Should()
+			.BeFalse();
+	}
 
-            for (var i = 0; i < 20; i++)
-            {
-                await channel.CreateMessageAsync(new() { Content = messageContent });
-            }
+	[Fact]
+	private async Task BulkEditMessagesAsync()
+	{
+		var category = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = nameof(BulkEditMessagesAsync),
+				Type = DiscordChannelType.GuildCategory
+			});
+		var channel = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = Guid.NewGuid()
+					.ToString(format: "D"),
+				Type = DiscordChannelType.GuildText,
+				ParentId = category.Id
+			});
 
-            var rateLimitHit = false;
+		var content = Guid.NewGuid()
+			.ToString(format: "D");
 
-            void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs)
-            {
-                rateLimitHit = true;
-            }
+		var messages = new List<DiscordMessage>();
+		for (var i = 0; i < 15; i++)
+		{
+			messages.Add(item: await channel.CreateMessageAsync(args: new DiscordCreateMessageArgs { Content = content }));
+		}
 
-            _client.RestRateLimitExceeded += OnRestRateLimitHit;
-            try
-            {
-                var messages = await channel.GetMessagesAsync();
-                await channel.BulkDeleteMessagesAsync(new() { Messages = messages.Select(m => m.Id).ToArray() });
-            }
-            finally
-            {
-                _client.RestRateLimitExceeded -= OnRestRateLimitHit;
-            }
+		var rateLimitHit = false;
 
-            rateLimitHit.Should().BeFalse();
-        }
+		void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs) => rateLimitHit = true;
 
-        [Fact]
-        private async Task BulkEditMessagesAsync()
-        {
-            var category = await _client.CreateGuildChannelAsync(
-                               _guildId,
-                               new DiscordCreateGuildChannelArgs { Name = nameof(BulkEditMessagesAsync), Type = DiscordChannelType.GuildCategory });
-            var channel = await _client.CreateGuildChannelAsync(
-                              _guildId,
-                              new DiscordCreateGuildChannelArgs
-                              {
-                                  Name = Guid.NewGuid().ToString("D"), Type = DiscordChannelType.GuildText, ParentId = category.Id
-                              });
+		_client.RestRateLimitExceeded += OnRestRateLimitHit;
+		try
+		{
+			for (var i = 0; i < 3; i++)
+			{
+				var li = i;
+				var tasks = messages.Select(
+					selector: (m, ti) => m.EditAsync(args: new DiscordEditMessageArgs { Content = $"{content}__{li}-{ti}" }));
+				await Task.WhenAll(tasks: tasks);
+			}
+		}
+		finally
+		{
+			_client.RestRateLimitExceeded -= OnRestRateLimitHit;
+		}
 
-            var content = Guid.NewGuid().ToString("D");
+		rateLimitHit.Should()
+			.BeFalse();
+	}
 
-            var messages = new List<DiscordMessage>();
-            for (var i = 0; i < 15; i++)
-            {
-                messages.Add(await channel.CreateMessageAsync(new() { Content = content }));
-            }
+	[Fact]
+	private async Task CreateMessageAsync()
+	{
+		var category = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = nameof(CreateMessageAsync),
+				Type = DiscordChannelType.GuildCategory
+			});
+		var channel = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = Guid.NewGuid()
+					.ToString(format: "D"),
+				Type = DiscordChannelType.GuildText,
+				ParentId = category.Id
+			});
 
-            var rateLimitHit = false;
+		var rateLimitHit = false;
 
-            void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs)
-            {
-                rateLimitHit = true;
-            }
+		void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs) => rateLimitHit = true;
 
-            _client.RestRateLimitExceeded += OnRestRateLimitHit;
-            try
-            {
-                for (var i = 0; i < 3; i++)
-                {
-                    var li = i;
-                    var tasks = messages.Select((m, ti) => m.EditAsync(new() { Content = $"{content}__{li}-{ti}" }));
-                    await Task.WhenAll(tasks);
-                }
-            }
-            finally
-            {
-                _client.RestRateLimitExceeded -= OnRestRateLimitHit;
-            }
+		_client.RestRateLimitExceeded += OnRestRateLimitHit;
+		try
+		{
+			for (var i = 0; i < 20; i++)
+			{
+				await channel.CreateMessageAsync(
+					args: new DiscordCreateMessageArgs
+					{
+						Content = Guid.NewGuid()
+							.ToString(format: "D")
+					});
+			}
+		}
+		finally
+		{
+			_client.RestRateLimitExceeded -= OnRestRateLimitHit;
+		}
 
-            rateLimitHit.Should().BeFalse();
-        }
+		rateLimitHit.Should()
+			.BeFalse();
+	}
 
-        [Fact]
-        private async Task CreateMessageAsync()
-        {
-            var category = await _client.CreateGuildChannelAsync(
-                               _guildId,
-                               new DiscordCreateGuildChannelArgs { Name = nameof(CreateMessageAsync), Type = DiscordChannelType.GuildCategory });
-            var channel = await _client.CreateGuildChannelAsync(
-                              _guildId,
-                              new DiscordCreateGuildChannelArgs
-                              {
-                                  Name = Guid.NewGuid().ToString("D"), Type = DiscordChannelType.GuildText, ParentId = category.Id
-                              });
+	[Theory]
+	[AutoData]
+	private async Task EditMessageAsync(string categoryName, string channelName, string messageContent)
+	{
+		var category = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = categoryName,
+				Type = DiscordChannelType.GuildCategory
+			});
+		var channel = await _client.CreateGuildChannelAsync(
+			guildId: _guildId,
+			args: new DiscordCreateGuildChannelArgs
+			{
+				Name = channelName,
+				Type = DiscordChannelType.GuildText,
+				ParentId = category.Id
+			});
+		var message = await channel.CreateMessageAsync(args: new DiscordCreateMessageArgs { Content = messageContent });
+		await message.CreateReactionAsync(emoji: new DiscordEmoji { Name = "🇬🇧" });
+		await message.DeleteAllReactionsForEmojiAsync(emoji: new DiscordEmoji { Name = "🇬🇧" });
+		await Task.Delay(millisecondsDelay: 500);
 
-            var rateLimitHit = false;
+		var rateLimitHits = 0;
 
-            void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs)
-            {
-                rateLimitHit = true;
-            }
+		void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs) => rateLimitHits++;
 
-            _client.RestRateLimitExceeded += OnRestRateLimitHit;
-            try
-            {
-                for (var i = 0; i < 20; i++)
-                {
-                    await channel.CreateMessageAsync(new() { Content = Guid.NewGuid().ToString("D") });
-                }
-            }
-            finally
-            {
-                _client.RestRateLimitExceeded -= OnRestRateLimitHit;
-            }
+		async Task OnMessageReactionAdd(DiscordMessageReactionAdd eventArgs)
+		{
+			var m = await _client.GetChannelMessageAsync(channelId: eventArgs.ChannelId, messageId: eventArgs.MessageId);
+			await m.EditAsync(
+				args: new DiscordEditMessageArgs
+				{
+					Content = Guid.NewGuid()
+						.ToString()
+				});
+			await m.DeleteAllReactionsForEmojiAsync(emoji: eventArgs.Emoji);
+		}
 
-            rateLimitHit.Should().BeFalse();
-        }
+		async Task OnMessageReactionRemove(DiscordMessageReactionRemove eventArgs)
+		{
+			var m = await _client.GetChannelMessageAsync(channelId: eventArgs.ChannelId, messageId: eventArgs.MessageId);
+			await m.EditAsync(
+				args: new DiscordEditMessageArgs
+				{
+					Content = Guid.NewGuid()
+						.ToString()
+				});
+			await m.DeleteAllReactionsForEmojiAsync(emoji: eventArgs.Emoji);
+		}
 
-        [Theory]
-        [AutoData]
-        private async Task EditMessageAsync(string categoryName, string channelName, string messageContent)
-        {
-            var category = await _client.CreateGuildChannelAsync(
-                               _guildId,
-                               new DiscordCreateGuildChannelArgs { Name = categoryName, Type = DiscordChannelType.GuildCategory });
-            var channel = await _client.CreateGuildChannelAsync(
-                              _guildId,
-                              new DiscordCreateGuildChannelArgs { Name = channelName, Type = DiscordChannelType.GuildText, ParentId = category.Id });
-            var message = await channel.CreateMessageAsync(new() { Content = messageContent });
-            await message.CreateReactionAsync(new DiscordEmoji { Name = "🇬🇧" });
-            await message.DeleteAllReactionsForEmojiAsync(new DiscordEmoji { Name = "🇬🇧" });
-            await Task.Delay(500);
+		_client.RestRateLimitExceeded += OnRestRateLimitHit;
+		_client.MessageReactionAdd += async (_, eventArgs) => await OnMessageReactionAdd(eventArgs: eventArgs);
+		_client.MessageReactionRemove += async (_, eventArgs) => await OnMessageReactionRemove(eventArgs: eventArgs);
+		try
+		{
+			for (var i = 0; i < 20; i++)
+			{
+				await message.CreateReactionAsync(emoji: new DiscordEmoji { Name = "🇬🇧" });
+				await Task.Delay(millisecondsDelay: 500);
+			}
+		}
+		finally
+		{
+			_client.RestRateLimitExceeded -= OnRestRateLimitHit;
+		}
 
-            var rateLimitHits = 0;
-
-            void OnRestRateLimitHit(object? sender, DiscordRateLimitExceeded eventArgs)
-            {
-                rateLimitHits++;
-            }
-
-            async Task OnMessageReactionAdd(DiscordMessageReactionAdd eventArgs)
-            {
-                var m = await _client.GetChannelMessageAsync(eventArgs.ChannelId, eventArgs.MessageId);
-                await m.EditAsync(new() { Content = Guid.NewGuid().ToString() });
-                await m.DeleteAllReactionsForEmojiAsync(eventArgs.Emoji);
-            }
-
-            async Task OnMessageReactionRemove(DiscordMessageReactionRemove eventArgs)
-            {
-                var m = await _client.GetChannelMessageAsync(eventArgs.ChannelId, eventArgs.MessageId);
-                await m.EditAsync(new() { Content = Guid.NewGuid().ToString() });
-                await m.DeleteAllReactionsForEmojiAsync(eventArgs.Emoji);
-            }
-
-            _client.RestRateLimitExceeded += OnRestRateLimitHit;
-            _client.MessageReactionAdd += async (_, eventArgs) => await OnMessageReactionAdd(eventArgs);
-            _client.MessageReactionRemove += async (_, eventArgs) => await OnMessageReactionRemove(eventArgs);
-            try
-            {
-                for (var i = 0; i < 20; i++)
-                {
-                    await message.CreateReactionAsync(new DiscordEmoji { Name = "🇬🇧" });
-                    await Task.Delay(500);
-                }
-            }
-            finally
-            {
-                _client.RestRateLimitExceeded -= OnRestRateLimitHit;
-            }
-
-            rateLimitHits.Should().Be(0);
-        }
-    }
+		rateLimitHits.Should()
+			.Be(expected: 0);
+	}
 }

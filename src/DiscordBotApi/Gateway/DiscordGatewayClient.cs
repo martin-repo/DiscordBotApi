@@ -1,282 +1,316 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayClient.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayClient.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway
+using System.Globalization;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Text.Json;
+
+using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Models.Gateway.Commands;
+using DiscordBotApi.Models.Gateway.Events;
+
+using Serilog;
+
+namespace DiscordBotApi.Gateway;
+
+internal partial class DiscordGatewayClient : IAsyncDisposable
 {
-    using System.Globalization;
-    using System.Runtime.Serialization;
-    using System.Text;
-    using System.Text.Json;
+	// https://discord.com/developers/docs/topics/gateway#sending-payloads
+	private const int OutgoingWebSocketChunkLength = 4096;
 
-    using DiscordBotApi.Models.Gateway;
-    using DiscordBotApi.Models.Gateway.Commands;
-    using DiscordBotApi.Models.Gateway.Events;
+	private static readonly TextInfo EnglishTextInfo = new CultureInfo(name: "en-US", useUserOverride: false).TextInfo;
 
-    using Serilog;
+	private readonly string _botToken;
+	private readonly ILogger? _logger;
+	private readonly Func<IBinaryWebSocket> _webSocketActivator;
+	private readonly Func<IZlibContext> _zlibContextActivator;
 
-    internal partial class DiscordGatewayClient : IAsyncDisposable
-    {
-        // https://discord.com/developers/docs/topics/gateway#sending-payloads
-        private const int OutgoingWebSocketChunkLength = 4096;
+	private bool _isDisposed;
+	private DiscordGatewaySession _session;
 
-        private static readonly TextInfo EnglishTextInfo = new CultureInfo("en-US", false).TextInfo;
+	public DiscordGatewayClient(
+		ILogger? logger,
+		Func<IBinaryWebSocket> webSocketActivator,
+		Func<IZlibContext> zlibContextActivator,
+		string botToken
+	)
+	{
+		_logger = logger?.ForContext<DiscordGatewayClient>();
+		_webSocketActivator = webSocketActivator;
+		_zlibContextActivator = zlibContextActivator;
+		_botToken = botToken;
+		_session = new DiscordGatewaySession(
+			webSocket: default!,
+			zlibContext: default!,
+			gatewayUrl: "",
+			intents: DiscordGatewayIntent.None,
+			shard: null) { Status = DiscordGatewaySessionStatus.Disconnected };
+	}
 
-        private readonly string _botToken;
-        private readonly ILogger? _logger;
-        private readonly Func<IBinaryWebSocket> _webSocketActivator;
-        private readonly Func<IZlibContext> _zlibContextActivator;
+	public event EventHandler<DiscordGatewayDispatch>? GatewayDispatchReceived;
 
-        private bool _isDisposed;
-        private DiscordGatewaySession _session;
+	public event EventHandler<DiscordGatewayException>? GatewayException;
 
-        public DiscordGatewayClient(
-            ILogger? logger,
-            Func<IBinaryWebSocket> webSocketActivator,
-            Func<IZlibContext> zlibContextActivator,
-            string botToken)
-        {
-            _logger = logger?.ForContext<DiscordGatewayClient>();
-            _webSocketActivator = webSocketActivator;
-            _zlibContextActivator = zlibContextActivator;
-            _botToken = botToken;
-            _session = new DiscordGatewaySession(default!, default!, "", DiscordGatewayIntent.None, null)
-                       {
-                           Status = DiscordGatewaySessionStatus.Disconnected
-                       };
-        }
+	public event EventHandler<DiscordReady>? GatewayReady;
 
-        public event EventHandler<DiscordGatewayDispatch>? GatewayDispatchReceived;
+	public async Task ConnectAsync(
+		string gatewayUrl,
+		DiscordGatewayIntent intents,
+		DiscordShard? shard = null,
+		CancellationToken cancellationToken = default
+	)
+	{
+		if (_isDisposed)
+		{
+			throw new ObjectDisposedException(objectName: $"{nameof(DiscordGatewayClient)} has been disposed.");
+		}
 
-        public event EventHandler<DiscordGatewayException>? GatewayException;
+		await ConnectAsync(
+				gatewayUrl: gatewayUrl,
+				intents: intents,
+				sessionId: null,
+				sessionSequenceNumber: 0,
+				shard: shard,
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-        public event EventHandler<DiscordReady>? GatewayReady;
+	public async Task DisconnectAsync(DiscordGatewayCloseType closeType)
+	{
+		if (_isDisposed)
+		{
+			throw new ObjectDisposedException(objectName: $"{nameof(DiscordGatewayClient)} has been disposed.");
+		}
 
-        public async Task ConnectAsync(
-            string gatewayUrl,
-            DiscordGatewayIntent intents,
-            DiscordShard? shard = null,
-            CancellationToken cancellationToken = default)
-        {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException($"{nameof(DiscordGatewayClient)} has been disposed.");
-            }
+		await DisconnectInternalAsync(closeType: closeType)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-            await ConnectAsync(
-                    gatewayUrl,
-                    intents,
-                    null,
-                    0,
-                    shard,
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
+	public async ValueTask DisposeAsync()
+	{
+		await DisconnectInternalAsync(closeType: DiscordGatewayCloseType.NormalClosure)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-        public async Task DisconnectAsync(DiscordGatewayCloseType closeType)
-        {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException($"{nameof(DiscordGatewayClient)} has been disposed.");
-            }
+		_isDisposed = true;
 
-            await DisconnectInternalAsync(closeType).ConfigureAwait(false);
-        }
+		GC.SuppressFinalize(obj: this);
+	}
 
-        public async ValueTask DisposeAsync()
-        {
-            await DisconnectInternalAsync(DiscordGatewayCloseType.NormalClosure).ConfigureAwait(false);
+	public async Task UpdatePresenceAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken = default)
+	{
+		if (_session.Status != DiscordGatewaySessionStatus.Connected)
+		{
+			throw new InvalidOperationException(message: "Not connected");
+		}
 
-            _isDisposed = true;
+		await SendPresenceUpdateAsync(presenceUpdate: presenceUpdate, cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-            GC.SuppressFinalize(this);
-        }
+	private static float GetJitter()
+	{
+		var random = new Random();
+		var jitter = random.NextSingle();
+		while (jitter == 0)
+		{
+			jitter = random.NextSingle();
+		}
 
-        public async Task UpdatePresenceAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken = default)
-        {
-            if (_session.Status != DiscordGatewaySessionStatus.Connected)
-            {
-                throw new InvalidOperationException("Not connected");
-            }
+		return jitter;
+	}
 
-            await SendPresenceUpdateAsync(presenceUpdate, cancellationToken).ConfigureAwait(false);
-        }
+	private static async Task JoinWithTaskAsync(Task? task)
+	{
+		if (task == null)
+		{
+			return;
+		}
 
-        private static float GetJitter()
-        {
-            var random = new Random();
-            var jitter = random.NextSingle();
-            while (jitter == 0)
-            {
-                jitter = random.NextSingle();
-            }
+		try
+		{
+			await task.WaitAsync(cancellationToken: CancellationToken.None)
+				.ConfigureAwait(continueOnCapturedContext: false);
+		}
+		catch (OperationCanceledException)
+		{
+		}
+	}
 
-            return jitter;
-        }
+	private async Task ConnectAsync(
+		string gatewayUrl,
+		DiscordGatewayIntent intents,
+		string? sessionId = null,
+		int? sessionSequenceNumber = null,
+		DiscordShard? shard = null,
+		CancellationToken cancellationToken = default
+	)
+	{
+		if (_session.Status != DiscordGatewaySessionStatus.Disconnected)
+		{
+			throw new InvalidOperationException(message: "Already connected");
+		}
 
-        private static async Task JoinWithTaskAsync(Task? task)
-        {
-            if (task == null)
-            {
-                return;
-            }
+		_session = new DiscordGatewaySession(
+			webSocket: _webSocketActivator(),
+			zlibContext: _zlibContextActivator(),
+			gatewayUrl: gatewayUrl,
+			intents: intents,
+			shard: shard)
+		{
+			Id = sessionId ?? DiscordGatewaySession.EmptySessionId,
+			SequenceNumber = sessionSequenceNumber ?? 0
+		};
 
-            try
-            {
-                await task.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        }
+		_logger?.Information(messageTemplate: "Gateway -- Connecting");
 
-        private async Task ConnectAsync(
-            string gatewayUrl,
-            DiscordGatewayIntent intents,
-            string? sessionId = null,
-            int? sessionSequenceNumber = null,
-            DiscordShard? shard = null,
-            CancellationToken cancellationToken = default)
-        {
-            if (_session.Status != DiscordGatewaySessionStatus.Disconnected)
-            {
-                throw new InvalidOperationException("Already connected");
-            }
+		var uri = new Uri(uriString: $"{gatewayUrl}?v={DiscordBotClient.DiscordApiVersion}&encoding=json&compress=zlib-stream");
 
-            _session = new DiscordGatewaySession(_webSocketActivator(), _zlibContextActivator(), gatewayUrl, intents, shard)
-                       {
-                           Id = sessionId ?? DiscordGatewaySession.EmptySessionId, SequenceNumber = sessionSequenceNumber ?? 0
-                       };
+		try
+		{
+			await _session.WebSocket.ConnectAsync(uri: uri, cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			_session.PayloadLoopTask = Task.Run(
+					function: async () => await PayloadLoopAsync()
+						.ConfigureAwait(continueOnCapturedContext: false),
+					cancellationToken: cancellationToken)
+				.ContinueWith(
+					continuationFunction: async task =>
+						await HandlePayloadLoopException(loopException: task.Exception!.InnerExceptions.First())
+							.ConfigureAwait(continueOnCapturedContext: false),
+					continuationOptions: TaskContinuationOptions.OnlyOnFaulted);
+		}
+		catch
+		{
+			await DisconnectInternalAsync(closeType: DiscordGatewayCloseType.UnknownError)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			throw;
+		}
+	}
 
-            _logger?.Information("Gateway -- Connecting");
+	private async Task DisconnectInternalAsync(DiscordGatewayCloseType closeType)
+	{
+		if (_session.Status != DiscordGatewaySessionStatus.Connected)
+		{
+			return;
+		}
 
-            var uri = new Uri($"{gatewayUrl}?v={DiscordBotClient.DiscordApiVersion}&encoding=json&compress=zlib-stream");
+		_logger?.Debug(messageTemplate: "Gateway -- Disconnecting");
 
-            try
-            {
-                await _session.WebSocket.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
-                _session.PayloadLoopTask = Task.Run(async () => await PayloadLoopAsync().ConfigureAwait(false), cancellationToken)
-                                               .ContinueWith(
-                                                   async task => await HandlePayloadLoopException(task.Exception!.InnerExceptions.First())
-                                                                     .ConfigureAwait(false),
-                                                   TaskContinuationOptions.OnlyOnFaulted);
-            }
-            catch
-            {
-                await DisconnectInternalAsync(DiscordGatewayCloseType.UnknownError).ConfigureAwait(false);
-                throw;
-            }
-        }
+		_session.Status = DiscordGatewaySessionStatus.Disconnecting;
 
-        private async Task DisconnectInternalAsync(DiscordGatewayCloseType closeType)
-        {
-            if (_session.Status != DiscordGatewaySessionStatus.Connected)
-            {
-                return;
-            }
+		// Cancel heartbeat loop to ensure nothing is written to the socket while
+		// disconnect is in progress.
+		_session.HeartbeatCancellationSource.Cancel();
 
-            _logger?.Debug("Gateway -- Disconnecting");
+		// Close socket before cancelling payload loop to ensure that closeType
+		// is properly transmitted to Discord.
+		await _session.WebSocket.DisconnectAsync(closeType: closeType)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-            _session.Status = DiscordGatewaySessionStatus.Disconnecting;
+		_session.PayloadCancellationSource.Cancel();
 
-            // Cancel heartbeat loop to ensure nothing is written to the socket while
-            // disconnect is in progress.
-            _session.HeartbeatCancellationSource.Cancel();
+		await JoinWithTaskAsync(task: _session.HeartbeatLoopTask)
+			.ConfigureAwait(continueOnCapturedContext: false);
+		await JoinWithTaskAsync(task: _session.PayloadLoopTask)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-            // Close socket before cancelling payload loop to ensure that closeType
-            // is properly transmitted to Discord.
-            await _session.WebSocket.DisconnectAsync(closeType).ConfigureAwait(false);
+		_session.WebSocket.Dispose();
 
-            _session.PayloadCancellationSource.Cancel();
+		_session.Status = DiscordGatewaySessionStatus.Disconnected;
+	}
 
-            await JoinWithTaskAsync(_session.HeartbeatLoopTask).ConfigureAwait(false);
-            await JoinWithTaskAsync(_session.PayloadLoopTask).ConfigureAwait(false);
+	private async Task HeartbeatLoopAsync(TimeSpan interval)
+	{
+		var cancellationToken = _session.HeartbeatCancellationSource.Token;
 
-            _session.WebSocket.Dispose();
+		var jitter = GetJitter();
+		var initialInterval = TimeSpan.FromMilliseconds(value: interval.TotalMilliseconds * jitter);
 
-            _session.Status = DiscordGatewaySessionStatus.Disconnected;
-        }
+		var nextHeartbeat = DateTime.UtcNow.Add(value: initialInterval);
+		while (!cancellationToken.IsCancellationRequested)
+		{
+			var delay = nextHeartbeat - DateTime.UtcNow;
+			if (delay > TimeSpan.Zero)
+			{
+				await Task.Delay(delay: delay, cancellationToken: cancellationToken)
+					.ConfigureAwait(continueOnCapturedContext: false);
+			}
 
-        private async Task HeartbeatLoopAsync(TimeSpan interval)
-        {
-            var cancellationToken = _session.HeartbeatCancellationSource.Token;
+			if (!_session.HeartbeatAckReceived)
+			{
+				_logger?.Warning(messageTemplate: "No heartbeat ack was received");
+				Reconnect(closeType: DiscordGatewayCloseType.UnknownError);
+				return;
+			}
 
-            var jitter = GetJitter();
-            var initialInterval = TimeSpan.FromMilliseconds(interval.TotalMilliseconds * jitter);
+			await SendHeartbeatAsync(cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
-            var nextHeartbeat = DateTime.UtcNow.Add(initialInterval);
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var delay = nextHeartbeat - DateTime.UtcNow;
-                if (delay > TimeSpan.Zero)
-                {
-                    await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-                }
+			do
+			{
+				nextHeartbeat = nextHeartbeat.Add(value: interval);
+			} while (nextHeartbeat < DateTime.UtcNow);
+		}
+	}
 
-                if (!_session.HeartbeatAckReceived)
-                {
-                    _logger?.Warning("No heartbeat ack was received");
-                    Reconnect(DiscordGatewayCloseType.UnknownError);
-                    return;
-                }
+	private async Task PayloadLoopAsync()
+	{
+		var cancellationToken = _session.PayloadCancellationSource.Token;
 
-                await SendHeartbeatAsync(cancellationToken).ConfigureAwait(false);
+		var socket = _session.WebSocket;
+		var zlib = _session.ZlibContext;
 
-                do
-                {
-                    nextHeartbeat = nextHeartbeat.Add(interval);
-                }
-                while (nextHeartbeat < DateTime.UtcNow);
-            }
-        }
+		while (!cancellationToken.IsCancellationRequested)
+		{
+			var socketBytes = await socket.ReceiveAsync(cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			var payloadBytes = await zlib.DecompressAsync(compressedBytes: socketBytes, cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			var payloadJson = Encoding.UTF8.GetString(bytes: payloadBytes);
 
-        private async Task PayloadLoopAsync()
-        {
-            var cancellationToken = _session.PayloadCancellationSource.Token;
+			var payloadDto = JsonSerializer.Deserialize<DiscordGatewayPayloadDto>(json: payloadJson);
+			if (payloadDto == null)
+			{
+				throw new SerializationException(message: $"Failed to deserialize {nameof(DiscordGatewayPayload)}.");
+			}
 
-            var socket = _session.WebSocket;
-            var zlib = _session.ZlibContext;
+			var payload = new DiscordGatewayPayload(dto: payloadDto);
+			if (payload.SequenceNumber != null)
+			{
+				_session.SequenceNumber = payload.SequenceNumber.Value;
+			}
 
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var socketBytes = await socket.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                var payloadBytes = await zlib.DecompressAsync(socketBytes, cancellationToken).ConfigureAwait(false);
-                var payloadJson = Encoding.UTF8.GetString(payloadBytes);
+			await HandlePayloadAsync(payload: payload, cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+		}
+	}
 
-                var payloadDto = JsonSerializer.Deserialize<DiscordGatewayPayloadDto>(payloadJson);
-                if (payloadDto == null)
-                {
-                    throw new SerializationException($"Failed to deserialize {nameof(DiscordGatewayPayload)}.");
-                }
-
-                var payload = new DiscordGatewayPayload(payloadDto);
-                if (payload.SequenceNumber != null)
-                {
-                    _session.SequenceNumber = payload.SequenceNumber.Value;
-                }
-
-                await HandlePayloadAsync(payload, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private void Reconnect(DiscordGatewayCloseType closeType)
-        {
-            _ = Task.Run(
-                        async () =>
-                        {
-                            await DisconnectInternalAsync(closeType).ConfigureAwait(false);
-                            await ConnectAsync(_session.GatewayUrl, _session.Intents, _session.Id, _session.SequenceNumber, _session.Shard)
-                                .ConfigureAwait(false);
-                        })
-                    .ContinueWith(
-                        task =>
-                        {
-                            var gatewayException = new DiscordGatewayException("Reconnect failed", true, task.Exception!.InnerExceptions.First());
-                            GatewayException?.Invoke(this, gatewayException);
-                        },
-                        TaskContinuationOptions.OnlyOnFaulted);
-        }
-    }
+	private void Reconnect(DiscordGatewayCloseType closeType) =>
+		_ = Task.Run(
+				function: async () =>
+				{
+					await DisconnectInternalAsync(closeType: closeType)
+						.ConfigureAwait(continueOnCapturedContext: false);
+					await ConnectAsync(
+							gatewayUrl: _session.GatewayUrl,
+							intents: _session.Intents,
+							sessionId: _session.Id,
+							sessionSequenceNumber: _session.SequenceNumber,
+							shard: _session.Shard)
+						.ConfigureAwait(continueOnCapturedContext: false);
+				})
+			.ContinueWith(
+				continuationAction: task =>
+				{
+					var gatewayException = new DiscordGatewayException(
+						message: "Reconnect failed",
+						isDisconnected: true,
+						innerException: task.Exception!.InnerExceptions.First());
+					GatewayException?.Invoke(sender: this, e: gatewayException);
+				},
+				continuationOptions: TaskContinuationOptions.OnlyOnFaulted);
 }

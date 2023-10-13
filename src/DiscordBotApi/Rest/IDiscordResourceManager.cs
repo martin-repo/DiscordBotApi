@@ -1,19 +1,22 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="IDiscordResourceManager.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="IDiscordResourceManager.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Rest
+using DiscordBotApi.Models.Rest;
+
+namespace DiscordBotApi.Rest;
+
+internal interface IDiscordResourceManager
 {
-    using DiscordBotApi.Models.Rest;
+	Task<IDisposable> GetReservationAsync(DiscordResourceId resourceId, long requestIndex, CancellationToken cancellationToken);
 
-    internal interface IDiscordResourceManager
-    {
-        Task<IDisposable> GetReservationAsync(DiscordResourceId resourceId, long requestIndex, CancellationToken cancellationToken);
+	DiscordResourceId GetResourceId(string httpMethod, string endpoint);
 
-        DiscordResourceId GetResourceId(string httpMethod, string endpoint);
-
-        void UpdateResource(DiscordResourceId resourceId, DiscordBucketResponse? bucketResponse, DiscordRateLimitResponse? rateLimitResponse);
-    }
+	void UpdateResource(
+		DiscordResourceId resourceId,
+		DiscordBucketResponse? bucketResponse,
+		DiscordRateLimitResponse? rateLimitResponse
+	);
 }

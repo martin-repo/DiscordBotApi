@@ -1,13 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="JsonData.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="JsonData.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    [JsonConverter(typeof(JsonDataConverter))]
-    internal record JsonData(string Json);
-}
+namespace DiscordBotApi.Models.Gateway;
+
+[JsonConverter(converterType: typeof(JsonDataConverter))]
+internal record JsonData(string Json);

@@ -1,13 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="AutoArchiveDuration.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="AutoArchiveDuration.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels
+namespace DiscordBotApi.Models.Guilds.Channels;
+
+public enum AutoArchiveDuration
 {
-    public enum AutoArchiveDuration
-    {
-        OneHour = 60
-    }
+	OneHour = 60
 }

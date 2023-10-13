@@ -1,22 +1,29 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordPermissionsOverwriteDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordPermissionOverwriteDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordPermissionOverwriteDto(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("type")] int Type,
-        [property: JsonPropertyName("allow")] string Allow,
-        [property: JsonPropertyName("deny")] string Deny)
-    {
-        internal DiscordPermissionOverwriteDto(DiscordPermissionOverwrite model)
-            : this(model.Id.ToString(), (int)model.Type, ((ulong)model.Allow).ToString(), ((ulong)model.Deny).ToString())
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds;
+
+internal record DiscordPermissionOverwriteDto(
+	[property: JsonPropertyName(name: "id")]
+	string Id,
+	[property: JsonPropertyName(name: "type")]
+	int Type,
+	[property: JsonPropertyName(name: "allow")]
+	string Allow,
+	[property: JsonPropertyName(name: "deny")]
+	string Deny
+)
+{
+	internal DiscordPermissionOverwriteDto(DiscordPermissionOverwrite model) : this(
+		Id: model.Id.ToString(),
+		Type: (int)model.Type,
+		Allow: ((ulong)model.Allow).ToString(),
+		Deny: ((ulong)model.Deny).ToString())
+	{
+	}
 }

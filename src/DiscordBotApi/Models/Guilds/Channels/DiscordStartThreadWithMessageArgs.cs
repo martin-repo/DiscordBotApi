@@ -1,15 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordStartThreadWithMessageArgs.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordStartThreadWithMessageArgs.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels
-{
-    public record DiscordStartThreadWithMessageArgs
-    {
-        public AutoArchiveDuration? AutoArchiveDuration { get; init; }
+namespace DiscordBotApi.Models.Guilds.Channels;
 
-        public string Name { get; init; } = "";
-    }
+public record DiscordStartThreadWithMessageArgs
+{
+	public AutoArchiveDuration? AutoArchiveDuration { get; init; }
+
+	public string Name { get; init; } = "";
 }

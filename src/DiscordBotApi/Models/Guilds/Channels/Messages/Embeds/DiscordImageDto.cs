@@ -1,18 +1,19 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordImageDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordImageDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordImageDto([property: JsonPropertyName("url")] string Url)
-    {
-        internal DiscordImageDto(DiscordImage model)
-            : this(model.Url)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+
+internal record DiscordImageDto(
+	[property: JsonPropertyName(name: "url")]
+	string Url
+)
+{
+	internal DiscordImageDto(DiscordImage model) : this(Url: model.Url)
+	{
+	}
 }

@@ -1,24 +1,33 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    using DiscordBotApi.Models.Guilds.Emojis;
+using DiscordBotApi.Models.Guilds.Emojis;
 
-    // https://discord.com/developers/docs/resources/guild#guild-object-guild-structure
-    internal record DiscordGuildDto(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("roles")] DiscordRoleDto[] Roles,
-        [property: JsonPropertyName("emojis")] DiscordEmojiDto[] Emojis,
-        [property: JsonPropertyName("member_count")] int? MemberCount,
-        [property: JsonPropertyName("members")] DiscordGuildMemberDto[]? Members,
-        [property: JsonPropertyName("premium_tier")] int PremiumTier,
-        [property: JsonPropertyName("premium_subscription_count")] int? PremiumTierSubscriptionCount,
-        [property: JsonPropertyName("approximate_member_count")] int? ApproximateMemberCount);
-}
+namespace DiscordBotApi.Models.Guilds;
+
+// https://discord.com/developers/docs/resources/guild#guild-object-guild-structure
+internal record DiscordGuildDto(
+	[property: JsonPropertyName(name: "id")]
+	string Id,
+	[property: JsonPropertyName(name: "name")]
+	string Name,
+	[property: JsonPropertyName(name: "roles")]
+	DiscordRoleDto[] Roles,
+	[property: JsonPropertyName(name: "emojis")]
+	DiscordEmojiDto[] Emojis,
+	[property: JsonPropertyName(name: "member_count")]
+	int? MemberCount,
+	[property: JsonPropertyName(name: "members")]
+	DiscordGuildMemberDto[]? Members,
+	[property: JsonPropertyName(name: "premium_tier")]
+	int PremiumTier,
+	[property: JsonPropertyName(name: "premium_subscription_count")]
+	int? PremiumTierSubscriptionCount,
+	[property: JsonPropertyName(name: "approximate_member_count")]
+	int? ApproximateMemberCount
+);

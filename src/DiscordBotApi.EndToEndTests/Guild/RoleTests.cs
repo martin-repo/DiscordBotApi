@@ -1,134 +1,153 @@
 // -------------------------------------------------------------------------------------------------
-// <copyright file="RoleTests.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="RoleTests.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.EndToEndTests.Guild
+using System;
+using System.Threading.Tasks;
+
+using AutoFixture.Xunit2;
+
+using DiscordBotApi.Models.Gateway.Events;
+using DiscordBotApi.Models.Guilds;
+
+using FluentAssertions;
+
+using Xunit;
+
+namespace DiscordBotApi.EndToEndTests.Guild;
+
+[Collection(name: "DiscordBotClient collection")]
+public class RoleTests
 {
-    using System;
-    using System.Threading.Tasks;
+	private readonly DiscordBotClient _client;
+	private readonly ulong _guildId;
 
-    using AutoFixture.Xunit2;
+	public RoleTests(DiscordBotClientFixture fixture)
+	{
+		_client = fixture.BotClient;
+		_guildId = fixture.GuildId;
+	}
 
-    using DiscordBotApi.Models.Gateway.Events;
-    using DiscordBotApi.Models.Guilds;
+	[Theory]
+	[AutoData]
+	private async Task CreateGuildRoleAsync(string name, DiscordPermissions permissions)
+	{
+		var completion = TaskCompletionSourceCreator.Create<DiscordGuildRoleCreate>();
 
-    using FluentAssertions;
+		void OnGuildRoleCreate(object? sender, DiscordGuildRoleCreate eventArgs) => completion.SetResult(result: eventArgs);
 
-    using Xunit;
+		void ValidateRole(DiscordRole role)
+		{
+			role.Name.Should()
+				.Be(expected: name);
+			role.Permissions.Should()
+				.Be(expected: permissions);
+		}
 
-    [Collection("DiscordBotClient collection")]
-    public class RoleTests
-    {
-        private readonly DiscordBotClient _client;
-        private readonly ulong _guildId;
+		_client.GuildRoleCreate += OnGuildRoleCreate;
+		try
+		{
+			var roleFromRest = await _client.CreateGuildRoleAsync(
+				guildId: _guildId,
+				args: new DiscordCreateGuildRoleArgs
+				{
+					Name = name,
+					Permissions = permissions
+				});
+			var roleFromGateway = await completion.Task;
 
-        public RoleTests(DiscordBotClientFixture fixture)
-        {
-            _client = fixture.BotClient;
-            _guildId = fixture.GuildId;
-        }
+			typeof(DiscordRole).GetProperties()
+				.Length.Should()
+				.Be(expected: 3);
+			ValidateRole(role: roleFromRest);
+			ValidateRole(role: roleFromGateway.Role);
+		}
+		finally
+		{
+			_client.GuildRoleCreate -= OnGuildRoleCreate;
+		}
+	}
 
-        [Theory]
-        [AutoData]
-        private async Task CreateGuildRoleAsync(string name, DiscordPermissions permissions)
-        {
-            var completion = TaskCompletionSourceCreator.Create<DiscordGuildRoleCreate>();
+	[Fact]
+	private async Task DeleteGuildRoleAsync()
+	{
+		var completion = TaskCompletionSourceCreator.Create<DiscordGuildRoleDelete>();
 
-            void OnGuildRoleCreate(object? sender, DiscordGuildRoleCreate eventArgs)
-            {
-                completion.SetResult(eventArgs);
-            }
+		void OnGuildRoleDelete(object? sender, DiscordGuildRoleDelete eventArgs) => completion.SetResult(result: eventArgs);
 
-            void ValidateRole(DiscordRole role)
-            {
-                role.Name.Should().Be(name);
-                role.Permissions.Should().Be(permissions);
-            }
+		_client.GuildRoleDelete += OnGuildRoleDelete;
+		try
+		{
+			var role = await _client.CreateGuildRoleAsync(
+				guildId: _guildId,
+				args: new DiscordCreateGuildRoleArgs
+				{
+					Name = Guid.NewGuid()
+						.ToString(format: "D"),
+					Permissions = DiscordPermissions.None
+				});
 
-            _client.GuildRoleCreate += OnGuildRoleCreate;
-            try
-            {
-                var roleFromRest = await _client.CreateGuildRoleAsync(
-                                       _guildId,
-                                       new DiscordCreateGuildRoleArgs { Name = name, Permissions = permissions });
-                var roleFromGateway = await completion.Task;
+			await role.DeleteAsync();
+			var guildRole = await completion.Task;
 
-                typeof(DiscordRole).GetProperties().Length.Should().Be(3);
-                ValidateRole(roleFromRest);
-                ValidateRole(roleFromGateway.Role);
-            }
-            finally
-            {
-                _client.GuildRoleCreate -= OnGuildRoleCreate;
-            }
-        }
+			guildRole.GuildId.Should()
+				.Be(expected: _guildId);
+			guildRole.RoleId.Should()
+				.Be(expected: role.Id);
+		}
+		finally
+		{
+			_client.GuildRoleDelete -= OnGuildRoleDelete;
+		}
+	}
 
-        [Fact]
-        private async Task DeleteGuildRoleAsync()
-        {
-            var completion = TaskCompletionSourceCreator.Create<DiscordGuildRoleDelete>();
+	[Theory]
+	[AutoData]
+	private async Task ModifyGuildRoleAsync(string name, DiscordPermissions permissions)
+	{
+		var completion = TaskCompletionSourceCreator.Create<DiscordGuildRoleUpdate>();
 
-            void OnGuildRoleDelete(object? sender, DiscordGuildRoleDelete eventArgs)
-            {
-                completion.SetResult(eventArgs);
-            }
+		void OnGuildRoleUpdate(object? sender, DiscordGuildRoleUpdate eventArgs) => completion.SetResult(result: eventArgs);
 
-            _client.GuildRoleDelete += OnGuildRoleDelete;
-            try
-            {
-                var role = await _client.CreateGuildRoleAsync(
-                               _guildId,
-                               new DiscordCreateGuildRoleArgs { Name = Guid.NewGuid().ToString("D"), Permissions = DiscordPermissions.None });
+		void ValidateRole(DiscordRole role)
+		{
+			role.Name.Should()
+				.Be(expected: name);
+			role.Permissions.Should()
+				.Be(expected: permissions);
+		}
 
-                await role.DeleteAsync();
-                var guildRole = await completion.Task;
+		_client.GuildRoleUpdate += OnGuildRoleUpdate;
+		try
+		{
+			var roleFromRest = await _client.CreateGuildRoleAsync(
+				guildId: _guildId,
+				args: new DiscordCreateGuildRoleArgs
+				{
+					Name = Guid.NewGuid()
+						.ToString(format: "D"),
+					Permissions = DiscordPermissions.None
+				});
 
-                guildRole.GuildId.Should().Be(_guildId);
-                guildRole.RoleId.Should().Be(role.Id);
-            }
-            finally
-            {
-                _client.GuildRoleDelete -= OnGuildRoleDelete;
-            }
-        }
+			roleFromRest = await roleFromRest.ModifyAsync(
+				args: new DiscordModifyGuildRoleArgs
+				{
+					Name = name,
+					Permissions = permissions
+				});
+			var roleFromGateway = await completion.Task;
 
-        [Theory]
-        [AutoData]
-        private async Task ModifyGuildRoleAsync(string name, DiscordPermissions permissions)
-        {
-            var completion = TaskCompletionSourceCreator.Create<DiscordGuildRoleUpdate>();
-
-            void OnGuildRoleUpdate(object? sender, DiscordGuildRoleUpdate eventArgs)
-            {
-                completion.SetResult(eventArgs);
-            }
-
-            void ValidateRole(DiscordRole role)
-            {
-                role.Name.Should().Be(name);
-                role.Permissions.Should().Be(permissions);
-            }
-
-            _client.GuildRoleUpdate += OnGuildRoleUpdate;
-            try
-            {
-                var roleFromRest = await _client.CreateGuildRoleAsync(
-                                       _guildId,
-                                       new DiscordCreateGuildRoleArgs { Name = Guid.NewGuid().ToString("D"), Permissions = DiscordPermissions.None });
-
-                roleFromRest = await roleFromRest.ModifyAsync(new DiscordModifyGuildRoleArgs { Name = name, Permissions = permissions });
-                var roleFromGateway = await completion.Task;
-
-                typeof(DiscordRole).GetProperties().Length.Should().Be(3);
-                ValidateRole(roleFromRest);
-                ValidateRole(roleFromGateway.Role);
-            }
-            finally
-            {
-                _client.GuildRoleUpdate -= OnGuildRoleUpdate;
-            }
-        }
-    }
+			typeof(DiscordRole).GetProperties()
+				.Length.Should()
+				.Be(expected: 3);
+			ValidateRole(role: roleFromRest);
+			ValidateRole(role: roleFromGateway.Role);
+		}
+		finally
+		{
+			_client.GuildRoleUpdate -= OnGuildRoleUpdate;
+		}
+	}
 }

@@ -1,17 +1,19 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGuildMemberRemoveDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGuildMemberRemoveDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Events
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    using DiscordBotApi.Models.Users;
+using DiscordBotApi.Models.Users;
 
-    // https://discord.com/developers/docs/topics/gateway#guild-member-remove-guild-member-remove-event-fields
-    internal record DiscordGuildMemberRemoveDto(
-        [property: JsonPropertyName("guild_id")] string GuildId,
-        [property: JsonPropertyName("user")] DiscordUserDto User);
-}
+namespace DiscordBotApi.Models.Gateway.Events;
+
+// https://discord.com/developers/docs/topics/gateway#guild-member-remove-guild-member-remove-event-fields
+internal record DiscordGuildMemberRemoveDto(
+	[property: JsonPropertyName(name: "guild_id")]
+	string GuildId,
+	[property: JsonPropertyName(name: "user")]
+	DiscordUserDto User
+);

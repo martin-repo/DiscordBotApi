@@ -1,17 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageButtonStyle.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordMessageButtonStyle.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components
+namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+
+public enum DiscordMessageButtonStyle
 {
-    public enum DiscordMessageButtonStyle
-    {
-        Primary = 1,
-        Secondary = 2,
-        Success = 3,
-        Danger = 4,
-        Link = 5
-    }
+	Primary = 1,
+	Secondary = 2,
+	Success = 3,
+	Danger = 4,
+	Link = 5
 }

@@ -1,18 +1,21 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordAuthorDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordAuthorDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordAuthorDto([property: JsonPropertyName("name")] string Name, [property: JsonPropertyName("icon_url")] string? IconUrl)
-    {
-        internal DiscordAuthorDto(DiscordAuthor model)
-            : this(model.Name, model.IconUrl)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+
+internal record DiscordAuthorDto(
+	[property: JsonPropertyName(name: "name")]
+	string Name,
+	[property: JsonPropertyName(name: "icon_url")]
+	string? IconUrl
+)
+{
+	internal DiscordAuthorDto(DiscordAuthor model) : this(Name: model.Name, IconUrl: model.IconUrl)
+	{
+	}
 }

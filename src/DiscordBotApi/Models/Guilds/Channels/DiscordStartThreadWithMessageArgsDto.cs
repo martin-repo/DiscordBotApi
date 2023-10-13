@@ -1,20 +1,25 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordStartThreadWithMessageArgsDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordStartThreadWithMessageArgsDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordStartThreadWithMessageArgsDto(
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("auto_archive_duration")] int? AutoArchiveDuration)
-    {
-        internal DiscordStartThreadWithMessageArgsDto(DiscordStartThreadWithMessageArgs model)
-            : this(model.Name, model.AutoArchiveDuration != null ? (int)model.AutoArchiveDuration : null)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds.Channels;
+
+internal record DiscordStartThreadWithMessageArgsDto(
+	[property: JsonPropertyName(name: "name")]
+	string Name,
+	[property: JsonPropertyName(name: "auto_archive_duration")]
+	int? AutoArchiveDuration
+)
+{
+	internal DiscordStartThreadWithMessageArgsDto(DiscordStartThreadWithMessageArgs model) : this(
+		Name: model.Name,
+		AutoArchiveDuration: model.AutoArchiveDuration != null
+			? (int)model.AutoArchiveDuration
+			: null)
+	{
+	}
 }

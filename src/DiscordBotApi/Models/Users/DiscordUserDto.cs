@@ -1,17 +1,22 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordUserDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordUserDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Users
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    internal record DiscordUserDto(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("username")] string Username,
-        [property: JsonPropertyName("discriminator")] string Discriminator,
-        [property: JsonPropertyName("avatar")] string? Avatar,
-        [property: JsonPropertyName("bot")] bool? Bot);
-}
+namespace DiscordBotApi.Models.Users;
+
+internal record DiscordUserDto(
+	[property: JsonPropertyName(name: "id")]
+	string Id,
+	[property: JsonPropertyName(name: "username")]
+	string Username,
+	[property: JsonPropertyName(name: "discriminator")]
+	string Discriminator,
+	[property: JsonPropertyName(name: "avatar")]
+	string? Avatar,
+	[property: JsonPropertyName(name: "bot")]
+	bool? Bot
+);

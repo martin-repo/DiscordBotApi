@@ -1,17 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionType.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordInteractionType.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Interactions
+namespace DiscordBotApi.Models.Interactions;
+
+public enum DiscordInteractionType
 {
-    public enum DiscordInteractionType
-    {
-        Ping = 1,
-        ApplicationCommand = 2,
-        MessageComponent = 3,
-        ApplicaitonCommandAutocomplete = 4,
-        ModalSubmit = 5
-    }
+	Ping = 1,
+	ApplicationCommand = 2,
+	MessageComponent = 3,
+	ApplicaitonCommandAutocomplete = 4,
+	ModalSubmit = 5
 }

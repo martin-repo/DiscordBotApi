@@ -1,18 +1,23 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordApplicationCommandInteractionDataOptionDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordApplicationCommandInteractionDataOptionDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Applications
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-interaction-data-option-structure
-    internal record DiscordApplicationCommandInteractionDataOptionDto(
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("type")] int Type,
-        [property: JsonPropertyName("value")] object Value,
-        [property: JsonPropertyName("options")] DiscordApplicationCommandInteractionDataOptionDto[]? Options,
-        [property: JsonPropertyName("focused")] bool? Focused);
-}
+namespace DiscordBotApi.Models.Applications;
+
+// https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-interaction-data-option-structure
+internal record DiscordApplicationCommandInteractionDataOptionDto(
+	[property: JsonPropertyName(name: "name")]
+	string Name,
+	[property: JsonPropertyName(name: "type")]
+	int Type,
+	[property: JsonPropertyName(name: "value")]
+	object Value,
+	[property: JsonPropertyName(name: "options")]
+	DiscordApplicationCommandInteractionDataOptionDto[]? Options,
+	[property: JsonPropertyName(name: "focused")]
+	bool? Focused
+);

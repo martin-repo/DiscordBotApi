@@ -1,32 +1,41 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordMessageDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
-    using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
-    using DiscordBotApi.Models.Users;
+using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+using DiscordBotApi.Models.Users;
 
-    // https://discord.com/developers/docs/resources/channel#message-object-message-structure
-    internal record DiscordMessageDto(
-        string Id,
-        string ChannelId,
-        [property: JsonPropertyName("guild_id")] string? GuildId,
-        [property: JsonPropertyName("author")] DiscordUserDto Author,
-        [property: JsonPropertyName("content")] string Content,
-        [property: JsonPropertyName("timestamp")] string Timestamp,
-        [property: JsonPropertyName("edited_timestamp")] string? EditedTimestamp,
-        [property: JsonPropertyName("attachments")] DiscordMessageAttachmentDto[] Attachments,
-        [property: JsonPropertyName("embeds")] DiscordEmbedDto[] Embeds,
-        [property: JsonPropertyName("reactions")] DiscordReactionDto[]? Reactions,
-        [property: JsonPropertyName("pinned")] bool Pinned,
-        [property: JsonPropertyName("thread")] DiscordChannelDto? Thread,
-        [property: JsonPropertyName("components")] DiscordMessageActionRowDto[]? Components) : DiscordMessageBaseDto(
-        Id,
-        ChannelId);
-}
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+// https://discord.com/developers/docs/resources/channel#message-object-message-structure
+internal record DiscordMessageDto(
+	string Id,
+	string ChannelId,
+	[property: JsonPropertyName(name: "guild_id")]
+	string? GuildId,
+	[property: JsonPropertyName(name: "author")]
+	DiscordUserDto Author,
+	[property: JsonPropertyName(name: "content")]
+	string Content,
+	[property: JsonPropertyName(name: "timestamp")]
+	string Timestamp,
+	[property: JsonPropertyName(name: "edited_timestamp")]
+	string? EditedTimestamp,
+	[property: JsonPropertyName(name: "attachments")]
+	DiscordMessageAttachmentDto[] Attachments,
+	[property: JsonPropertyName(name: "embeds")]
+	DiscordEmbedDto[] Embeds,
+	[property: JsonPropertyName(name: "reactions")]
+	DiscordReactionDto[]? Reactions,
+	[property: JsonPropertyName(name: "pinned")]
+	bool Pinned,
+	[property: JsonPropertyName(name: "thread")]
+	DiscordChannelDto? Thread,
+	[property: JsonPropertyName(name: "components")]
+	DiscordMessageActionRowDto[]? Components
+) : DiscordMessageBaseDto(Id: Id, ChannelId: ChannelId);

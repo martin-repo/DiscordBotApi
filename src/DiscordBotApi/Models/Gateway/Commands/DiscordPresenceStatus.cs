@@ -1,17 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordPresenceStatus.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordPresenceStatus.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Commands
+namespace DiscordBotApi.Models.Gateway.Commands;
+
+public enum DiscordPresenceStatus
 {
-    public enum DiscordPresenceStatus
-    {
-        Online,
-        DoNotDisturb,
-        Idle,
-        Invisible,
-        Offline
-    }
+	Online,
+	DoNotDisturb,
+	Idle,
+	Invisible,
+	Offline
 }

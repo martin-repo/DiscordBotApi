@@ -1,410 +1,478 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayClientHandler.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordGatewayClientHandler.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway
+using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Text.Json;
+
+using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Models.Gateway.Commands;
+using DiscordBotApi.Models.Gateway.Events;
+
+namespace DiscordBotApi.Gateway;
+
+internal partial class DiscordGatewayClient
 {
-    using System.Net.Sockets;
-    using System.Net.WebSockets;
-    using System.Text.Json;
+	private const int ConnectRetryIntervalSeconds = 2;
+	private const int MaxConnectAttempts = 60;
 
-    using DiscordBotApi.Models.Gateway;
-    using DiscordBotApi.Models.Gateway.Commands;
-    using DiscordBotApi.Models.Gateway.Events;
+	private async Task ConnectUntilSuccessfulAsync(
+		string gatewayUrl,
+		DiscordGatewayIntent intents,
+		string? sessionId,
+		int? sessionSequenceNumber,
+		DiscordShard? shard
+	)
+	{
+		var connectAttempts = 0;
+		while (!_isDisposed)
+		{
+			try
+			{
+				_logger?.Debug(messageTemplate: "Attempt {Index} to connect", propertyValue: connectAttempts + 1);
+				await ConnectAsync(
+						gatewayUrl: gatewayUrl,
+						intents: intents,
+						sessionId: sessionId,
+						sessionSequenceNumber: sessionSequenceNumber,
+						shard: shard)
+					.ConfigureAwait(continueOnCapturedContext: false);
+				return;
+			}
+			catch (Exception exception) when (ShouldConnectAgain(exception: exception))
+			{
+				if (++connectAttempts >= MaxConnectAttempts)
+				{
+					GatewayException?.Invoke(
+						sender: this,
+						e: new DiscordGatewayException(
+							message: $"{nameof(ConnectAsync)} failed",
+							isDisconnected: true,
+							innerException: exception));
+					return;
+				}
 
-    internal partial class DiscordGatewayClient
-    {
-        private const int ConnectRetryIntervalSeconds = 2;
-        private const int MaxConnectAttempts = 60;
+				await Task.Delay(delay: TimeSpan.FromSeconds(value: ConnectRetryIntervalSeconds))
+					.ConfigureAwait(continueOnCapturedContext: false);
+			}
+			catch (Exception exception)
+			{
+				GatewayException?.Invoke(
+					sender: this,
+					e: new DiscordGatewayException(
+						message: $"{nameof(ConnectAsync)} failed",
+						isDisconnected: true,
+						innerException: exception));
+				return;
+			}
+		}
+	}
 
-        private async Task ConnectUntilSuccessfulAsync(
-            string gatewayUrl,
-            DiscordGatewayIntent intents,
-            string? sessionId,
-            int? sessionSequenceNumber,
-            DiscordShard? shard)
-        {
-            var connectAttempts = 0;
-            while (!_isDisposed)
-            {
-                try
-                {
-                    _logger?.Debug("Attempt {Index} to connect", connectAttempts + 1);
-                    await ConnectAsync(gatewayUrl, intents, sessionId, sessionSequenceNumber, shard).ConfigureAwait(false);
-                    return;
-                }
-                catch (Exception exception) when (ShouldConnectAgain(exception))
-                {
-                    if (++connectAttempts >= MaxConnectAttempts)
-                    {
-                        GatewayException?.Invoke(this, new DiscordGatewayException($"{nameof(ConnectAsync)} failed", true, exception));
-                        return;
-                    }
+	private async Task HandleDiscordGatewayClosedExceptionAsync(
+		DiscordGatewaySession session,
+		DiscordGatewayClosedException closedException
+	)
+	{
+		_logger?.Debug(messageTemplate: "Gateway -- Disconnected ({CloseType})", propertyValue: closedException.CloseType);
+		if (ShouldReconnect(closeType: closedException.CloseType))
+		{
+			_logger?.Debug(messageTemplate: "Attempt to reconnect (reason: {Reason})", propertyValue: closedException.CloseType);
 
-                    await Task.Delay(TimeSpan.FromSeconds(ConnectRetryIntervalSeconds)).ConfigureAwait(false);
-                }
-                catch (Exception exception)
-                {
-                    GatewayException?.Invoke(this, new DiscordGatewayException($"{nameof(ConnectAsync)} failed", true, exception));
-                    return;
-                }
-            }
-        }
+			await ConnectUntilSuccessfulAsync(
+					gatewayUrl: session.GatewayUrl,
+					intents: session.Intents,
+					sessionId: session.Id,
+					sessionSequenceNumber: session.SequenceNumber,
+					shard: session.Shard)
+				.ConfigureAwait(continueOnCapturedContext: false);
+		}
+		else
+		{
+			_logger?.Debug(messageTemplate: "Will not reconnect (reason: {Reason})", propertyValue: closedException.CloseType);
 
-        private async Task HandleDiscordGatewayClosedExceptionAsync(DiscordGatewaySession session, DiscordGatewayClosedException closedException)
-        {
-            _logger?.Debug("Gateway -- Disconnected ({CloseType})", closedException.CloseType);
-            if (ShouldReconnect(closedException.CloseType))
-            {
-                _logger?.Debug("Attempt to reconnect (reason: {Reason})", closedException.CloseType);
+			GatewayException?.Invoke(
+				sender: this,
+				e: new DiscordGatewayException(
+					message: $"Disconnected: {closedException.CloseType} ({closedException.CloseStatusDescription})",
+					isDisconnected: true));
+		}
+	}
 
-                await ConnectUntilSuccessfulAsync(session.GatewayUrl, session.Intents, session.Id, session.SequenceNumber, session.Shard)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                _logger?.Debug("Will not reconnect (reason: {Reason})", closedException.CloseType);
+	private void HandleDispatch(DiscordGatewayPayload payload)
+	{
+		var eventType = ParseEventType(eventName: payload.EventName);
+		if (eventType == null)
+		{
+			return;
+		}
 
-                GatewayException?.Invoke(
-                    this,
-                    new DiscordGatewayException($"Disconnected: {closedException.CloseType} ({closedException.CloseStatusDescription})", true));
-            }
-        }
+		switch (eventType)
+		{
+			case DiscordEventType.ApplicationCommandPermissionsUpdate:
+			case DiscordEventType.ChannelCreate:
+			case DiscordEventType.ChannelUpdate:
+			case DiscordEventType.ChannelDelete:
+			case DiscordEventType.ChannelPinsUpdate:
+			case DiscordEventType.GuildCreate:
+			case DiscordEventType.GuildUpdate:
+			case DiscordEventType.GuildDelete:
+			case DiscordEventType.GuildMemberAdd:
+			case DiscordEventType.GuildMemberUpdate:
+			case DiscordEventType.GuildMemberRemove:
+			case DiscordEventType.GuildRoleCreate:
+			case DiscordEventType.GuildRoleUpdate:
+			case DiscordEventType.GuildRoleDelete:
+			case DiscordEventType.InteractionCreate:
+			case DiscordEventType.MessageCreate:
+			case DiscordEventType.MessageReactionAdd:
+			case DiscordEventType.MessageReactionRemove:
+			case DiscordEventType.MessageUpdate:
+			case DiscordEventType.MessageDelete:
+			case DiscordEventType.MessageDeleteBulk:
+			case DiscordEventType.MessageReactionRemoveAll:
+			case DiscordEventType.MessageReactionRemoveEmoji:
+			case DiscordEventType.StageInstanceCreate:
+			case DiscordEventType.StageInstanceUpdate:
+			case DiscordEventType.StageInstanceDelete:
+			case DiscordEventType.ThreadCreate:
+			case DiscordEventType.ThreadUpdate:
+			case DiscordEventType.ThreadDelete:
+			case DiscordEventType.ThreadListSync:
+			case DiscordEventType.ThreadMemberUpdate:
+			case DiscordEventType.ThreadMembersUpdate:
+				try
+				{
+					GatewayDispatchReceived?.Invoke(
+						sender: this,
+						e: new DiscordGatewayDispatch(EventType: eventType.Value, EventDataJson: payload.EventData!));
+				}
+				catch (Exception exception)
+				{
+					GatewayException?.Invoke(
+						sender: this,
+						e: new DiscordGatewayException(
+							message: $"Failed to dispatch {eventType}",
+							isDisconnected: false,
+							innerException: exception));
+				}
 
-        private void HandleDispatch(DiscordGatewayPayload payload)
-        {
-            var eventType = ParseEventType(payload.EventName);
-            if (eventType == null)
-            {
-                return;
-            }
+				break;
+			case DiscordEventType.Ready:
+				var readyDto = JsonSerializer.Deserialize<DiscordReadyDto>(json: payload.EventData!)!;
+				var ready = new DiscordReady(dto: readyDto);
+				HandleReady(ready: ready);
+				break;
+			case DiscordEventType.Resumed:
+				_logger?.Debug(
+					messageTemplate: "Gateway -- Resumed {Id} #{Number}",
+					propertyValue0: _session.Id,
+					propertyValue1: _session.SequenceNumber);
+				break;
+			case DiscordEventType.UserUpdate:
+				// https://discord.com/developers/docs/topics/gateway#user-update
+				break;
+			default:
+				_logger?.Error(messageTemplate: $"{typeof(DiscordEventType)} {eventType} is not supported");
+				break;
+		}
+	}
 
-            switch (eventType)
-            {
-                case DiscordEventType.ApplicationCommandPermissionsUpdate:
-                case DiscordEventType.ChannelCreate:
-                case DiscordEventType.ChannelUpdate:
-                case DiscordEventType.ChannelDelete:
-                case DiscordEventType.ChannelPinsUpdate:
-                case DiscordEventType.GuildCreate:
-                case DiscordEventType.GuildUpdate:
-                case DiscordEventType.GuildDelete:
-                case DiscordEventType.GuildMemberAdd:
-                case DiscordEventType.GuildMemberUpdate:
-                case DiscordEventType.GuildMemberRemove:
-                case DiscordEventType.GuildRoleCreate:
-                case DiscordEventType.GuildRoleUpdate:
-                case DiscordEventType.GuildRoleDelete:
-                case DiscordEventType.InteractionCreate:
-                case DiscordEventType.MessageCreate:
-                case DiscordEventType.MessageReactionAdd:
-                case DiscordEventType.MessageReactionRemove:
-                case DiscordEventType.MessageUpdate:
-                case DiscordEventType.MessageDelete:
-                case DiscordEventType.MessageDeleteBulk:
-                case DiscordEventType.MessageReactionRemoveAll:
-                case DiscordEventType.MessageReactionRemoveEmoji:
-                case DiscordEventType.StageInstanceCreate:
-                case DiscordEventType.StageInstanceUpdate:
-                case DiscordEventType.StageInstanceDelete:
-                case DiscordEventType.ThreadCreate:
-                case DiscordEventType.ThreadUpdate:
-                case DiscordEventType.ThreadDelete:
-                case DiscordEventType.ThreadListSync:
-                case DiscordEventType.ThreadMemberUpdate:
-                case DiscordEventType.ThreadMembersUpdate:
-                    try
-                    {
-                        GatewayDispatchReceived?.Invoke(this, new DiscordGatewayDispatch(eventType.Value, payload.EventData!));
-                    }
-                    catch (Exception exception)
-                    {
-                        GatewayException?.Invoke(this, new DiscordGatewayException($"Failed to dispatch {eventType}", false, exception));
-                    }
+	private void HandleHeartbeatAck() => _session.HeartbeatAckReceived = true;
 
-                    break;
-                case DiscordEventType.Ready:
-                    var readyDto = JsonSerializer.Deserialize<DiscordReadyDto>(payload.EventData!)!;
-                    var ready = new DiscordReady(readyDto);
-                    HandleReady(ready);
-                    break;
-                case DiscordEventType.Resumed:
-                    _logger?.Debug("Gateway -- Resumed {Id} #{Number}", _session.Id, _session.SequenceNumber);
-                    break;
-                case DiscordEventType.UserUpdate:
-                    // https://discord.com/developers/docs/topics/gateway#user-update
-                    break;
-                default:
-                    _logger?.Error($"{typeof(DiscordEventType)} {eventType} is not supported");
-                    break;
-            }
-        }
+	private async Task HandleHelloAsync(DiscordHelloDto helloDto, CancellationToken cancellationToken)
+	{
+		if (_session.HeartbeatLoopTask == null)
+		{
+			_session.HeartbeatLoopTask = Task.Run(
+				function: async () => await HeartbeatLoopAsync(interval: TimeSpan.FromMilliseconds(value: helloDto.HeartbeatInterval))
+					.ConfigureAwait(continueOnCapturedContext: false),
+				cancellationToken: cancellationToken);
+		}
+		else
+		{
+			_logger?.Error(messageTemplate: $"Gateway {nameof(HandleHelloAsync)} has already been received for this session.");
+		}
 
-        private void HandleHeartbeatAck()
-        {
-            _session.HeartbeatAckReceived = true;
-        }
+		if (_session.Id != DiscordGatewaySession.EmptySessionId)
+		{
+			await SendResumeAsync(cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+		}
+		else
+		{
+			await SendIdentifyAsync(cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+		}
+	}
 
-        private async Task HandleHelloAsync(DiscordHelloDto helloDto, CancellationToken cancellationToken)
-        {
-            if (_session.HeartbeatLoopTask == null)
-            {
-                _session.HeartbeatLoopTask = Task.Run(
-                    async () => await HeartbeatLoopAsync(TimeSpan.FromMilliseconds(helloDto.HeartbeatInterval)).ConfigureAwait(false),
-                    cancellationToken);
-            }
-            else
-            {
-                _logger?.Error($"Gateway {nameof(HandleHelloAsync)} has already been received for this session.");
-            }
+	private async Task HandleInvalidSessionAsync(string eventDataJson, CancellationToken cancellationToken)
+	{
+		var waitSeconds = new Random().Next(minValue: 1, maxValue: 6);
+		await Task.Delay(delay: TimeSpan.FromSeconds(value: waitSeconds), cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-            if (_session.Id != DiscordGatewaySession.EmptySessionId)
-            {
-                await SendResumeAsync(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                await SendIdentifyAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
+		var isResumable = eventDataJson.Equals(value: "true", comparisonType: StringComparison.OrdinalIgnoreCase);
+		if (isResumable)
+		{
+			await SendResumeAsync(cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+		}
+		else
+		{
+			_session.Id = DiscordGatewaySession.EmptySessionId;
+			_session.SequenceNumber = 0;
+			await SendIdentifyAsync(cancellationToken: cancellationToken)
+				.ConfigureAwait(continueOnCapturedContext: false);
+		}
+	}
 
-        private async Task HandleInvalidSessionAsync(string eventDataJson, CancellationToken cancellationToken)
-        {
-            var waitSeconds = new Random().Next(1, 6);
-            await Task.Delay(TimeSpan.FromSeconds(waitSeconds), cancellationToken).ConfigureAwait(false);
+	private async Task HandlePayloadAsync(DiscordGatewayPayload payload, CancellationToken cancellationToken)
+	{
+		if (payload.Opcode != DiscordGatewayPayloadOpcode.Dispatch)
+		{
+			_logger?.Debug(messageTemplate: "Gateway << {Type}", propertyValue: payload.Opcode);
+		}
 
-            var isResumable = eventDataJson.Equals("true", StringComparison.OrdinalIgnoreCase);
-            if (isResumable)
-            {
-                await SendResumeAsync(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                _session.Id = DiscordGatewaySession.EmptySessionId;
-                _session.SequenceNumber = 0;
-                await SendIdentifyAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
+		switch (payload.Opcode)
+		{
+			case DiscordGatewayPayloadOpcode.Dispatch:
+				HandleDispatch(payload: payload);
+				break;
+			case DiscordGatewayPayloadOpcode.Heartbeat:
+				await SendHeartbeatAsync(cancellationToken: cancellationToken)
+					.ConfigureAwait(continueOnCapturedContext: false);
+				break;
+			case DiscordGatewayPayloadOpcode.Reconnect:
+				Reconnect(closeType: DiscordGatewayCloseType.UnknownError);
+				break;
+			case DiscordGatewayPayloadOpcode.InvalidSession:
+				await HandleInvalidSessionAsync(eventDataJson: payload.EventData!, cancellationToken: cancellationToken)
+					.ConfigureAwait(continueOnCapturedContext: false);
+				break;
+			case DiscordGatewayPayloadOpcode.Hello:
+				var helloDto = JsonSerializer.Deserialize<DiscordHelloDto>(json: payload.EventData!)!;
+				await HandleHelloAsync(helloDto: helloDto, cancellationToken: cancellationToken)
+					.ConfigureAwait(continueOnCapturedContext: false);
+				break;
+			case DiscordGatewayPayloadOpcode.HeartbeatAck:
+				HandleHeartbeatAck();
+				break;
+			default:
+				_logger?.Error(messageTemplate: $"{typeof(DiscordGatewayPayloadOpcode)} {payload.Opcode} is not supported");
+				break;
+		}
+	}
 
-        private async Task HandlePayloadAsync(DiscordGatewayPayload payload, CancellationToken cancellationToken)
-        {
-            if (payload.Opcode != DiscordGatewayPayloadOpcode.Dispatch)
-            {
-                _logger?.Debug("Gateway << {Type}", payload.Opcode);
-            }
+	private async Task HandlePayloadLoopException(Exception loopException)
+	{
+		if (_session.Status == DiscordGatewaySessionStatus.Disconnecting)
+		{
+			return;
+		}
 
-            switch (payload.Opcode)
-            {
-                case DiscordGatewayPayloadOpcode.Dispatch:
-                    HandleDispatch(payload);
-                    break;
-                case DiscordGatewayPayloadOpcode.Heartbeat:
-                    await SendHeartbeatAsync(cancellationToken).ConfigureAwait(false);
-                    break;
-                case DiscordGatewayPayloadOpcode.Reconnect:
-                    Reconnect(DiscordGatewayCloseType.UnknownError);
-                    break;
-                case DiscordGatewayPayloadOpcode.InvalidSession:
-                    await HandleInvalidSessionAsync(payload.EventData!, cancellationToken).ConfigureAwait(false);
-                    break;
-                case DiscordGatewayPayloadOpcode.Hello:
-                    var helloDto = JsonSerializer.Deserialize<DiscordHelloDto>(payload.EventData!)!;
-                    await HandleHelloAsync(helloDto, cancellationToken).ConfigureAwait(false);
-                    break;
-                case DiscordGatewayPayloadOpcode.HeartbeatAck:
-                    HandleHeartbeatAck();
-                    break;
-                default:
-                    _logger?.Error($"{typeof(DiscordGatewayPayloadOpcode)} {payload.Opcode} is not supported");
-                    break;
-            }
-        }
+		var faultingSession = _session;
+		await DisconnectAsync(closeType: DiscordGatewayCloseType.InternalServerError)
+			.ConfigureAwait(continueOnCapturedContext: false);
 
-        private async Task HandlePayloadLoopException(Exception loopException)
-        {
-            if (_session.Status == DiscordGatewaySessionStatus.Disconnecting)
-            {
-                return;
-            }
+		switch (loopException)
+		{
+			case DiscordGatewayClosedException closedException:
+				await HandleDiscordGatewayClosedExceptionAsync(session: faultingSession, closedException: closedException)
+					.ConfigureAwait(continueOnCapturedContext: false);
+				break;
 
-            var faultingSession = _session;
-            await DisconnectAsync(DiscordGatewayCloseType.InternalServerError).ConfigureAwait(false);
+			case WebSocketException webSocketException:
+				await HandleWebSocketExceptionAsync(session: faultingSession, webSocketException: webSocketException)
+					.ConfigureAwait(continueOnCapturedContext: false);
+				break;
 
-            switch (loopException)
-            {
-                case DiscordGatewayClosedException closedException:
-                    await HandleDiscordGatewayClosedExceptionAsync(faultingSession, closedException).ConfigureAwait(false);
-                    break;
+			case OperationCanceledException:
+				_logger?.Debug(messageTemplate: $"{nameof(PayloadLoopAsync)} was cancelled.");
+				break;
 
-                case WebSocketException webSocketException:
-                    await HandleWebSocketExceptionAsync(faultingSession, webSocketException).ConfigureAwait(false);
-                    break;
+			// ReSharper disable once ConvertTypeCheckPatternToNullCheck
+			case Exception exception:
+				_logger?.Debug(
+					messageTemplate: "Gateway -- Unhandled Exception ({Type})",
+					propertyValue: exception.GetType()
+						.Name);
+				var gatewayException = new DiscordGatewayException(
+					message: "Unhandled exception",
+					isDisconnected: true,
+					innerException: exception);
+				GatewayException?.Invoke(sender: this, e: gatewayException);
+				break;
+		}
+	}
 
-                case OperationCanceledException:
-                    _logger?.Debug($"{nameof(PayloadLoopAsync)} was cancelled.");
-                    break;
+	private void HandleReady(DiscordReady ready)
+	{
+		_logger?.Debug(messageTemplate: "Gateway -- Started {Id}", propertyValue: ready.SessionId);
 
-                // ReSharper disable once ConvertTypeCheckPatternToNullCheck
-                case Exception exception:
-                    _logger?.Debug("Gateway -- Unhandled Exception ({Type})", exception.GetType().Name);
-                    var gatewayException = new DiscordGatewayException("Unhandled exception", true, exception);
-                    GatewayException?.Invoke(this, gatewayException);
-                    break;
-            }
-        }
+		_session.Id = ready.SessionId;
+		_session.SequenceNumber = 0;
 
-        private void HandleReady(DiscordReady ready)
-        {
-            _logger?.Debug("Gateway -- Started {Id}", ready.SessionId);
+		GatewayReady?.Invoke(sender: this, e: ready);
+	}
 
-            _session.Id = ready.SessionId;
-            _session.SequenceNumber = 0;
+	private async Task HandleWebSocketExceptionAsync(DiscordGatewaySession session, WebSocketException webSocketException)
+	{
+		_logger?.Debug(
+			messageTemplate: "Gateway -- WebSocketException ({Websocket}/{Error}/{Native})",
+			propertyValue0: webSocketException.WebSocketErrorCode,
+			propertyValue1: webSocketException.ErrorCode,
+			propertyValue2: webSocketException.NativeErrorCode);
 
-            GatewayReady?.Invoke(this, ready);
-        }
+		await ConnectUntilSuccessfulAsync(
+				gatewayUrl: session.GatewayUrl,
+				intents: session.Intents,
+				sessionId: session.Id,
+				sessionSequenceNumber: session.SequenceNumber,
+				shard: session.Shard)
+			.ConfigureAwait(continueOnCapturedContext: false);
+	}
 
-        private async Task HandleWebSocketExceptionAsync(DiscordGatewaySession session, WebSocketException webSocketException)
-        {
-            _logger?.Debug(
-                "Gateway -- WebSocketException ({Websocket}/{Error}/{Native})",
-                webSocketException.WebSocketErrorCode,
-                webSocketException.ErrorCode,
-                webSocketException.NativeErrorCode);
+	private DiscordEventType? ParseEventType(string? eventName)
+	{
+		if (eventName == null)
+		{
+			return null;
+		}
 
-            await ConnectUntilSuccessfulAsync(session.GatewayUrl, session.Intents, session.Id, session.SequenceNumber, session.Shard)
-                .ConfigureAwait(false);
-        }
+		var eventTypeValue = EnglishTextInfo.ToTitleCase(
+				str: eventName.ToLowerInvariant()
+					.Replace(oldChar: '_', newChar: ' '))
+			.Replace(oldValue: " ", newValue: "");
 
-        private DiscordEventType? ParseEventType(string? eventName)
-        {
-            if (eventName == null)
-            {
-                return null;
-            }
+		if (Enum.TryParse<DiscordEventType>(value: eventTypeValue, ignoreCase: true, result: out var eventType))
+		{
+			_logger?.Debug(messageTemplate: "Gateway << {Type}", propertyValue: eventType);
+			return eventType;
+		}
 
-            var eventTypeValue = EnglishTextInfo.ToTitleCase(eventName.ToLowerInvariant().Replace('_', ' ')).Replace(" ", "");
+		_logger?.Debug(messageTemplate: "Gateway << {Type}", propertyValue: eventTypeValue);
+		_logger?.Error(messageTemplate: $"{typeof(DiscordEventType)} {eventTypeValue} is not defined");
+		return null;
+	}
 
-            if (Enum.TryParse<DiscordEventType>(eventTypeValue, true, out var eventType))
-            {
-                _logger?.Debug("Gateway << {Type}", eventType);
-                return eventType;
-            }
+	private bool ShouldConnectAgain(Exception exception)
+	{
+		var exceptions = new List<Exception> { exception };
+		while (exception.InnerException != null)
+		{
+			exception = exception.InnerException;
+			exceptions.Add(item: exception);
+		}
 
-            _logger?.Debug("Gateway << {Type}", eventTypeValue);
-            _logger?.Error($"{typeof(DiscordEventType)} {eventTypeValue} is not defined");
-            return null;
-        }
+		var socketException = (SocketException?)exceptions.FirstOrDefault(predicate: e => e is SocketException);
+		var webSocketException = (WebSocketException?)exceptions.FirstOrDefault(predicate: e => e is WebSocketException);
+		return ShouldConnectAgain(socketException: socketException) || ShouldConnectAgain(webSocketException: webSocketException);
+	}
 
-        private bool ShouldConnectAgain(Exception exception)
-        {
-            var exceptions = new List<Exception> { exception };
-            while (exception.InnerException != null)
-            {
-                exception = exception.InnerException;
-                exceptions.Add(exception);
-            }
+	private bool ShouldConnectAgain(WebSocketException? webSocketException)
+	{
+		if (webSocketException == null)
+		{
+			return false;
+		}
 
-            var socketException = (SocketException?)exceptions.FirstOrDefault(e => e is SocketException);
-            var webSocketException = (WebSocketException?)exceptions.FirstOrDefault(e => e is WebSocketException);
-            return ShouldConnectAgain(socketException) || ShouldConnectAgain(webSocketException);
-        }
+		_logger?.Debug(messageTemplate: webSocketException.Message);
 
-        private bool ShouldConnectAgain(WebSocketException? webSocketException)
-        {
-            if (webSocketException == null)
-            {
-                return false;
-            }
+		switch (webSocketException.WebSocketErrorCode)
+		{
+			case WebSocketError.InvalidMessageType:
+			case WebSocketError.Faulted:
+			case WebSocketError.NativeError:
+			case WebSocketError.HeaderError:
+			case WebSocketError.ConnectionClosedPrematurely:
+			case WebSocketError.InvalidState:
+				_logger?.Debug(
+					messageTemplate: "Attempt to connect again (reason: {Reason})",
+					propertyValue: webSocketException.WebSocketErrorCode);
+				return true;
+			default:
+				_logger?.Debug(
+					messageTemplate: "Will not connect again (reason: {Reason})",
+					propertyValue: webSocketException.WebSocketErrorCode);
+				return false;
+		}
+	}
 
-            _logger?.Debug(webSocketException.Message);
+	private bool ShouldConnectAgain(SocketException? socketException)
+	{
+		if (socketException == null)
+		{
+			return false;
+		}
 
-            switch (webSocketException.WebSocketErrorCode)
-            {
-                case WebSocketError.InvalidMessageType:
-                case WebSocketError.Faulted:
-                case WebSocketError.NativeError:
-                case WebSocketError.HeaderError:
-                case WebSocketError.ConnectionClosedPrematurely:
-                case WebSocketError.InvalidState:
-                    _logger?.Debug("Attempt to connect again (reason: {Reason})", webSocketException.WebSocketErrorCode);
-                    return true;
-                default:
-                    _logger?.Debug("Will not connect again (reason: {Reason})", webSocketException.WebSocketErrorCode);
-                    return false;
-            }
-        }
+		_logger?.Debug(messageTemplate: socketException.Message);
 
-        private bool ShouldConnectAgain(SocketException? socketException)
-        {
-            if (socketException == null)
-            {
-                return false;
-            }
+		switch (socketException.SocketErrorCode)
+		{
+			case SocketError.ConnectionAborted:
+			case SocketError.ConnectionReset:
+			case SocketError.ConnectionRefused:
+			case SocketError.HostDown:
+			case SocketError.HostUnreachable:
+			case SocketError.HostNotFound:
+			case SocketError.TryAgain:
+				_logger?.Debug(
+					messageTemplate: "Attempt to connect again (reason: {Reason})",
+					propertyValue: socketException.SocketErrorCode);
+				return true;
+			default:
+				_logger?.Debug(
+					messageTemplate: "Will not connect again (reason: {Reason})",
+					propertyValue: socketException.SocketErrorCode);
+				return false;
+		}
+	}
 
-            _logger?.Debug(socketException.Message);
+	private bool ShouldReconnect(DiscordGatewayCloseType? closeType)
+	{
+		if (closeType == null)
+		{
+			return true;
+		}
 
-            switch (socketException.SocketErrorCode)
-            {
-                case SocketError.ConnectionAborted:
-                case SocketError.ConnectionReset:
-                case SocketError.ConnectionRefused:
-                case SocketError.HostDown:
-                case SocketError.HostUnreachable:
-                case SocketError.HostNotFound:
-                case SocketError.TryAgain:
-                    _logger?.Debug("Attempt to connect again (reason: {Reason})", socketException.SocketErrorCode);
-                    return true;
-                default:
-                    _logger?.Debug("Will not connect again (reason: {Reason})", socketException.SocketErrorCode);
-                    return false;
-            }
-        }
+		switch (closeType)
+		{
+			case DiscordGatewayCloseType.EndpointUnavailable:
+			case DiscordGatewayCloseType.Empty:
+			case DiscordGatewayCloseType.InternalServerError:
+			case DiscordGatewayCloseType.InvalidMessageType:
+			case DiscordGatewayCloseType.InvalidPayloadData:
+			case DiscordGatewayCloseType.MandatoryExtension:
+			case DiscordGatewayCloseType.MessageTooBig:
+			case DiscordGatewayCloseType.NormalClosure:
+			case DiscordGatewayCloseType.PolicyViolation:
+			case DiscordGatewayCloseType.ProtocolError:
+				return true;
 
-        private bool ShouldReconnect(DiscordGatewayCloseType? closeType)
-        {
-            if (closeType == null)
-            {
-                return true;
-            }
+			case DiscordGatewayCloseType.UnknownError:
+			case DiscordGatewayCloseType.UnknownOpcode:
+			case DiscordGatewayCloseType.DecodeError:
+			case DiscordGatewayCloseType.NotAuthenticated:
+			case DiscordGatewayCloseType.AlreadyAuthenticated:
+			case DiscordGatewayCloseType.InvalidSeq:
+			case DiscordGatewayCloseType.RateLimited:
+			case DiscordGatewayCloseType.SessionTimedOut:
+				return true;
 
-            switch (closeType)
-            {
-                case DiscordGatewayCloseType.EndpointUnavailable:
-                case DiscordGatewayCloseType.Empty:
-                case DiscordGatewayCloseType.InternalServerError:
-                case DiscordGatewayCloseType.InvalidMessageType:
-                case DiscordGatewayCloseType.InvalidPayloadData:
-                case DiscordGatewayCloseType.MandatoryExtension:
-                case DiscordGatewayCloseType.MessageTooBig:
-                case DiscordGatewayCloseType.NormalClosure:
-                case DiscordGatewayCloseType.PolicyViolation:
-                case DiscordGatewayCloseType.ProtocolError:
-                    return true;
+			case DiscordGatewayCloseType.AuthenticationFailed:
+			case DiscordGatewayCloseType.InvalidShard:
+			case DiscordGatewayCloseType.ShardingRequired:
+			case DiscordGatewayCloseType.InvalidApiVersion:
+			case DiscordGatewayCloseType.InvalidIntent:
+			case DiscordGatewayCloseType.DisallowedIntent:
+				return false;
 
-                case DiscordGatewayCloseType.UnknownError:
-                case DiscordGatewayCloseType.UnknownOpcode:
-                case DiscordGatewayCloseType.DecodeError:
-                case DiscordGatewayCloseType.NotAuthenticated:
-                case DiscordGatewayCloseType.AlreadyAuthenticated:
-                case DiscordGatewayCloseType.InvalidSeq:
-                case DiscordGatewayCloseType.RateLimited:
-                case DiscordGatewayCloseType.SessionTimedOut:
-                    return true;
-
-                case DiscordGatewayCloseType.AuthenticationFailed:
-                case DiscordGatewayCloseType.InvalidShard:
-                case DiscordGatewayCloseType.ShardingRequired:
-                case DiscordGatewayCloseType.InvalidApiVersion:
-                case DiscordGatewayCloseType.InvalidIntent:
-                case DiscordGatewayCloseType.DisallowedIntent:
-                    return false;
-
-                default:
-                    _logger?.Error($"{typeof(DiscordGatewayCloseType)} {closeType} is not supported");
-                    return false;
-            }
-        }
-    }
+			default:
+				_logger?.Error(messageTemplate: $"{typeof(DiscordGatewayCloseType)} {closeType} is not supported");
+				return false;
+		}
+	}
 }

@@ -1,23 +1,30 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageReferenceDto.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+// <copyright file="DiscordMessageReferenceDto.cs" company="Martin Karlsson">
+//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages
-{
-    using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-    // https://discord.com/developers/docs/resources/channel#message-reference-object
-    internal record DiscordMessageReferenceDto(
-        [property: JsonPropertyName("message_id")] string? MessageId,
-        [property: JsonPropertyName("channel_id")] string? ChannelId,
-        [property: JsonPropertyName("guild_id")] string? GuildId,
-        [property: JsonPropertyName("fail_if_not_exists")] bool? FailIfNotExists)
-    {
-        internal DiscordMessageReferenceDto(DiscordMessageReference model)
-            : this(model.MessageId?.ToString(), model.ChannelId?.ToString(), model.GuildId?.ToString(), model.FailIfNotExists)
-        {
-        }
-    }
+namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+
+// https://discord.com/developers/docs/resources/channel#message-reference-object
+internal record DiscordMessageReferenceDto(
+	[property: JsonPropertyName(name: "message_id")]
+	string? MessageId,
+	[property: JsonPropertyName(name: "channel_id")]
+	string? ChannelId,
+	[property: JsonPropertyName(name: "guild_id")]
+	string? GuildId,
+	[property: JsonPropertyName(name: "fail_if_not_exists")]
+	bool? FailIfNotExists
+)
+{
+	internal DiscordMessageReferenceDto(DiscordMessageReference model) : this(
+		MessageId: model.MessageId?.ToString(),
+		ChannelId: model.ChannelId?.ToString(),
+		GuildId: model.GuildId?.ToString(),
+		FailIfNotExists: model.FailIfNotExists)
+	{
+	}
 }
