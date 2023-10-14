@@ -14,7 +14,9 @@ public record DiscordApplicationCommandInteractionDataOption
 	{
 		Name = dto.Name;
 		Type = (DiscordApplicationCommandOptionType)dto.Type;
-		Value = JsonParseUtils.ToObject(type: (DiscordApplicationCommandOptionType)dto.Type, jsonValue: dto.Value);
+		Value = dto.Value is not null
+			? JsonParseUtils.ToObject(type: (DiscordApplicationCommandOptionType)dto.Type, jsonValue: dto.Value)
+			: null;
 		Options = dto.Options?.Select(selector: o => new DiscordApplicationCommandInteractionDataOption(dto: o))
 			.ToArray();
 		Focused = dto.Focused;
@@ -28,5 +30,5 @@ public record DiscordApplicationCommandInteractionDataOption
 
 	public DiscordApplicationCommandOptionType Type { get; init; }
 
-	public object Value { get; init; }
+	public object? Value { get; init; }
 }

@@ -8,14 +8,14 @@ using System.Text.Json.Serialization;
 
 namespace DiscordBotApi.Models.Applications;
 
-// https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-interaction-data-option-structure
+// https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-application-command-data-structure
 internal record DiscordApplicationCommandInteractionDataOptionDto(
 	[property: JsonPropertyName(name: "name")]
 	string Name,
 	[property: JsonPropertyName(name: "type")]
 	int Type,
 	[property: JsonPropertyName(name: "value")]
-	object Value,
+	object? Value,
 	[property: JsonPropertyName(name: "options")]
 	DiscordApplicationCommandInteractionDataOptionDto[]? Options,
 	[property: JsonPropertyName(name: "focused")]
