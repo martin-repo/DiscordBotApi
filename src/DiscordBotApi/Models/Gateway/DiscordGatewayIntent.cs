@@ -13,7 +13,7 @@ public enum DiscordGatewayIntent
 	None = 0,
 	Guilds = 1 << 0,
 	GuildMembers = 1 << 1,
-	GuildBans = 1 << 2,
+	GuildModeration = 1 << 2,
 	GuildEmojisAndStickers = 1 << 3,
 	GuildIntegrations = 1 << 4,
 	GuildWebhooks = 1 << 5,
@@ -26,5 +26,8 @@ public enum DiscordGatewayIntent
 	DirectMessages = 1 << 12,
 	DirectMessageReactions = 1 << 13,
 	DirectMessageTyping = 1 << 14,
-	GuildScheduledEvents = 1 << 16
+	MessageContent = 1 << 15,
+	GuildScheduledEvents = 1 << 16,
+	AutoModerationConfiguration = 1 << 20,
+	AutoModerationExecution = 1 << 21
 }

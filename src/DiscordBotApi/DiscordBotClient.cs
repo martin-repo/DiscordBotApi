@@ -14,7 +14,7 @@ namespace DiscordBotApi;
 public partial class DiscordBotClient : IAsyncDisposable
 {
 	// https://discord.com/developers/docs/reference
-	public const string DiscordApiVersion = "9";
+	public const string DiscordApiVersion = "10";
 
 	private const string DiscordApiBaseUrl = "https://discord.com/api/v" + DiscordApiVersion + "/";
 	private const int MaxRequestsPerSecond = 50;

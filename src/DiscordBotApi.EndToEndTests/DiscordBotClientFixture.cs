@@ -35,13 +35,15 @@ public class DiscordBotClientFixture : IDisposable
 		GuildId = settingsSection.GetValue<ulong>(key: "GuildId");
 		BotRoleId = settingsSection.GetValue<ulong>(key: "BotRoleId");
 
-		var discordBotToken = settingsSection.GetValue<string>(key: "DiscordBotToken");
+		var discordBotToken = settingsSection.GetValue<string>(key: "DiscordBotToken") ??
+			throw new InvalidOperationException(message: "Invalid settings.");
 		BotClient = new DiscordBotClient(botToken: discordBotToken, logger: Log.Logger);
 
 		CleanupAsync()
 			.Wait();
 
-		var gatewayUrl = settingsSection.GetValue<string>(key: "GatewayUrl");
+		var gatewayUrl = settingsSection.GetValue<string>(key: "GatewayUrl") ??
+			throw new InvalidOperationException(message: "Invalid settings.");
 		BotClient.ConnectToGatewayAsync(
 				gatewayUrl: gatewayUrl,
 				intents: DiscordGatewayIntent.Guilds |
