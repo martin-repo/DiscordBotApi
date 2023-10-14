@@ -10,6 +10,7 @@ using DiscordBotApi.Models.Applications;
 
 namespace DiscordBotApi.Models.Interactions;
 
+// https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-application-command-data-structure
 internal record DiscordInteractionDataDto(
 	[property: JsonPropertyName(name: "id")]
 	string? Id,
