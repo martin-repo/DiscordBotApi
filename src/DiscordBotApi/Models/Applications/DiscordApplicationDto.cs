@@ -23,7 +23,7 @@ internal record DiscordApplicationDto(
 	[property: JsonPropertyName(name: "owner")]
 	DiscordUserDto? Owner,
 	[property: JsonPropertyName(name: "flags")]
-	int? Flags,
+	uint? Flags,
 	[property: JsonPropertyName(name: "tags")]
 	string[]? Tags,
 	[property: JsonPropertyName(name: "install_params")]

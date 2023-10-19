@@ -22,7 +22,9 @@ internal record DiscordCreateMessageArgsDto(
 	[property: JsonPropertyName(name: "components")]
 	DiscordMessageComponentDto[]? Components,
 	[property: JsonPropertyName(name: "attachments")]
-	DiscordMessageAttachmentDto[]? Attachments
+	DiscordMessageAttachmentDto[]? Attachments,
+	[property: JsonPropertyName(name: "flags")]
+	uint? Flags
 )
 {
 	internal DiscordCreateMessageArgsDto(DiscordCreateMessageArgs model) : this(
@@ -35,7 +37,10 @@ internal record DiscordCreateMessageArgsDto(
 		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
 			.ToArray(),
 		Attachments: model.Attachments?.Select(selector: a => new DiscordMessageAttachmentDto(model: a))
-			.ToArray())
+			.ToArray(),
+		Flags: model.Flags != null
+			? (uint)model.Flags
+			: null)
 	{
 	}
 }

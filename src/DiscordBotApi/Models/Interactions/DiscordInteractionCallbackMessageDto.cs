@@ -18,7 +18,7 @@ internal record DiscordInteractionCallbackMessageDto(
 	[property: JsonPropertyName(name: "embeds")]
 	DiscordEmbedDto[]? Embeds,
 	[property: JsonPropertyName(name: "flags")]
-	ulong? Flags,
+	uint? Flags,
 	[property: JsonPropertyName(name: "components")]
 	DiscordMessageComponentDto[]? Components,
 	[property: JsonPropertyName(name: "attachments")]
@@ -30,7 +30,7 @@ internal record DiscordInteractionCallbackMessageDto(
 		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
 			.ToArray(),
 		Flags: model.Flags != null
-			? (ulong)model.Flags
+			? (uint)model.Flags
 			: null,
 		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
 			.ToArray(),

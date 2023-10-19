@@ -30,6 +30,8 @@ public record DiscordApplicationCommandOption()
 		MaxValue = dto.MaxValue != null
 			? JsonParseUtils.ToObject(type: type, jsonValue: dto.MaxValue)
 			: null;
+		MinLength = dto.MinLength;
+		MaxLength = dto.MaxLength;
 		Autocomplete = dto.Autocomplete;
 	}
 
@@ -41,7 +43,11 @@ public record DiscordApplicationCommandOption()
 
 	public string Description { get; init; } = "";
 
+	public int? MaxLength { get; init; }
+
 	public object? MaxValue { get; init; }
+
+	public int? MinLength { get; init; }
 
 	public object? MinValue { get; init; }
 

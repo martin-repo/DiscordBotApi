@@ -21,5 +21,7 @@ public record DiscordCreateMessageArgs
 
 	public IReadOnlyCollection<DiscordMessageFile>? Files { get; init; }
 
+	public DiscordMessageFlags? Flags { get; init; }
+
 	public DiscordMessageReference? MessageReference { get; init; }
 }

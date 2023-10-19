@@ -28,6 +28,10 @@ internal record DiscordApplicationCommandOptionDto(
 	object? MinValue,
 	[property: JsonPropertyName(name: "max_value")]
 	object? MaxValue,
+	[property: JsonPropertyName(name: "min_length")]
+	int? MinLength,
+	[property: JsonPropertyName(name: "max_length")]
+	int? MaxLength,
 	[property: JsonPropertyName(name: "autocomplete")]
 	bool? Autocomplete
 )
@@ -45,6 +49,8 @@ internal record DiscordApplicationCommandOptionDto(
 			.ToArray(),
 		MinValue: model.MinValue,
 		MaxValue: model.MaxValue,
+		MinLength: model.MinLength,
+		MaxLength: model.MaxLength,
 		Autocomplete: model.Autocomplete)
 	{
 	}

@@ -13,6 +13,30 @@ namespace DiscordBotApi;
 
 public partial class DiscordBotClient
 {
+	// https://discord.com/developers/docs/interactions/application-commands#create-global-application-command
+	public async Task<DiscordApplicationCommand> CreateGlobalApplicationCommandAsync(
+		ulong applicationId,
+		DiscordCreateGlobalApplicationCommandArgs args,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var url = $"applications/{applicationId}/commands";
+
+		var argsDto = new DiscordCreateGlobalApplicationCommandArgsDto(model: args);
+		var applicationCommandDto = await _restClient.SendRequestAsync<DiscordApplicationCommandDto>(
+				requestFactoryFunc: () =>
+				{
+					var request = new HttpRequestMessage(method: HttpMethod.Post, requestUri: url);
+					request.Content = _restClient.CreateJsonContent(value: argsDto);
+					return request;
+				},
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+
+		var applicationCommand = new DiscordApplicationCommand(dto: applicationCommandDto);
+		return applicationCommand;
+	}
+
 	// https://discord.com/developers/docs/interactions/application-commands#create-guild-application-command
 	public async Task<DiscordApplicationCommand> CreateGuildApplicationCommandAsync(
 		ulong applicationId,
@@ -36,6 +60,22 @@ public partial class DiscordBotClient
 
 		var applicationCommand = new DiscordApplicationCommand(dto: applicationCommandDto);
 		return applicationCommand;
+	}
+
+	// https://discord.com/developers/docs/interactions/application-commands#delete-global-application-command
+	public async Task DeleteGlobalApplicationCommandAsync(
+		ulong applicationId,
+		ulong commandId,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var url = $"applications/{applicationId}/commands/{commandId}";
+
+		await _restClient.SendRequestAsync(
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Delete, requestUri: url),
+				expectedResponseCode: HttpStatusCode.NoContent,
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
 	// https://discord.com/developers/docs/interactions/application-commands#delete-guild-application-command

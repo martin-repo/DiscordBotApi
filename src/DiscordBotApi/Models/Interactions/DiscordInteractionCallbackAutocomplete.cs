@@ -1,16 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionType.cs" company="Martin Karlsson">
+// <copyright file="DiscordInteractionCallbackAutocomplete.cs" company="Martin Karlsson">
 //   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using DiscordBotApi.Models.Applications;
+
 namespace DiscordBotApi.Models.Interactions;
 
-public enum DiscordInteractionType
+public record DiscordInteractionCallbackAutocomplete : DiscordInteractionCallbackData
 {
-	Ping = 1,
-	ApplicationCommand = 2,
-	MessageComponent = 3,
-	ApplicationCommandAutocomplete = 4,
-	ModalSubmit = 5
+	public IReadOnlyCollection<DiscordApplicationCommandOptionChoice> Choices { get; init; } = default!;
 }
