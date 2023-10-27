@@ -13,8 +13,8 @@
         <PackageProjectUrl>https://github.com/martin-repo/DiscordBotApi</PackageProjectUrl>
         <RepositoryUrl>https://github.com/martin-repo/DiscordBotApi</RepositoryUrl>
         <PackageTags>discord;bot;api;rest;gateway</PackageTags>
-        <Version Condition="'$(BuildId)' == ''">9.7.0</Version>
-        <Version Condition="'$(BuildId)' != ''">9.7.$(BuildId)</Version>
+        <Version Condition="'$(BuildId)' == ''">10.0.0</Version>
+        <Version Condition="'$(BuildId)' != ''">10.0.$(BuildId)</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -30,7 +30,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0"/>
         <PackageReference Include="Serilog" Version="3.0.1" />
     </ItemGroup>
 

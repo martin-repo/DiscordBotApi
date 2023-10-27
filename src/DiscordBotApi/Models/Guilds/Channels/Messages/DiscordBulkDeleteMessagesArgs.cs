@@ -4,9 +4,11 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
+
 namespace DiscordBotApi.Models.Guilds.Channels.Messages;
 
 public record DiscordBulkDeleteMessagesArgs
 {
-	public IReadOnlyCollection<ulong> Messages { get; set; } = Array.Empty<ulong>();
+	public IReadOnlyCollection<ulong> Messages { get; init; } = ImmutableArray<ulong>.Empty;
 }

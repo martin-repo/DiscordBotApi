@@ -6,7 +6,7 @@
 
 namespace DiscordBotApi.Models.Rest;
 
-internal class DiscordResource
+internal record DiscordResource
 {
 	public DiscordResource(DiscordResourceId id, DiscordRateLimit rateLimit)
 	{

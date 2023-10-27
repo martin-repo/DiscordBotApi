@@ -1,17 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordActivityType.cs" company="Martin Karlsson">
+// <copyright file="DiscordListGuildMembersArgs.cs" company="Martin Karlsson">
 //   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Models.Gateway.Commands;
+namespace DiscordBotApi.Models.Guilds;
 
-public enum DiscordActivityType
+public record DiscordListGuildMembersArgs
 {
-	Playing = 0,
-	Streaming = 1,
-	Listening = 2,
-	Watching = 3,
-	Custom = 4,
-	Competing = 5
+	public ulong? After { get; init; }
+
+	public int? Limit { get; init; }
 }

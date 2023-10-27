@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
-public record DiscordVideoDto(
+internal record DiscordVideoDto(
 	[property: JsonPropertyName(name: "url")]
 	string? Url
 )

@@ -4,6 +4,7 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text.Json;
@@ -13,7 +14,7 @@ using DiscordBotApi.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Guilds.Emojis;
 using DiscordBotApi.Rest;
 
-using Microsoft.AspNetCore.StaticFiles;
+using Serilog;
 
 namespace DiscordBotApi;
 
@@ -359,9 +360,9 @@ public partial class DiscordBotClient
 
 	private static string GetContentType(string fileName)
 	{
-		var success = new FileExtensionContentTypeProvider().TryGetContentType(subpath: fileName, contentType: out var contentType);
+		var success = TryGetContentType(fileName: fileName, contentType: out var contentType);
 		return success
-			? contentType
+			? contentType!
 			: "application/octet-stream";
 	}
 
@@ -378,6 +379,35 @@ public partial class DiscordBotClient
 		var encodedEmojiValue = WebUtility.UrlEncode(value: emojiValue);
 
 		return encodedEmojiValue;
+	}
+
+	private static bool TryGetContentType(string fileName, [NotNullWhen(returnValue: true)] out string? contentType)
+	{
+		var extension = Path.GetExtension(path: fileName);
+		if (string.IsNullOrWhiteSpace(value: extension))
+		{
+			contentType = null;
+			return false;
+		}
+
+		// https://discord.com/developers/docs/reference#editing-message-attachments-using-attachments-within-embeds
+		contentType = extension.ToLowerInvariant() switch
+		{
+			".gif" => "image/gif",
+			".jpg" => "image/jpeg",
+			".jpeg" => "image/jpeg",
+			".png" => "image/png",
+			".webp" => "image/webp",
+			_ => null
+		};
+
+		if (contentType is not null)
+		{
+			return true;
+		}
+
+		Log.Warning(messageTemplate: "Unsupported file extension '{FileName}'", propertyValue: fileName);
+		return false;
 	}
 
 	private HttpContent CreateContentForMessage(

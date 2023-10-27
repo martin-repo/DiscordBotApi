@@ -4,6 +4,7 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Net;
 using System.Text;
 
@@ -248,6 +249,27 @@ public partial class DiscordBotClient
 		var emojis = emojiDtos.Select(selector: e => new DiscordEmoji(dto: e))
 			.ToArray();
 		return emojis;
+	}
+
+	// https://discord.com/developers/docs/resources/guild#list-guild-members
+	public async Task<ImmutableArray<DiscordGuildMember>> ListGuildMembersAsync(
+		ulong guildId,
+		DiscordListGuildMembersArgs? args = null,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var builder = new QueryBuilder(pathWithoutQuery: $"guilds/{guildId}/members");
+		builder.Add(key: "limit", value: args?.Limit);
+		builder.Add(key: "after", value: args?.After);
+
+		var guildMemberDtos = await _restClient.SendRequestAsync<DiscordGuildMemberDto[]>(
+				requestFactoryFunc: () => new HttpRequestMessage(method: HttpMethod.Get, requestUri: builder.ToString()),
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+
+		var guildMembers = guildMemberDtos.Select(selector: e => new DiscordGuildMember(dto: e))
+			.ToImmutableArray();
+		return guildMembers;
 	}
 
 	public async Task<DiscordRole> ModifyGuildRoleAsync(

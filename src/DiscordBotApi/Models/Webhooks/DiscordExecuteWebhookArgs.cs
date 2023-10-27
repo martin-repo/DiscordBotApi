@@ -1,15 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordCreateMessageArgs.cs" company="Martin Karlsson">
+// <copyright file="DiscordExecuteWebhookArgs.cs" company="Martin Karlsson">
 //   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using DiscordBotApi.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
-namespace DiscordBotApi.Models.Guilds.Channels.Messages;
+namespace DiscordBotApi.Models.Webhooks;
 
-public record DiscordCreateMessageArgs
+public record DiscordExecuteWebhookArgs
 {
 	public IReadOnlyCollection<DiscordMessageAttachment>? Attachments { get; init; }
 
@@ -22,6 +23,4 @@ public record DiscordCreateMessageArgs
 	public IReadOnlyCollection<DiscordMessageFile>? Files { get; init; }
 
 	public DiscordMessageFlags? Flags { get; init; }
-
-	public DiscordMessageReference? MessageReference { get; init; }
 }
