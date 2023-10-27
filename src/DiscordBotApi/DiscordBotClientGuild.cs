@@ -4,6 +4,7 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Net;
 using System.Text;
 
@@ -250,7 +251,8 @@ public partial class DiscordBotClient
 		return emojis;
 	}
 
-	public async Task<IReadOnlyCollection<DiscordGuildMember>> ListGuildMembersAsync(
+	// https://discord.com/developers/docs/resources/guild#list-guild-members
+	public async Task<ImmutableArray<DiscordGuildMember>> ListGuildMembersAsync(
 		ulong guildId,
 		DiscordListGuildMembersArgs? args = null,
 		CancellationToken cancellationToken = default
@@ -266,7 +268,7 @@ public partial class DiscordBotClient
 			.ConfigureAwait(continueOnCapturedContext: false);
 
 		var guildMembers = guildMemberDtos.Select(selector: e => new DiscordGuildMember(dto: e))
-			.ToArray();
+			.ToImmutableArray();
 		return guildMembers;
 	}
 

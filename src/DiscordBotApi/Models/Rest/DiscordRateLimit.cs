@@ -6,16 +6,8 @@
 
 namespace DiscordBotApi.Models.Rest;
 
-internal class DiscordRateLimit
+internal record DiscordRateLimit(string Bucket)
 {
-	public DiscordRateLimit(string bucket)
-	{
-		Bucket = bucket;
-		UpdateTask = Task.CompletedTask;
-	}
-
-	public string Bucket { get; }
-
 	public double DiscordReset { get; set; }
 
 	public int Remaining { get; set; }
@@ -24,5 +16,5 @@ internal class DiscordRateLimit
 
 	public DateTime? Retry { get; set; }
 
-	public Task UpdateTask { get; set; }
+	public Task UpdateTask { get; set; } = Task.CompletedTask;
 }

@@ -63,7 +63,7 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			valueFactory: _ =>
 			{
 				// Unknown rate limits (first resource access)
-				var resource = new DiscordResource(id: resourceId, rateLimit: new DiscordRateLimit(bucket: UnknownBucket));
+				var resource = new DiscordResource(id: resourceId, rateLimit: new DiscordRateLimit(Bucket: UnknownBucket));
 				reservation = CreateReservationWithUpdate(resource: resource);
 				return resource;
 			});
@@ -206,7 +206,7 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 				messageTemplate: "Creating RateLimitBucket ({Id}) for {Resource}",
 				propertyValue0: bucket,
 				propertyValue1: resource.Id);
-			resource.RateLimit = new DiscordRateLimit(bucket: bucket);
+			resource.RateLimit = new DiscordRateLimit(Bucket: bucket);
 			_sharedLimits.Add(key: bucket, value: resource.RateLimit);
 		}
 	}
@@ -448,7 +448,7 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			propertyValue0: resource.Id,
 			propertyValue1: resource.RateLimit.Bucket,
 			propertyValue2: UnlimitedBucket);
-		resource.RateLimit = new DiscordRateLimit(bucket: UnlimitedBucket);
+		resource.RateLimit = new DiscordRateLimit(Bucket: UnlimitedBucket);
 	}
 
 	private void UpdateRateLimit(DiscordRateLimit rateLimit, DiscordBucketResponse bucketResponse)
