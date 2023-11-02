@@ -16,6 +16,10 @@ public abstract record DiscordMessageComponent
 				return new DiscordMessageActionRowDto(model: actionRow);
 			case DiscordMessageButton button:
 				return new DiscordMessageButtonDto(model: button);
+			case DiscordMessageSelectMenu menu:
+				return new DiscordMessageSelectMenuDto(model: menu);
+			case DiscordMessageTextInput textInput:
+				return new DiscordMessageTextInputDto(model: textInput);
 			default:
 				throw new NotSupportedException(
 					message: $"{typeof(DiscordMessageComponent)} {model.GetType().Name} is not supported");

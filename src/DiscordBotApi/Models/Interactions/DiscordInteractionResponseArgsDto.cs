@@ -34,6 +34,8 @@ internal record DiscordInteractionResponseArgsDto(
 				return new DiscordInteractionCallbackMessageDto(model: message);
 			case DiscordInteractionCallbackAutocomplete autocomplete:
 				return new DiscordInteractionCallbackAutocompleteDto(model: autocomplete);
+			case DiscordInteractionCallbackModal modal:
+				return new DiscordInteractionCallbackModalDto(model: modal);
 			default:
 				throw new NotSupportedException(
 					message: $"{typeof(DiscordInteractionCallbackData)} {model.GetType().Name} is not supported");

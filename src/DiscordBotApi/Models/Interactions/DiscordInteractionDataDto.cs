@@ -7,6 +7,7 @@
 using System.Text.Json.Serialization;
 
 using DiscordBotApi.Models.Applications;
+using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 
 namespace DiscordBotApi.Models.Interactions;
 
@@ -23,5 +24,9 @@ internal record DiscordInteractionDataDto(
 	[property: JsonPropertyName(name: "custom_id")]
 	string? CustomId,
 	[property: JsonPropertyName(name: "component_type")]
-	int? ComponentType
+	int? ComponentType,
+	[property: JsonPropertyName(name: "values")]
+	string[]? Values,
+	[property: JsonPropertyName(name: "components")]
+	DiscordMessageComponentDto[]? Components
 );

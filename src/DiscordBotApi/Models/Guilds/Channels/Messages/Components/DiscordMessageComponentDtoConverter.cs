@@ -26,6 +26,15 @@ internal class DiscordMessageComponentDtoConverter : JsonConverter<DiscordMessag
 		var type = (DiscordMessageComponentType)component.Type;
 		switch (type)
 		{
+			case DiscordMessageComponentType.ActionRow:
+				var actionRowDto = JsonSerializer.Deserialize<DiscordMessageActionRowDto>(json: json, options: options);
+				if (actionRowDto == null)
+				{
+					throw new JsonException(message: $"Failed to deserialize {nameof(DiscordMessageActionRowDto)}.");
+				}
+
+				return actionRowDto;
+
 			case DiscordMessageComponentType.Button:
 				var buttonDto = JsonSerializer.Deserialize<DiscordMessageButtonDto>(json: json, options: options);
 				if (buttonDto == null)
@@ -34,6 +43,24 @@ internal class DiscordMessageComponentDtoConverter : JsonConverter<DiscordMessag
 				}
 
 				return buttonDto;
+
+			case DiscordMessageComponentType.SelectMenu:
+				var selectMenuDto = JsonSerializer.Deserialize<DiscordMessageSelectMenuDto>(json: json, options: options);
+				if (selectMenuDto == null)
+				{
+					throw new JsonException(message: $"Failed to deserialize {nameof(DiscordMessageSelectMenuDto)}.");
+				}
+
+				return selectMenuDto;
+
+			case DiscordMessageComponentType.TextInput:
+				var textInputDto = JsonSerializer.Deserialize<DiscordMessageTextInputDto>(json: json, options: options);
+				if (textInputDto == null)
+				{
+					throw new JsonException(message: $"Failed to deserialize {nameof(DiscordMessageTextInputDto)}.");
+				}
+
+				return textInputDto;
 
 			default:
 				throw new NotSupportedException(message: $"{nameof(DiscordMessageComponentType)} {type} is not supported.");
