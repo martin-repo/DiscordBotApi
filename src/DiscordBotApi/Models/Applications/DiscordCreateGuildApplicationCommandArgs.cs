@@ -8,8 +8,6 @@ namespace DiscordBotApi.Models.Applications;
 
 public record DiscordCreateGuildApplicationCommandArgs
 {
-	public bool? DefaultPermission { get; init; }
-
 	public string Description { get; init; } = "";
 
 	public string Name { get; init; } = "";

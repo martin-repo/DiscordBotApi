@@ -8,7 +8,7 @@ namespace DiscordBotApi.Models.Applications;
 
 public record DiscordCreateGlobalApplicationCommandArgs
 {
-	public bool? DefaultPermission { get; init; }
+	public bool? DmPermission { get; init; }
 
 	public string Description { get; init; } = "";
 
