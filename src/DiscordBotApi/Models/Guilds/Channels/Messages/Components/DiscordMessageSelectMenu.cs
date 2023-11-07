@@ -4,6 +4,8 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
+
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 
 public record DiscordMessageSelectMenu() : DiscordMessageComponent
@@ -12,7 +14,7 @@ public record DiscordMessageSelectMenu() : DiscordMessageComponent
 	{
 		CustomId = dto.CustomId;
 		Options = dto.Options?.Select(selector: o => new DiscordMessageSelectMenuOption(dto: o))
-			.ToArray();
+			.ToImmutableArray();
 		Placeholder = dto.Placeholder;
 		MinValues = dto.MinValues;
 		MaxValues = dto.MaxValues;
@@ -27,7 +29,7 @@ public record DiscordMessageSelectMenu() : DiscordMessageComponent
 
 	public int? MinValues { get; init; }
 
-	public DiscordMessageSelectMenuOption[]? Options { get; init; }
+	public IReadOnlyCollection<DiscordMessageSelectMenuOption>? Options { get; init; }
 
 	public string? Placeholder { get; init; }
 }

@@ -4,6 +4,7 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
@@ -13,7 +14,7 @@ internal record DiscordMessageSelectMenuDto(
 	[property: JsonPropertyName(name: "custom_id")]
 	string CustomId,
 	[property: JsonPropertyName(name: "options")]
-	DiscordMessageSelectMenuOptionDto[]? Options,
+	ImmutableArray<DiscordMessageSelectMenuOptionDto>? Options,
 	[property: JsonPropertyName(name: "placeholder")]
 	string? Placeholder,
 	[property: JsonPropertyName(name: "min_values")]
@@ -27,7 +28,7 @@ internal record DiscordMessageSelectMenuDto(
 	internal DiscordMessageSelectMenuDto(DiscordMessageSelectMenu model) : this(
 		CustomId: model.CustomId,
 		Options: model.Options?.Select(selector: o => new DiscordMessageSelectMenuOptionDto(model: o))
-			.ToArray(),
+			.ToImmutableArray(),
 		Placeholder: model.Placeholder,
 		MinValues: model.MinValues,
 		MaxValues: model.MaxValues,
