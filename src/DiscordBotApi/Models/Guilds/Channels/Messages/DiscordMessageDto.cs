@@ -34,6 +34,8 @@ internal record DiscordMessageDto(
 	DiscordReactionDto[]? Reactions,
 	[property: JsonPropertyName(name: "pinned")]
 	bool Pinned,
+	[property: JsonPropertyName(name: "flags")]
+	int? Flags,
 	[property: JsonPropertyName(name: "thread")]
 	DiscordChannelDto? Thread,
 	[property: JsonPropertyName(name: "components")]

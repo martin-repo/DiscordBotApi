@@ -116,6 +116,29 @@ public partial class DiscordBotClient
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
+	public async Task<DiscordChannel> CreateThreadWithoutMessageAsync(
+		ulong channelId,
+		DiscordCreateThreadWithoutMessageArgs args,
+		CancellationToken cancellationToken = default
+	)
+	{
+		var url = $"channels/{channelId}/threads";
+
+		var argsDto = new DiscordCreateThreadWithoutMessageArgsDto(model: args);
+		var channelDto = await _restClient.SendRequestAsync<DiscordChannelDto>(
+				requestFactoryFunc: () =>
+				{
+					var request = new HttpRequestMessage(method: HttpMethod.Post, requestUri: url);
+					request.Content = _restClient.CreateJsonContent(value: argsDto);
+					return request;
+				},
+				cancellationToken: cancellationToken)
+			.ConfigureAwait(continueOnCapturedContext: false);
+
+		var channel = new DiscordChannel(botClient: this, dto: channelDto);
+		return channel;
+	}
+
 	public async Task DeleteAllReactionsForEmojiAsync(
 		ulong channelId,
 		ulong messageId,

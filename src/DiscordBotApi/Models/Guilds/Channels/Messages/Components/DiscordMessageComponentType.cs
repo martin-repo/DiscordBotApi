@@ -6,6 +6,7 @@
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 
+// https://discord.com/developers/docs/interactions/message-components#component-object-component-types
 public enum DiscordMessageComponentType
 {
 	ActionRow = 1,

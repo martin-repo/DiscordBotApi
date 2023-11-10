@@ -4,6 +4,7 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Net;
 
 using DiscordBotApi.Models.Applications;
@@ -96,7 +97,7 @@ public partial class DiscordBotClient
 	}
 
 	// https://discord.com/developers/docs/interactions/application-commands#get-global-application-commands
-	public async Task<IReadOnlyCollection<DiscordApplicationCommand>> GetGlobalApplicationCommandsAsync(
+	public async Task<ImmutableArray<DiscordApplicationCommand>> GetGlobalApplicationCommandsAsync(
 		ulong applicationId,
 		DiscordGetApplicationCommandsArgs? args = null,
 		CancellationToken cancellationToken = default
@@ -111,13 +112,13 @@ public partial class DiscordBotClient
 			.ConfigureAwait(continueOnCapturedContext: false);
 
 		var applicationCommands = applicationCommandDtos.Select(selector: c => new DiscordApplicationCommand(dto: c))
-			.ToArray();
+			.ToImmutableArray();
 
 		return applicationCommands;
 	}
 
 	// https://discord.com/developers/docs/interactions/application-commands#get-guild-application-commands
-	public async Task<IReadOnlyCollection<DiscordApplicationCommand>> GetGuildApplicationCommandsAsync(
+	public async Task<ImmutableArray<DiscordApplicationCommand>> GetGuildApplicationCommandsAsync(
 		ulong applicationId,
 		ulong guildId,
 		DiscordGetApplicationCommandsArgs? args = null,
@@ -133,7 +134,7 @@ public partial class DiscordBotClient
 			.ConfigureAwait(continueOnCapturedContext: false);
 
 		var applicationCommands = applicationCommandDtos.Select(selector: c => new DiscordApplicationCommand(dto: c))
-			.ToArray();
+			.ToImmutableArray();
 
 		return applicationCommands;
 	}

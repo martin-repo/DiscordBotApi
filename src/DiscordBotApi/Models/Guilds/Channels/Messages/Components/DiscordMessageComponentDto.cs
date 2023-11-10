@@ -22,6 +22,10 @@ internal abstract record DiscordMessageComponentDto(
 				return new DiscordMessageActionRow(dto: actionRowDto);
 			case DiscordMessageButtonDto buttonDto:
 				return new DiscordMessageButton(dto: buttonDto);
+			case DiscordMessageSelectMenuDto menu:
+				return new DiscordMessageSelectMenu(dto: menu);
+			case DiscordMessageTextInputDto textInput:
+				return new DiscordMessageTextInput(dto: textInput);
 			default:
 				throw new NotSupportedException(message: $"{typeof(DiscordMessageComponent)} {dto.GetType().Name} is not supported");
 		}

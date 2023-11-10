@@ -26,7 +26,12 @@ public record DiscordInteractionData
 		ComponentType = dto.ComponentType != null
 			? (DiscordMessageComponentType)dto.ComponentType
 			: null;
+		Values = dto.Values;
+		Components = dto.Components?.Select(selector: DiscordMessageComponentDto.ConvertToModel)
+			.ToArray();
 	}
+
+	public IReadOnlyCollection<DiscordMessageComponent>? Components { get; init; }
 
 	public DiscordMessageComponentType? ComponentType { get; init; }
 
@@ -39,4 +44,6 @@ public record DiscordInteractionData
 	public IReadOnlyCollection<DiscordApplicationCommandInteractionDataOption>? Options { get; init; }
 
 	public DiscordApplicationCommandType? Type { get; init; }
+
+	public IReadOnlyCollection<string>? Values { get; init; }
 }

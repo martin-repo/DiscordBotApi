@@ -33,6 +33,9 @@ public record DiscordMessage : DiscordMessageBase
 		Reactions = dto.Reactions?.Select(selector: r => new DiscordReaction(dto: r))
 			.ToArray();
 		Pinned = dto.Pinned;
+		Flags = dto.Flags != null
+			? (DiscordMessageFlags)dto.Flags
+			: null;
 		Thread = dto.Thread != null
 			? new DiscordChannel(botClient: botClient, dto: dto.Thread)
 			: null;
@@ -51,6 +54,8 @@ public record DiscordMessage : DiscordMessageBase
 	public DateTime? EditedTimestamp { get; init; }
 
 	public IReadOnlyCollection<DiscordEmbed> Embeds { get; init; }
+
+	public DiscordMessageFlags? Flags { get; init; }
 
 	public ulong? GuildId { get; init; }
 
