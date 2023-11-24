@@ -151,9 +151,12 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
-								""");
-							codeBuilder.AppendLine(
-								handler: $$"""
+								
+									public DiscordMessageActionRowBuilder AddButton(DiscordMessageButton button)
+									{
+										{{data.FieldName}}.Add(item: button);
+										return this;
+									}
 								
 									public DiscordMessageActionRowBuilder AddSelectMenu(Action<DiscordMessageSelectMenuBuilder> builderAction)
 									{
@@ -162,9 +165,12 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
-								""");
-							codeBuilder.AppendLine(
-								handler: $$"""
+								
+									public DiscordMessageActionRowBuilder AddSelectMenu(DiscordMessageSelectMenu selectMenu)
+									{
+										{{data.FieldName}}.Add(item: selectMenu);
+										return this;
+									}
 								
 									public DiscordMessageActionRowBuilder AddTextInput(Action<DiscordMessageTextInputBuilder> builderAction)
 									{
@@ -173,17 +179,23 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
+								
+									public DiscordMessageActionRowBuilder AddButton(DiscordMessageTextInput textInput)
+									{
+										{{data.FieldName}}.Add(item: textInput);
+										return this;
+									}
 								""");
 						}
 					}
 					else if (data.GenericType?.IsValueType == true ||
 						data.GenericType == typeof(string))
 					{
-						var argumentName = data.ArgumentName.TrimEnd(trimChar: 's');
+						var argumentName = GetSingularName(pluralName: data.ArgumentName);
 						codeBuilder.AppendLine(
 							handler: $$"""
 							
-								public {{type.Name}}Builder Add{{data.PropertyName.TrimEnd(trimChar: 's')}}({{data.GenericTypeName}} {{argumentName}})
+								public {{type.Name}}Builder Add{{GetSingularName(pluralName: data.PropertyName)}}({{data.GenericTypeName}} {{argumentName}})
 								{{{listConstruction}}
 									{{data.FieldName}}.Add(item: {{argumentName}});
 									return this;
@@ -195,11 +207,17 @@ public class SourceCodeGenerator
 						codeBuilder.AppendLine(
 							handler: $$"""
 							
-								public {{type.Name}}Builder Add{{data.PropertyName.TrimEnd(trimChar: 's')}}(Action<{{data.GenericTypeName}}Builder> builderAction)
+								public {{type.Name}}Builder Add{{GetSingularName(pluralName: data.PropertyName)}}(Action<{{data.GenericTypeName}}Builder> builderAction)
 								{
 									var builder = new {{data.GenericTypeName!}}Builder();
 									builderAction(obj: builder);{{listConstruction}}
 									{{data.FieldName}}.Add(item: builder.Build());
+									return this;
+								}
+							
+								public {{type.Name}}Builder Add{{GetSingularName(pluralName: data.PropertyName)}}({{data.GenericTypeName}} item)
+								{{{listConstruction}}
+									{{data.FieldName}}.Add(item: item);
 									return this;
 								}
 							""");
@@ -327,6 +345,11 @@ public class SourceCodeGenerator
 			return typeName;
 		}
 	}
+
+	private static string GetSingularName(string pluralName) =>
+		pluralName.EndsWith(value: "ies", comparisonType: StringComparison.OrdinalIgnoreCase)
+			? $"{pluralName[..^3]}y"
+			: $"{pluralName[..^1]}";
 
 	private record PropertyData(
 		string PropertyName,

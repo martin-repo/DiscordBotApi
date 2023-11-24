@@ -23,12 +23,26 @@ public class DiscordForumMessageArgsBuilder
 		return this;
 	}
 
+	public DiscordForumMessageArgsBuilder AddAttachment(DiscordMessageAttachment item)
+	{
+		_attachments ??= new List<DiscordMessageAttachment>();
+		_attachments.Add(item: item);
+		return this;
+	}
+
 	public DiscordForumMessageArgsBuilder AddComponent(Action<DiscordMessageActionRowBuilder> builderAction)
 	{
 		var builder = new DiscordMessageActionRowBuilder();
 		builderAction(obj: builder);
 		_components ??= new List<DiscordMessageActionRow>();
 		_components.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordForumMessageArgsBuilder AddComponent(DiscordMessageActionRow item)
+	{
+		_components ??= new List<DiscordMessageActionRow>();
+		_components.Add(item: item);
 		return this;
 	}
 
@@ -47,12 +61,26 @@ public class DiscordForumMessageArgsBuilder
 		return this;
 	}
 
+	public DiscordForumMessageArgsBuilder AddEmbed(DiscordEmbed item)
+	{
+		_embeds ??= new List<DiscordEmbed>();
+		_embeds.Add(item: item);
+		return this;
+	}
+
 	public DiscordForumMessageArgsBuilder AddFile(Action<DiscordMessageFileBuilder> builderAction)
 	{
 		var builder = new DiscordMessageFileBuilder();
 		builderAction(obj: builder);
 		_files ??= new List<DiscordMessageFile>();
 		_files.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordForumMessageArgsBuilder AddFile(DiscordMessageFile item)
+	{
+		_files ??= new List<DiscordMessageFile>();
+		_files.Add(item: item);
 		return this;
 	}
 

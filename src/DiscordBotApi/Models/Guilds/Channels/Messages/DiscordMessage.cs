@@ -32,7 +32,9 @@ public record DiscordMessage : DiscordMessageBase
 			.ToArray();
 		Reactions = dto.Reactions?.Select(selector: r => new DiscordReaction(dto: r))
 			.ToArray();
+		Nonce = dto.Nonce;
 		Pinned = dto.Pinned;
+		Type = (DiscordMessageType)dto.Type;
 		Flags = dto.Flags != null
 			? (DiscordMessageFlags)dto.Flags
 			: null;
@@ -59,6 +61,8 @@ public record DiscordMessage : DiscordMessageBase
 
 	public ulong? GuildId { get; init; }
 
+	public string? Nonce { get; init; }
+
 	public bool Pinned { get; init; }
 
 	public IReadOnlyCollection<DiscordReaction>? Reactions { get; init; }
@@ -66,4 +70,6 @@ public record DiscordMessage : DiscordMessageBase
 	public DiscordChannel? Thread { get; init; }
 
 	public DateTime Timestamp { get; init; }
+
+	public DiscordMessageType Type { get; init; }
 }

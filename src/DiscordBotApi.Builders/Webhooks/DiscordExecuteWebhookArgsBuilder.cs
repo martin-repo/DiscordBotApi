@@ -24,6 +24,13 @@ public class DiscordExecuteWebhookArgsBuilder
 		return this;
 	}
 
+	public DiscordExecuteWebhookArgsBuilder AddAttachment(DiscordMessageAttachment item)
+	{
+		_attachments ??= new List<DiscordMessageAttachment>();
+		_attachments.Add(item: item);
+		return this;
+	}
+
 	public DiscordExecuteWebhookArgsBuilder AddActionRow(Action<DiscordMessageActionRowBuilder> builderAction)
 	{
 		var builder = new DiscordMessageActionRowBuilder();
@@ -48,12 +55,26 @@ public class DiscordExecuteWebhookArgsBuilder
 		return this;
 	}
 
+	public DiscordExecuteWebhookArgsBuilder AddEmbed(DiscordEmbed item)
+	{
+		_embeds ??= new List<DiscordEmbed>();
+		_embeds.Add(item: item);
+		return this;
+	}
+
 	public DiscordExecuteWebhookArgsBuilder AddFile(Action<DiscordMessageFileBuilder> builderAction)
 	{
 		var builder = new DiscordMessageFileBuilder();
 		builderAction(obj: builder);
 		_files ??= new List<DiscordMessageFile>();
 		_files.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordExecuteWebhookArgsBuilder AddFile(DiscordMessageFile item)
+	{
+		_files ??= new List<DiscordMessageFile>();
+		_files.Add(item: item);
 		return this;
 	}
 

@@ -23,6 +23,13 @@ public class DiscordEditMessageArgsBuilder
 		return this;
 	}
 
+	public DiscordEditMessageArgsBuilder AddAttachment(DiscordMessageAttachment item)
+	{
+		_attachments ??= new List<DiscordMessageAttachment>();
+		_attachments.Add(item: item);
+		return this;
+	}
+
 	public DiscordEditMessageArgsBuilder AddActionRow(Action<DiscordMessageActionRowBuilder> builderAction)
 	{
 		var builder = new DiscordMessageActionRowBuilder();
@@ -47,12 +54,26 @@ public class DiscordEditMessageArgsBuilder
 		return this;
 	}
 
+	public DiscordEditMessageArgsBuilder AddEmbed(DiscordEmbed item)
+	{
+		_embeds ??= new List<DiscordEmbed>();
+		_embeds.Add(item: item);
+		return this;
+	}
+
 	public DiscordEditMessageArgsBuilder AddFile(Action<DiscordMessageFileBuilder> builderAction)
 	{
 		var builder = new DiscordMessageFileBuilder();
 		builderAction(obj: builder);
 		_files ??= new List<DiscordMessageFile>();
 		_files.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordEditMessageArgsBuilder AddFile(DiscordMessageFile item)
+	{
+		_files ??= new List<DiscordMessageFile>();
+		_files.Add(item: item);
 		return this;
 	}
 

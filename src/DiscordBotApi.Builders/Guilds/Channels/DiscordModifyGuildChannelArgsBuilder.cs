@@ -29,6 +29,13 @@ public class DiscordModifyGuildChannelArgsBuilder
 		return this;
 	}
 
+	public DiscordModifyGuildChannelArgsBuilder AddAvailableTag(DiscordForumTag item)
+	{
+		_availableTags ??= new List<DiscordForumTag>();
+		_availableTags.Add(item: item);
+		return this;
+	}
+
 	public DiscordModifyGuildChannelArgsBuilder WithDefaultAutoArchiveDuration(int? defaultAutoArchiveDuration)
 	{
 		_defaultAutoArchiveDuration = defaultAutoArchiveDuration;
@@ -71,6 +78,13 @@ public class DiscordModifyGuildChannelArgsBuilder
 		builderAction(obj: builder);
 		_permissionOverwrites ??= new List<DiscordPermissionOverwrite>();
 		_permissionOverwrites.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordModifyGuildChannelArgsBuilder AddPermissionOverwrite(DiscordPermissionOverwrite item)
+	{
+		_permissionOverwrites ??= new List<DiscordPermissionOverwrite>();
+		_permissionOverwrites.Add(item: item);
 		return this;
 	}
 

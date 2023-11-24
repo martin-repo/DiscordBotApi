@@ -43,6 +43,13 @@ public class DiscordApplicationCommandOptionBuilder
 		return this;
 	}
 
+	public DiscordApplicationCommandOptionBuilder AddChoice(DiscordApplicationCommandOptionChoice item)
+	{
+		_choices ??= new List<DiscordApplicationCommandOptionChoice>();
+		_choices.Add(item: item);
+		return this;
+	}
+
 	public DiscordApplicationCommandOptionBuilder WithDescription(string description)
 	{
 		_description = description;
@@ -85,6 +92,13 @@ public class DiscordApplicationCommandOptionBuilder
 		builderAction(obj: builder);
 		_options ??= new List<DiscordApplicationCommandOption>();
 		_options.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordApplicationCommandOptionBuilder AddOption(DiscordApplicationCommandOption item)
+	{
+		_options ??= new List<DiscordApplicationCommandOption>();
+		_options.Add(item: item);
 		return this;
 	}
 

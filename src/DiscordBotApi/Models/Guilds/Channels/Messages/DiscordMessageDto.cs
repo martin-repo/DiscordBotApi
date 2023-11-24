@@ -32,8 +32,12 @@ internal record DiscordMessageDto(
 	DiscordEmbedDto[] Embeds,
 	[property: JsonPropertyName(name: "reactions")]
 	DiscordReactionDto[]? Reactions,
+	[property: JsonPropertyName(name: "nonce")]
+	string? Nonce,
 	[property: JsonPropertyName(name: "pinned")]
 	bool Pinned,
+	[property: JsonPropertyName(name: "type")]
+	int Type,
 	[property: JsonPropertyName(name: "flags")]
 	int? Flags,
 	[property: JsonPropertyName(name: "thread")]

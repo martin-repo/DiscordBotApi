@@ -15,6 +15,8 @@ namespace DiscordBotApi.Models.Guilds.Channels.Messages;
 internal record DiscordCreateMessageArgsDto(
 	[property: JsonPropertyName(name: "content")]
 	string? Content,
+	[property: JsonPropertyName(name: "nonce")]
+	string? Nonce,
 	[property: JsonPropertyName(name: "embeds")]
 	DiscordEmbedDto[]? Embeds,
 	[property: JsonPropertyName(name: "message_reference")]
@@ -29,6 +31,7 @@ internal record DiscordCreateMessageArgsDto(
 {
 	internal DiscordCreateMessageArgsDto(DiscordCreateMessageArgs model) : this(
 		Content: model.Content,
+		Nonce: model.Nonce,
 		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
 			.ToArray(),
 		MessageReference: model.MessageReference != null

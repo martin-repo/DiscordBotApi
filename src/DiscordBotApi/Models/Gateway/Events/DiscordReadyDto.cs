@@ -21,6 +21,8 @@ internal record DiscordReadyDto(
 	UnavailableGuildDto[] Guilds,
 	[property: JsonPropertyName(name: "session_id")]
 	string SessionId,
+	[property: JsonPropertyName(name: "resume_gateway_url")]
+	string ResumeGatewayUrl,
 	[property: JsonPropertyName(name: "shard")]
 	int[]? Shard,
 	[property: JsonPropertyName(name: "application")]

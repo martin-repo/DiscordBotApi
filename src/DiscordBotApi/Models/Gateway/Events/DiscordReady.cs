@@ -19,6 +19,7 @@ public record DiscordReady
 		Guilds = dto.Guilds.Select(selector: g => new UnavailableGuild(dto: g))
 			.ToArray();
 		SessionId = dto.SessionId;
+		ResumeGatewayUrl = dto.ResumeGatewayUrl;
 		Shard = dto.Shard != null
 			? new DiscordShard
 			{
@@ -32,6 +33,8 @@ public record DiscordReady
 	public DiscordApplication Application { get; init; }
 
 	public IReadOnlyCollection<UnavailableGuild> Guilds { get; init; }
+
+	public string ResumeGatewayUrl { get; init; }
 
 	public string SessionId { get; init; }
 

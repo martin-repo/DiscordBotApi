@@ -15,6 +15,7 @@ public class DiscordCreateMessageArgsBuilder
 	private List<DiscordMessageFile>? _files;
 	private DiscordMessageFlags? _flags;
 	private DiscordMessageReference? _messageReference;
+	private string? _nonce;
 
 	public DiscordCreateMessageArgsBuilder AddAttachment(Action<DiscordMessageAttachmentBuilder> builderAction)
 	{
@@ -22,6 +23,13 @@ public class DiscordCreateMessageArgsBuilder
 		builderAction(obj: builder);
 		_attachments ??= new List<DiscordMessageAttachment>();
 		_attachments.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordCreateMessageArgsBuilder AddAttachment(DiscordMessageAttachment item)
+	{
+		_attachments ??= new List<DiscordMessageAttachment>();
+		_attachments.Add(item: item);
 		return this;
 	}
 
@@ -49,12 +57,26 @@ public class DiscordCreateMessageArgsBuilder
 		return this;
 	}
 
+	public DiscordCreateMessageArgsBuilder AddEmbed(DiscordEmbed item)
+	{
+		_embeds ??= new List<DiscordEmbed>();
+		_embeds.Add(item: item);
+		return this;
+	}
+
 	public DiscordCreateMessageArgsBuilder AddFile(Action<DiscordMessageFileBuilder> builderAction)
 	{
 		var builder = new DiscordMessageFileBuilder();
 		builderAction(obj: builder);
 		_files ??= new List<DiscordMessageFile>();
 		_files.Add(item: builder.Build());
+		return this;
+	}
+
+	public DiscordCreateMessageArgsBuilder AddFile(DiscordMessageFile item)
+	{
+		_files ??= new List<DiscordMessageFile>();
+		_files.Add(item: item);
 		return this;
 	}
 
@@ -70,6 +92,12 @@ public class DiscordCreateMessageArgsBuilder
 		return this;
 	}
 
+	public DiscordCreateMessageArgsBuilder WithNonce(string? nonce)
+	{
+		_nonce = nonce;
+		return this;
+	}
+
 	public DiscordCreateMessageArgs Build() =>
 		new()
 		{
@@ -80,5 +108,6 @@ public class DiscordCreateMessageArgsBuilder
 			Files = _files?.ToImmutableArray(),
 			Flags = _flags,
 			MessageReference = _messageReference,
+			Nonce = _nonce,
 		};
 }

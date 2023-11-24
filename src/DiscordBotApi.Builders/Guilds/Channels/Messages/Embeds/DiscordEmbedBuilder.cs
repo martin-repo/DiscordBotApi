@@ -46,6 +46,13 @@ public class DiscordEmbedBuilder
 		return this;
 	}
 
+	public DiscordEmbedBuilder AddField(DiscordField item)
+	{
+		_fields ??= new List<DiscordField>();
+		_fields.Add(item: item);
+		return this;
+	}
+
 	public DiscordEmbedBuilder WithFooter(DiscordFooter? footer)
 	{
 		_footer = footer;

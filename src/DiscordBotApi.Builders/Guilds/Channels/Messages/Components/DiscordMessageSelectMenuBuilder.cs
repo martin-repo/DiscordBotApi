@@ -48,6 +48,13 @@ public class DiscordMessageSelectMenuBuilder
 		return this;
 	}
 
+	public DiscordMessageSelectMenuBuilder AddOption(DiscordMessageSelectMenuOption item)
+	{
+		_options ??= new List<DiscordMessageSelectMenuOption>();
+		_options.Add(item: item);
+		return this;
+	}
+
 	public DiscordMessageSelectMenuBuilder WithPlaceholder(string? placeholder)
 	{
 		_placeholder = placeholder;

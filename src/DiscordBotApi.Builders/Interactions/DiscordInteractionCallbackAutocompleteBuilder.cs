@@ -18,6 +18,12 @@ public class DiscordInteractionCallbackAutocompleteBuilder
 		return this;
 	}
 
+	public DiscordInteractionCallbackAutocompleteBuilder AddChoice(DiscordApplicationCommandOptionChoice item)
+	{
+		_choices.Add(item: item);
+		return this;
+	}
+
 	public DiscordInteractionCallbackAutocomplete Build() =>
 		new()
 		{
