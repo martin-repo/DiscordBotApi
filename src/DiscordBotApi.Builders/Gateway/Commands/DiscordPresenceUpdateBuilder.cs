@@ -13,7 +13,7 @@ public class DiscordPresenceUpdateBuilder
 	private DateTime? _since;
 	private DiscordPresenceStatus _status = default!;
 
-	public DiscordPresenceUpdateBuilder AddActivitie(Action<DiscordActivityUpdateBuilder> builderAction)
+	public DiscordPresenceUpdateBuilder AddActivity(Action<DiscordActivityUpdateBuilder> builderAction)
 	{
 		var builder = new DiscordActivityUpdateBuilder();
 		builderAction(obj: builder);
@@ -21,7 +21,7 @@ public class DiscordPresenceUpdateBuilder
 		return this;
 	}
 
-	public DiscordPresenceUpdateBuilder AddActivitie(DiscordActivityUpdate item)
+	public DiscordPresenceUpdateBuilder AddActivity(DiscordActivityUpdate item)
 	{
 		_activities.Add(item: item);
 		return this;

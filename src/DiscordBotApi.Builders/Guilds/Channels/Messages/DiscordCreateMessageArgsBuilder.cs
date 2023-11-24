@@ -15,6 +15,7 @@ public class DiscordCreateMessageArgsBuilder
 	private List<DiscordMessageFile>? _files;
 	private DiscordMessageFlags? _flags;
 	private DiscordMessageReference? _messageReference;
+	private string? _nonce;
 
 	public DiscordCreateMessageArgsBuilder AddAttachment(Action<DiscordMessageAttachmentBuilder> builderAction)
 	{
@@ -91,6 +92,12 @@ public class DiscordCreateMessageArgsBuilder
 		return this;
 	}
 
+	public DiscordCreateMessageArgsBuilder WithNonce(string? nonce)
+	{
+		_nonce = nonce;
+		return this;
+	}
+
 	public DiscordCreateMessageArgs Build() =>
 		new()
 		{
@@ -101,5 +108,6 @@ public class DiscordCreateMessageArgsBuilder
 			Files = _files?.ToImmutableArray(),
 			Flags = _flags,
 			MessageReference = _messageReference,
+			Nonce = _nonce,
 		};
 }
