@@ -24,4 +24,6 @@ public record DiscordCreateMessageArgs
 	public DiscordMessageFlags? Flags { get; init; }
 
 	public DiscordMessageReference? MessageReference { get; init; }
+
+	public string? Nonce { get; init; }
 }

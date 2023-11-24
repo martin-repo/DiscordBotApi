@@ -1,16 +1,17 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordModifyThreadArgs.cs" company="Martin Karlsson">
+// <copyright file="DiscordChannelFlags.cs" company="Martin Karlsson">
 //   Copyright (c) 2023 Martin Karlsson. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 namespace DiscordBotApi.Models.Guilds.Channels;
 
-public record DiscordModifyThreadArgs
+// https://discord.com/developers/docs/resources/channel#channel-object-channel-flags
+[Flags]
+public enum DiscordChannelFlags
 {
-	public bool? Archived { get; init; }
-
-	public DiscordChannelFlags? Flags { get; init; }
-
-	public string? Name { get; init; }
+	None = 0,
+	Pinned = 1 << 1,
+	RequireTag = 1 << 4,
+	HideMediaDownloadOptions = 1 << 15
 }

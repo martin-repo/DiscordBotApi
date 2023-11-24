@@ -8,12 +8,20 @@ using System.Text.Json.Serialization;
 
 namespace DiscordBotApi.Models.Guilds.Channels;
 
+// https://discord.com/developers/docs/resources/channel#modify-channel-json-params-thread
 internal record DiscordModifyThreadArgsDto(
+	[property: JsonPropertyName(name: "name")]
+	string? Name,
 	[property: JsonPropertyName(name: "archived")]
-	bool? Archived
+	bool? Archived,
+	[property: JsonPropertyName(name: "flags")]
+	int? Flags
 )
 {
-	internal DiscordModifyThreadArgsDto(DiscordModifyThreadArgs model) : this(Archived: model.Archived)
+	internal DiscordModifyThreadArgsDto(DiscordModifyThreadArgs model) : this(
+		Name: model.Name,
+		Archived: model.Archived,
+		Flags: (int?)model.Flags)
 	{
 	}
 }

@@ -16,5 +16,7 @@ internal record DiscordGuildMemberDto(
 	[property: JsonPropertyName(name: "nick")]
 	string? Nick,
 	[property: JsonPropertyName(name: "roles")]
-	string[] Roles
+	string[] Roles,
+	[property: JsonPropertyName(name: "permissions")]
+	string? Permissions
 );

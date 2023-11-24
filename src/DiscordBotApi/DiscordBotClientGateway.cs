@@ -17,6 +17,8 @@ public partial class DiscordBotClient
 
 	public event EventHandler<DiscordGatewayException>? GatewayException;
 
+	public event EventHandler<DiscordReady>? GatewayReady;
+
 	public async Task<DiscordReady> ConnectToGatewayAsync(
 		string gatewayUrl,
 		DiscordGatewayIntent intents,
@@ -27,7 +29,11 @@ public partial class DiscordBotClient
 		var gatewayReady =
 			new TaskCompletionSource<DiscordReady>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 
-		void OnGatewayReady(object? sender, DiscordReady ready) => gatewayReady.SetResult(result: ready);
+		void OnGatewayReady(object? sender, DiscordReady ready)
+		{
+			gatewayReady.SetResult(result: ready);
+			GatewayReady?.Invoke(sender: this, e: ready);
+		}
 
 		_gatewayClient.GatewayReady += OnGatewayReady;
 		try

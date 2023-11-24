@@ -15,6 +15,8 @@ internal record DiscordCreateGuildApplicationCommandArgsDto(
 	string Description,
 	[property: JsonPropertyName(name: "options")]
 	IReadOnlyCollection<DiscordApplicationCommandOptionDto>? Options,
+	[property: JsonPropertyName(name: "default_member_permissions")]
+	string? DefaultMemberPermissions,
 	[property: JsonPropertyName(name: "type")]
 	int? Type
 )
@@ -24,7 +26,10 @@ internal record DiscordCreateGuildApplicationCommandArgsDto(
 		Description: model.Description,
 		Options: model.Options?.Select(selector: o => new DiscordApplicationCommandOptionDto(model: o))
 			.ToArray(),
-		Type: model.Type != null
+		DefaultMemberPermissions: model.DefaultMemberPermissions is not null
+			? ((ulong)model.DefaultMemberPermissions).ToString()
+			: null,
+		Type: model.Type is not null
 			? (int)model.Type
 			: null)
 	{

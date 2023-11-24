@@ -16,6 +16,11 @@ internal record DiscordGuildMemberAddDto(
 	DiscordUserDto? User,
 	string? Nick,
 	string[] Roles,
+	string? Permissions,
 	[property: JsonPropertyName(name: "guild_id")]
 	string GuildId
-) : DiscordGuildMemberDto(User: User, Nick: Nick, Roles: Roles);
+) : DiscordGuildMemberDto(
+	User: User,
+	Nick: Nick,
+	Roles: Roles,
+	Permissions: Permissions);

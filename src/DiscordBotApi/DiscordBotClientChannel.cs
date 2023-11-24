@@ -201,6 +201,7 @@ public partial class DiscordBotClient
 		return message;
 	}
 
+	// https://discord.com/developers/docs/resources/channel#get-channel
 	public async Task<DiscordChannel> GetChannelAsync(ulong channelId, CancellationToken cancellationToken = default)
 	{
 		var url = $"channels/{channelId}";

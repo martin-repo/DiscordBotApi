@@ -4,10 +4,14 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using DiscordBotApi.Models.Guilds;
+
 namespace DiscordBotApi.Models.Applications;
 
 public record DiscordCreateGuildApplicationCommandArgs
 {
+	public DiscordPermissions? DefaultMemberPermissions { get; init; }
+
 	public string Description { get; init; } = "";
 
 	public string Name { get; init; } = "";

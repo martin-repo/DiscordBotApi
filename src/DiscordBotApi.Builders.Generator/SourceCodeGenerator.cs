@@ -151,9 +151,12 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
-								""");
-							codeBuilder.AppendLine(
-								handler: $$"""
+								
+									public DiscordMessageActionRowBuilder AddButton(DiscordMessageButton button)
+									{
+										{{data.FieldName}}.Add(item: button);
+										return this;
+									}
 								
 									public DiscordMessageActionRowBuilder AddSelectMenu(Action<DiscordMessageSelectMenuBuilder> builderAction)
 									{
@@ -162,15 +165,24 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
-								""");
-							codeBuilder.AppendLine(
-								handler: $$"""
+								
+									public DiscordMessageActionRowBuilder AddSelectMenu(DiscordMessageSelectMenu selectMenu)
+									{
+										{{data.FieldName}}.Add(item: selectMenu);
+										return this;
+									}
 								
 									public DiscordMessageActionRowBuilder AddTextInput(Action<DiscordMessageTextInputBuilder> builderAction)
 									{
 										var builder = new DiscordMessageTextInputBuilder();
 										builderAction(obj: builder);{{listConstruction}}
 										{{data.FieldName}}.Add(item: builder.Build());
+										return this;
+									}
+								
+									public DiscordMessageActionRowBuilder AddButton(DiscordMessageTextInput textInput)
+									{
+										{{data.FieldName}}.Add(item: textInput);
 										return this;
 									}
 								""");
@@ -200,6 +212,12 @@ public class SourceCodeGenerator
 									var builder = new {{data.GenericTypeName!}}Builder();
 									builderAction(obj: builder);{{listConstruction}}
 									{{data.FieldName}}.Add(item: builder.Build());
+									return this;
+								}
+							
+								public {{type.Name}}Builder Add{{data.PropertyName.TrimEnd(trimChar: 's')}}({{data.GenericTypeName}} item)
+								{{{listConstruction}}
+									{{data.FieldName}}.Add(item: item);
 									return this;
 								}
 							""");

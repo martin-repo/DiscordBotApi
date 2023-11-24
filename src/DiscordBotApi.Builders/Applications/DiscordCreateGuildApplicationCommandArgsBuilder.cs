@@ -8,10 +8,17 @@ namespace DiscordBotApi.Builders.Applications;
 
 public class DiscordCreateGuildApplicationCommandArgsBuilder
 {
+	private DiscordPermissions? _defaultMemberPermissions;
 	private string _description = default!;
 	private string _name = default!;
 	private List<DiscordApplicationCommandOption>? _options;
 	private DiscordApplicationCommandType? _type;
+
+	public DiscordCreateGuildApplicationCommandArgsBuilder WithDefaultMemberPermissions(DiscordPermissions? defaultMemberPermissions)
+	{
+		_defaultMemberPermissions = defaultMemberPermissions;
+		return this;
+	}
 
 	public DiscordCreateGuildApplicationCommandArgsBuilder WithDescription(string description)
 	{
@@ -34,6 +41,13 @@ public class DiscordCreateGuildApplicationCommandArgsBuilder
 		return this;
 	}
 
+	public DiscordCreateGuildApplicationCommandArgsBuilder AddOption(DiscordApplicationCommandOption item)
+	{
+		_options ??= new List<DiscordApplicationCommandOption>();
+		_options.Add(item: item);
+		return this;
+	}
+
 	public DiscordCreateGuildApplicationCommandArgsBuilder WithType(DiscordApplicationCommandType? type)
 	{
 		_type = type;
@@ -43,6 +57,7 @@ public class DiscordCreateGuildApplicationCommandArgsBuilder
 	public DiscordCreateGuildApplicationCommandArgs Build() =>
 		new()
 		{
+			DefaultMemberPermissions = _defaultMemberPermissions,
 			Description = _description,
 			Name = _name,
 			Options = _options?.ToImmutableArray(),

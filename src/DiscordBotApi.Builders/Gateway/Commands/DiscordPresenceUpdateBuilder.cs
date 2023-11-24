@@ -21,6 +21,12 @@ public class DiscordPresenceUpdateBuilder
 		return this;
 	}
 
+	public DiscordPresenceUpdateBuilder AddActivitie(DiscordActivityUpdate item)
+	{
+		_activities.Add(item: item);
+		return this;
+	}
+
 	public DiscordPresenceUpdateBuilder WithAfk(bool afk)
 	{
 		_afk = afk;
