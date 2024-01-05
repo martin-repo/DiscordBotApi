@@ -22,7 +22,11 @@ public class DiscordAsyncEventService
 
 	public delegate Task HandleMessageAsync(DiscordMessage message);
 
+	public delegate Task HandleMessageDeleteAsync(DiscordMessageDelete message);
+
 	public delegate Task HandleMessageReactionAddAsync(DiscordMessageReactionAdd messageReaction);
+
+	public delegate Task HandleMessageUpdateAsync(DiscordUpdatedMessage message);
 
 	private readonly DiscordBotClient _botClient;
 	private readonly CancellationTokenSource _cancellationTokenSource = new();
@@ -65,10 +69,22 @@ public class DiscordAsyncEventService
 			subscribeAction: () => _botClient.MessageCreate += OnMessageCreate,
 			handleDelegate: handler);
 
-	public void HandleMessageReactionAdd(HandleMessageAsync handler) =>
+	public void HandleMessageDelete(HandleMessageDeleteAsync handler) =>
+		AddHandler(
+			eventType: DiscordEventType.MessageDelete,
+			subscribeAction: () => _botClient.MessageDelete += OnMessageDelete,
+			handleDelegate: handler);
+
+	public void HandleMessageReactionAdd(HandleMessageReactionAddAsync handler) =>
 		AddHandler(
 			eventType: DiscordEventType.MessageReactionAdd,
 			subscribeAction: () => _botClient.MessageReactionAdd += OnMessageReactionAdd,
+			handleDelegate: handler);
+
+	public void HandleMessageUpdate(HandleMessageUpdateAsync handler) =>
+		AddHandler(
+			eventType: DiscordEventType.MessageUpdate,
+			subscribeAction: () => _botClient.MessageUpdate += OnMessageUpdate,
 			handleDelegate: handler);
 
 	private void AddHandler(DiscordEventType eventType, Action subscribeAction, object handleDelegate)
@@ -100,9 +116,15 @@ public class DiscordAsyncEventService
 	private void OnMessageCreate(object? _, DiscordMessage message) =>
 		_gatewayEvents.Add(item: new DiscordGatewayEvent(EventType: DiscordEventType.MessageCreate, EventData: message));
 
+	private void OnMessageDelete(object? _, DiscordMessageDelete message) =>
+		_gatewayEvents.Add(item: new DiscordGatewayEvent(EventType: DiscordEventType.MessageCreate, EventData: message));
+
 	private void OnMessageReactionAdd(object? _, DiscordMessageReactionAdd messageReaction) =>
 		_gatewayEvents.Add(
 			item: new DiscordGatewayEvent(EventType: DiscordEventType.MessageReactionAdd, EventData: messageReaction));
+
+	private void OnMessageUpdate(object? _, DiscordUpdatedMessage message) =>
+		_gatewayEvents.Add(item: new DiscordGatewayEvent(EventType: DiscordEventType.MessageCreate, EventData: message));
 
 	private async Task ProcessGatewayEventsAsync(CancellationToken cancellationToken)
 	{
@@ -140,6 +162,22 @@ public class DiscordAsyncEventService
 									tasks: _handlersByEventType[key: DiscordEventType.MessageCreate]
 										.Cast<HandleMessageAsync>()
 										.Select(selector: v => v(message: (DiscordMessage)gatewayEvent.EventData)))
+								.ConfigureAwait(continueOnCapturedContext: false);
+							break;
+
+						case DiscordEventType.MessageDelete:
+							await Task.WhenAll(
+									tasks: _handlersByEventType[key: DiscordEventType.MessageDelete]
+										.Cast<HandleMessageDeleteAsync>()
+										.Select(selector: v => v(message: (DiscordMessageDelete)gatewayEvent.EventData)))
+								.ConfigureAwait(continueOnCapturedContext: false);
+							break;
+
+						case DiscordEventType.MessageUpdate:
+							await Task.WhenAll(
+									tasks: _handlersByEventType[key: DiscordEventType.MessageUpdate]
+										.Cast<HandleMessageUpdateAsync>()
+										.Select(selector: v => v(message: (DiscordUpdatedMessage)gatewayEvent.EventData)))
 								.ConfigureAwait(continueOnCapturedContext: false);
 							break;
 
