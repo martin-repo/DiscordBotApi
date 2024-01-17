@@ -26,6 +26,8 @@ public class DiscordAsyncEventService
 
 	public delegate Task HandleMessageReactionAddAsync(DiscordMessageReactionAdd messageReaction);
 
+	public delegate Task HandleMessageReactionRemoveAsync(DiscordMessageReactionRemove messageReaction);
+
 	public delegate Task HandleMessageUpdateAsync(DiscordUpdatedMessage message);
 
 	private readonly DiscordBotClient _botClient;
@@ -81,6 +83,12 @@ public class DiscordAsyncEventService
 			subscribeAction: () => _botClient.MessageReactionAdd += OnMessageReactionAdd,
 			handleDelegate: handler);
 
+	public void HandleMessageReactionRemove(HandleMessageReactionRemoveAsync handler) =>
+		AddHandler(
+			eventType: DiscordEventType.MessageReactionRemove,
+			subscribeAction: () => _botClient.MessageReactionRemove += OnMessageReactionRemove,
+			handleDelegate: handler);
+
 	public void HandleMessageUpdate(HandleMessageUpdateAsync handler) =>
 		AddHandler(
 			eventType: DiscordEventType.MessageUpdate,
@@ -122,6 +130,10 @@ public class DiscordAsyncEventService
 	private void OnMessageReactionAdd(object? _, DiscordMessageReactionAdd messageReaction) =>
 		_gatewayEvents.Add(
 			item: new DiscordGatewayEvent(EventType: DiscordEventType.MessageReactionAdd, EventData: messageReaction));
+
+	private void OnMessageReactionRemove(object? _, DiscordMessageReactionRemove messageReaction) =>
+		_gatewayEvents.Add(
+			item: new DiscordGatewayEvent(EventType: DiscordEventType.MessageReactionRemove, EventData: messageReaction));
 
 	private void OnMessageUpdate(object? _, DiscordUpdatedMessage message) =>
 		_gatewayEvents.Add(item: new DiscordGatewayEvent(EventType: DiscordEventType.MessageCreate, EventData: message));
