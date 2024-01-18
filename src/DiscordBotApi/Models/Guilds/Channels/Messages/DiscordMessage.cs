@@ -4,6 +4,8 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
+
 using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 using DiscordBotApi.Models.Users;
@@ -26,6 +28,8 @@ public record DiscordMessage : DiscordMessageBase
 		EditedTimestamp = dto.EditedTimestamp != null
 			? DateTime.Parse(s: dto.EditedTimestamp)
 			: null;
+		Mentions = dto.Mentions.Select(selector: m => new DiscordUser(dto: m))
+			.ToImmutableArray();
 		Attachments = dto.Attachments.Select(selector: a => new DiscordMessageAttachment(dto: a))
 			.ToArray();
 		Embeds = dto.Embeds.Select(selector: e => new DiscordEmbed(dto: e))
@@ -35,14 +39,23 @@ public record DiscordMessage : DiscordMessageBase
 		Nonce = dto.Nonce;
 		Pinned = dto.Pinned;
 		Type = (DiscordMessageType)dto.Type;
+		MessageReference = dto.MessageReference is not null
+			? new DiscordMessageReference(dto: dto.MessageReference)
+			: null;
 		Flags = dto.Flags != null
 			? (DiscordMessageFlags)dto.Flags
+			: null;
+		ReferencedMessage = dto.ReferencedMessage is not null
+			? new DiscordMessage(botClient: botClient, dto: dto.ReferencedMessage)
 			: null;
 		Thread = dto.Thread != null
 			? new DiscordChannel(botClient: botClient, dto: dto.Thread)
 			: null;
 		Components = dto.Components?.Select(selector: c => new DiscordMessageActionRow(dto: c))
 			.ToArray();
+		Member = dto.Member is not null
+			? new DiscordGuildMember(dto: dto.Member)
+			: null;
 	}
 
 	public IReadOnlyCollection<DiscordMessageAttachment> Attachments { get; init; }
@@ -61,11 +74,19 @@ public record DiscordMessage : DiscordMessageBase
 
 	public ulong? GuildId { get; init; }
 
+	public DiscordGuildMember? Member { get; init; }
+
+	public ImmutableArray<DiscordUser> Mentions { get; init; }
+
+	public DiscordMessageReference? MessageReference { get; init; }
+
 	public string? Nonce { get; init; }
 
 	public bool Pinned { get; init; }
 
 	public IReadOnlyCollection<DiscordReaction>? Reactions { get; init; }
+
+	public DiscordMessage? ReferencedMessage { get; init; }
 
 	public DiscordChannel? Thread { get; init; }
 
