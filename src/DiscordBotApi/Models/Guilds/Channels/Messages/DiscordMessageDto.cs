@@ -17,7 +17,7 @@ internal record DiscordMessageDto(
 	string Id,
 	string ChannelId,
 	[property: JsonPropertyName(name: "guild_id")]
-	string? GuildId,
+	string? GuildId, // Exists in MESSAGE_CREATE and MESSAGE_UPDATE events
 	[property: JsonPropertyName(name: "author")]
 	DiscordUserDto Author,
 	[property: JsonPropertyName(name: "content")]
@@ -26,6 +26,8 @@ internal record DiscordMessageDto(
 	string Timestamp,
 	[property: JsonPropertyName(name: "edited_timestamp")]
 	string? EditedTimestamp,
+	[property: JsonPropertyName(name: "mentions")]
+	DiscordUserDto[] Mentions,
 	[property: JsonPropertyName(name: "attachments")]
 	DiscordMessageAttachmentDto[] Attachments,
 	[property: JsonPropertyName(name: "embeds")]
@@ -38,10 +40,16 @@ internal record DiscordMessageDto(
 	bool Pinned,
 	[property: JsonPropertyName(name: "type")]
 	int Type,
+	[property: JsonPropertyName(name: "message_reference")]
+	DiscordMessageReferenceDto? MessageReference,
 	[property: JsonPropertyName(name: "flags")]
 	int? Flags,
+	[property: JsonPropertyName(name: "referenced_message")]
+	DiscordMessageDto? ReferencedMessage,
 	[property: JsonPropertyName(name: "thread")]
 	DiscordChannelDto? Thread,
 	[property: JsonPropertyName(name: "components")]
-	DiscordMessageActionRowDto[]? Components
+	DiscordMessageActionRowDto[]? Components,
+	[property: JsonPropertyName(name: "member")]
+	DiscordGuildMemberDto? Member // Exists in MESSAGE_CREATE and MESSAGE_UPDATE events
 ) : DiscordMessageBaseDto(Id: Id, ChannelId: ChannelId);
