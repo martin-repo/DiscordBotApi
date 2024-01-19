@@ -23,6 +23,9 @@ public record DiscordMessageReactionAdd
 			? new DiscordGuildMember(dto: dto.Member)
 			: null;
 		Emoji = new DiscordEmoji(dto: dto.Emoji);
+		MessageAuthorId = dto.MessageAuthorId != null
+			? ulong.Parse(s: dto.MessageAuthorId)
+			: null;
 	}
 
 	public ulong ChannelId { get; init; }
@@ -32,6 +35,8 @@ public record DiscordMessageReactionAdd
 	public ulong? GuildId { get; init; }
 
 	public DiscordGuildMember? Member { get; init; }
+
+	public ulong? MessageAuthorId { get; init; }
 
 	public ulong MessageId { get; init; }
 
