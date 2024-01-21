@@ -8,16 +8,23 @@ using System.Text.Json.Serialization;
 
 namespace DiscordBotApi.Models.Gateway.Commands;
 
+// https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-structure
 internal record DiscordActivityUpdateDto(
 	[property: JsonPropertyName(name: "name")]
 	string Name,
 	[property: JsonPropertyName(name: "type")]
 	int Type,
 	[property: JsonPropertyName(name: "url")]
-	string? Url
+	string? Url,
+	[property: JsonPropertyName(name: "state")]
+	string? State
 )
 {
-	internal DiscordActivityUpdateDto(DiscordActivityUpdate model) : this(Name: model.Name, Type: (int)model.Type, Url: model.Url)
+	internal DiscordActivityUpdateDto(DiscordActivityUpdate model) : this(
+		Name: model.Name,
+		Type: (int)model.Type,
+		Url: model.Url,
+		State: model.State)
 	{
 	}
 }
