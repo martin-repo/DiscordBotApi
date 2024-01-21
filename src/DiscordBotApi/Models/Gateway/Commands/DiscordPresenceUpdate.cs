@@ -8,6 +8,9 @@ namespace DiscordBotApi.Models.Gateway.Commands;
 
 public record DiscordPresenceUpdate
 {
+	/// <summary>
+	/// To set custom status for a bot; Type=Custom,Name="any",State="♥ Custom status message"
+	/// </summary>
 	public IReadOnlyCollection<DiscordActivityUpdate> Activities { get; init; } = Array.Empty<DiscordActivityUpdate>();
 
 	public bool Afk { get; init; }
