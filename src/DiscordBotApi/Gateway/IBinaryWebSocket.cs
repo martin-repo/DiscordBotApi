@@ -1,10 +1,10 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="IBinaryWebSocket.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="IBinaryWebSocket.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Interface.Models.Gateway;
 
 namespace DiscordBotApi.Gateway;
 

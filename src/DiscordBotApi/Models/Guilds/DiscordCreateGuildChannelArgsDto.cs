@@ -1,16 +1,17 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordCreateGuildChannelArgsDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordCreateGuildChannelArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds;
 using DiscordBotApi.Models.Guilds.Channels;
 
 namespace DiscordBotApi.Models.Guilds;
 
-internal record DiscordCreateGuildChannelArgsDto(
+internal sealed record DiscordCreateGuildChannelArgsDto(
 	[property: JsonPropertyName(name: "name")]
 	string Name,
 	[property: JsonPropertyName(name: "type")]
@@ -35,30 +36,21 @@ internal record DiscordCreateGuildChannelArgsDto(
 	int? DefaultForumLayout
 )
 {
-	internal DiscordCreateGuildChannelArgsDto(DiscordCreateGuildChannelArgs model) : this(
-		Name: model.Name,
-		Type: model.Type != null
-			? (int)model.Type
-			: null,
-		Topic: model.Topic,
-		Position: model.Position,
-		PermissionOverwrites: model.PermissionOverwrites?.Select(selector: po => new DiscordPermissionOverwriteDto(model: po))
-			.ToArray(),
-		ParentId: model.ParentId is not null
-			? model.ParentId.ToString()
-			: null,
-		DefaultAutoArchiveDuration: model.DefaultAutoArchiveDuration,
-		DefaultReactionEmoji: model.DefaultReactionEmoji is not null
-			? new DiscordDefaultReactionDto(model: model.DefaultReactionEmoji)
-			: null,
-		AvailableTags: model.AvailableTags?.Select(selector: at => new DiscordForumTagDto(model: at))
-			.ToArray(),
-		DefaultSortOrder: model.DefaultSortOrder != null
-			? (int)model.DefaultSortOrder
-			: null,
-		DefaultForumLayout: model.DefaultForumLayout != null
-			? (int)model.DefaultForumLayout
-			: null)
-	{
-	}
+	public static DiscordCreateGuildChannelArgsDto FromModel(DiscordCreateGuildChannelArgs model) =>
+		new(
+			Name: model.Name,
+			Type: model.Type != null ? (int)model.Type : null,
+			Topic: model.Topic,
+			Position: model.Position,
+			PermissionOverwrites:
+			model.PermissionOverwrites?.Select(selector: DiscordPermissionOverwriteDto.FromModel).ToArray(),
+			ParentId: model.ParentId is not null ? model.ParentId.ToString() : null,
+			DefaultAutoArchiveDuration: model.DefaultAutoArchiveDuration,
+			DefaultReactionEmoji: model.DefaultReactionEmoji is not null
+				? DiscordDefaultReactionDto.FromModel(model: model.DefaultReactionEmoji)
+				: null,
+			AvailableTags: model.AvailableTags?.Select(selector: DiscordForumTagDto.FromModel).ToArray(),
+			DefaultSortOrder: model.DefaultSortOrder != null ? (int)model.DefaultSortOrder : null,
+			DefaultForumLayout: model.DefaultForumLayout != null ? (int)model.DefaultForumLayout : null
+		);
 }

@@ -1,53 +1,49 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordPresenceUpdateDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordPresenceUpdateDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
-using DiscordBotApi.Utilities;
+using DiscordBotApi.Interface.Models.Gateway.Commands;
+using DiscordBotApi.Interface.Utilities;
 
 namespace DiscordBotApi.Models.Gateway.Commands;
 
-internal record DiscordPresenceUpdateDto(
-	[property: JsonPropertyName(name: "since")]
-	int? Since,
-	[property: JsonPropertyName(name: "activities")]
-	DiscordActivityUpdateDto[] Activities,
-	[property: JsonPropertyName(name: "status")]
-	string Status,
-	[property: JsonPropertyName(name: "afk")]
-	bool Afk
-)
+// https://discord.com/developers/docs/events/gateway-events#update-presence-gateway-presence-update-structure
+internal sealed class DiscordPresenceUpdateDto
 {
-	internal DiscordPresenceUpdateDto(DiscordPresenceUpdate model) : this(
-		Since: model.Since != null
-			? DateTimeUtils.ToEpochTimeMilliseconds(datetime: model.Since.Value)
-			: null,
-		Activities: model.Activities.Select(selector: a => new DiscordActivityUpdateDto(model: a))
-			.ToArray(),
-		Status: GetStatusString(status: model.Status),
-		Afk: model.Afk)
-	{
-	}
+	[JsonPropertyName(name: "activities")]
+	public required ImmutableArray<DiscordActivityUpdateDto> Activities { get; init; }
 
-	private static string GetStatusString(DiscordPresenceStatus status)
-	{
-		switch (status)
+	[JsonPropertyName(name: "afk")]
+	public required bool Afk { get; init; }
+
+	[JsonPropertyName(name: "since")]
+	public int? Since { get; init; }
+
+	[JsonPropertyName(name: "status")]
+	public required string Status { get; init; }
+
+	public static DiscordPresenceUpdateDto FromModel(DiscordPresenceUpdate model) =>
+		new()
 		{
-			case DiscordPresenceStatus.Online:
-				return "online";
-			case DiscordPresenceStatus.DoNotDisturb:
-				return "dnd";
-			case DiscordPresenceStatus.Idle:
-				return "idle";
-			case DiscordPresenceStatus.Invisible:
-				return "invisible";
-			case DiscordPresenceStatus.Offline:
-				return "offline";
-			default:
-				throw new NotSupportedException(message: $"{nameof(DiscordPresenceStatus)} {status} is not supported");
-		}
-	}
+			Since = model.Since != null ? DateTimeUtils.ToEpochTimeMilliseconds(datetime: model.Since.Value) : null,
+			Activities = model.Activities.Select(selector: DiscordActivityUpdateDto.FromModel).ToImmutableArray(),
+			Status = GetStatusString(status: model.Status),
+			Afk = model.Afk
+		};
+
+	private static string GetStatusString(DiscordPresenceStatus status) =>
+		status switch
+		{
+			DiscordPresenceStatus.Online => "online",
+			DiscordPresenceStatus.DoNotDisturb => "dnd",
+			DiscordPresenceStatus.Idle => "idle",
+			DiscordPresenceStatus.Invisible => "invisible",
+			DiscordPresenceStatus.Offline => "offline",
+			_ => throw new NotSupportedException(message: $"{nameof(DiscordPresenceStatus)} {status} is not supported")
+		};
 }

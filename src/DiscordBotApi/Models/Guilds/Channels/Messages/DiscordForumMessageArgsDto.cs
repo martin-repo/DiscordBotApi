@@ -1,18 +1,19 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordForumMessageArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages;
 
 // https://discord.com/developers/docs/resources/channel#start-thread-in-forum-channel-forum-thread-message-params-object
-internal record DiscordForumMessageArgsDto(
+internal sealed record DiscordForumMessageArgsDto(
 	[property: JsonPropertyName(name: "content")]
 	string? Content,
 	[property: JsonPropertyName(name: "embeds")]
@@ -23,14 +24,11 @@ internal record DiscordForumMessageArgsDto(
 	DiscordMessageAttachmentDto[]? Attachments
 )
 {
-	internal DiscordForumMessageArgsDto(DiscordForumMessageArgs model) : this(
-		Content: model.Content,
-		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
-			.ToArray(),
-		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
-			.ToArray(),
-		Attachments: model.Attachments?.Select(selector: a => new DiscordMessageAttachmentDto(model: a))
-			.ToArray())
-	{
-	}
+	public static DiscordForumMessageArgsDto FromModel(DiscordForumMessageArgs model) =>
+		new(
+			Content: model.Content,
+			Embeds: model.Embeds?.Select(selector: DiscordEmbedDto.FromModel).ToArray(),
+			Components: model.Components?.Select(selector: c => DiscordMessageComponentDto.FromModel(model: c)).ToArray(),
+			Attachments: model.Attachments?.Select(selector: DiscordMessageAttachmentDto.FromModel).ToArray()
+		);
 }

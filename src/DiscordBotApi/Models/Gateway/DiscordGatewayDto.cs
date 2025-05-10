@@ -1,14 +1,19 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordGatewayDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Gateway;
+
 namespace DiscordBotApi.Models.Gateway;
 
-internal record DiscordGatewayDto(
+internal sealed record DiscordGatewayDto(
 	[property: JsonPropertyName(name: "url")]
 	string Url
-);
+)
+{
+	public DiscordGateway ToModel() => new() { Url = Url };
+}

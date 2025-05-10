@@ -1,19 +1,24 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageComponentDtoConverter.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordMessageComponentDtoConverter.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Utilities;
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 
 internal class DiscordMessageComponentDtoConverter : JsonConverter<DiscordMessageComponentDto>
 {
-	public override DiscordMessageComponentDto Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	public override DiscordMessageComponentDto Read(
+		ref Utf8JsonReader reader,
+		Type typeToConvert,
+		JsonSerializerOptions options
+	)
 	{
 		var json = reader.ReadObjectAsJson();
 

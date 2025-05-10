@@ -1,41 +1,43 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionCallbackMessageDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordInteractionCallbackMessageDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Interactions;
 using DiscordBotApi.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
 namespace DiscordBotApi.Models.Interactions;
 
-internal record DiscordInteractionCallbackMessageDto(
-	[property: JsonPropertyName(name: "content")]
-	string? Content,
-	[property: JsonPropertyName(name: "embeds")]
-	DiscordEmbedDto[]? Embeds,
-	[property: JsonPropertyName(name: "flags")]
-	uint? Flags,
-	[property: JsonPropertyName(name: "components")]
-	DiscordMessageComponentDto[]? Components,
-	[property: JsonPropertyName(name: "attachments")]
-	DiscordMessageAttachmentDto[]? Attachments
-) : DiscordInteractionCallbackDataDto
+internal sealed class DiscordInteractionCallbackMessageDto : DiscordInteractionCallbackDataDto
 {
-	internal DiscordInteractionCallbackMessageDto(DiscordInteractionCallbackMessage model) : this(
-		Content: model.Content,
-		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
-			.ToArray(),
-		Flags: model.Flags != null
-			? (uint)model.Flags
-			: null,
-		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
-			.ToArray(),
-		Attachments: model.Attachments?.Select(selector: a => new DiscordMessageAttachmentDto(model: a))
-			.ToArray())
-	{
-	}
+	[JsonPropertyName(name: "attachments")]
+	public ImmutableArray<DiscordMessageAttachmentDto>? Attachments { get; init; }
+
+	[JsonPropertyName(name: "components")]
+	public ImmutableArray<DiscordMessageComponentDto>? Components { get; init; }
+
+	[JsonPropertyName(name: "content")]
+	public string? Content { get; init; }
+
+	[JsonPropertyName(name: "embeds")]
+	public ImmutableArray<DiscordEmbedDto>? Embeds { get; init; }
+
+	[JsonPropertyName(name: "flags")]
+	public uint? Flags { get; init; }
+
+	public static DiscordInteractionCallbackMessageDto FromModel(DiscordInteractionCallbackMessage model) =>
+		new()
+		{
+			Content = model.Content,
+			Embeds = model.Embeds?.Select(selector: DiscordEmbedDto.FromModel).ToImmutableArray(),
+			Flags = model.Flags != null ? (uint)model.Flags : null,
+			Components = model.Components?.Select(selector: DiscordMessageComponentDto.FromModel).ToImmutableArray(),
+			Attachments = model.Attachments?.Select(selector: DiscordMessageAttachmentDto.FromModel).ToImmutableArray()
+		};
 }

@@ -1,12 +1,14 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordIdentify.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordIdentify.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using DiscordBotApi.Interface.Models.Gateway.Commands;
+
 namespace DiscordBotApi.Models.Gateway.Commands;
 
-internal record DiscordIdentify(
+internal sealed record DiscordIdentify(
 	string Token,
 	DiscordGatewayConnectionProperties Properties,
 	DiscordShard? Shard,

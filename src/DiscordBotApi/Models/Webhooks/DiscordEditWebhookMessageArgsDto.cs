@@ -1,11 +1,13 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordEditWebhookMessageArgsDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordEditWebhookMessageArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Webhooks;
 using DiscordBotApi.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
@@ -13,25 +15,26 @@ using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 namespace DiscordBotApi.Models.Webhooks;
 
 // https://discord.com/developers/docs/resources/webhook#edit-webhook-message-jsonform-params
-internal record DiscordEditWebhookMessageArgsDto(
-	[property: JsonPropertyName(name: "content")]
-	string? Content,
-	[property: JsonPropertyName(name: "embeds")]
-	DiscordEmbedDto[]? Embeds,
-	[property: JsonPropertyName(name: "components")]
-	DiscordMessageComponentDto[]? Components,
-	[property: JsonPropertyName(name: "attachments")]
-	DiscordMessageAttachmentDto[]? Attachments
-)
+internal sealed class DiscordEditWebhookMessageArgsDto
 {
-	internal DiscordEditWebhookMessageArgsDto(DiscordEditWebhookMessageArgs model) : this(
-		Content: model.Content,
-		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
-			.ToArray(),
-		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
-			.ToArray(),
-		Attachments: model.Attachments?.Select(selector: a => new DiscordMessageAttachmentDto(model: a))
-			.ToArray())
-	{
-	}
+	[JsonPropertyName(name: "attachments")]
+	public ImmutableArray<DiscordMessageAttachmentDto>? Attachments { get; init; }
+
+	[JsonPropertyName(name: "components")]
+	public ImmutableArray<DiscordMessageComponentDto>? Components { get; init; }
+
+	[JsonPropertyName(name: "content")]
+	public string? Content { get; init; }
+
+	[JsonPropertyName(name: "embeds")]
+	public ImmutableArray<DiscordEmbedDto>? Embeds { get; init; }
+
+	public static DiscordExecuteWebhookArgsDto FromModel(DiscordEditWebhookMessageArgs model) =>
+		new()
+		{
+			Content = model.Content,
+			Embeds = model.Embeds?.Select(selector: DiscordEmbedDto.FromModel).ToImmutableArray(),
+			Components = model.Components?.Select(selector: DiscordMessageComponentDto.FromModel).ToImmutableArray(),
+			Attachments = model.Attachments?.Select(selector: DiscordMessageAttachmentDto.FromModel).ToImmutableArray()
+		};
 }

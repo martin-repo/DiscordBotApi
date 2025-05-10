@@ -1,14 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordChannelDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordChannelDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels;
+
 namespace DiscordBotApi.Models.Guilds.Channels;
 
-internal record DiscordChannelDto(
+internal sealed record DiscordChannelDto(
 	[property: JsonPropertyName(name: "id")]
 	string Id,
 	[property: JsonPropertyName(name: "type")]
@@ -37,4 +39,24 @@ internal record DiscordChannelDto(
 	int? DefaultSortOrder,
 	[property: JsonPropertyName(name: "default_forum_layout")]
 	int? DefaultForumLayout
-);
+)
+{
+	public DiscordChannel ToModel() =>
+		new()
+		{
+			Id = ulong.Parse(s: Id),
+			Type = (DiscordChannelType)Type,
+			GuildId = GuildId != null ? ulong.Parse(s: GuildId) : null,
+			Position = Position,
+			PermissionOverwrites = PermissionOverwrites?.Select(selector: o => o.ToModel()).ToArray(),
+			Name = Name,
+			Topic = Topic,
+			ParentId = ParentId != null ? ulong.Parse(s: ParentId) : null,
+			ThreadMetadata = ThreadMetadata?.ToModel(),
+			AvailableTags = AvailableTags?.Select(selector: t => t.ToModel()).ToArray(),
+			DefaultAutoArchiveDuration = DefaultAutoArchiveDuration,
+			DefaultReactionEmoji = DefaultReactionEmoji?.ToModel(),
+			DefaultSortOrder = DefaultSortOrder != null ? (DiscordSortOrderType)DefaultSortOrder : null,
+			DefaultForumLayout = DefaultForumLayout != null ? (DiscordForumLayoutType)DefaultForumLayout : null
+		};
+}

@@ -1,12 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordResourceId.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordResourceId.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 namespace DiscordBotApi.Models.Rest;
 
-internal record DiscordResourceId(string HttpMethod, string Path)
+internal sealed record DiscordResourceId(string HttpMethod, string Path)
 {
 	public override string ToString() => $"{HttpMethod}:{Path}";
 }

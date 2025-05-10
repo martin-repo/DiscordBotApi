@@ -1,26 +1,13 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayPayload.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordGatewayPayload.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 namespace DiscordBotApi.Models.Gateway;
 
-internal record DiscordGatewayPayload
+internal sealed record DiscordGatewayPayload
 {
-	internal DiscordGatewayPayload(DiscordGatewayPayloadDto dto)
-	{
-		Opcode = (DiscordGatewayPayloadOpcode)dto.Opcode;
-		SequenceNumber = dto.SequenceNumber;
-		EventName = dto.EventName;
-		EventData = dto.EventData?.Json;
-	}
-
-	internal DiscordGatewayPayload(DiscordGatewayPayloadOpcode opcode)
-	{
-		Opcode = opcode;
-	}
-
 	public string? EventData { get; init; }
 
 	public string? EventName { get; init; }

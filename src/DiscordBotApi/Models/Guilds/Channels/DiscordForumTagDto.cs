@@ -1,14 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordForumTagDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordForumTagDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels;
+
 namespace DiscordBotApi.Models.Guilds.Channels;
 
-internal record DiscordForumTagDto(
+internal sealed record DiscordForumTagDto(
 	[property: JsonPropertyName(name: "id")]
 	string? Id,
 	[property: JsonPropertyName(name: "name")]
@@ -21,12 +23,22 @@ internal record DiscordForumTagDto(
 	string? EmojiName
 )
 {
-	internal DiscordForumTagDto(DiscordForumTag model) : this(
-		Id: model.Id?.ToString(),
-		Name: model.Name,
-		Moderated: model.Moderated,
-		EmojiId: model.EmojiId?.ToString(),
-		EmojiName: model.EmojiName)
-	{
-	}
+	public static DiscordForumTagDto FromModel(DiscordForumTag model) =>
+		new(
+			Id: model.Id?.ToString(),
+			Name: model.Name,
+			Moderated: model.Moderated,
+			EmojiId: model.EmojiId?.ToString(),
+			EmojiName: model.EmojiName
+		);
+
+	public DiscordForumTag ToModel() =>
+		new()
+		{
+			Id = Id != null ? ulong.Parse(s: Id) : null,
+			Name = Name,
+			Moderated = Moderated,
+			EmojiId = EmojiId != null ? ulong.Parse(s: EmojiId) : null,
+			EmojiName = EmojiName
+		};
 }

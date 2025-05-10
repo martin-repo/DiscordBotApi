@@ -1,23 +1,26 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordEmbedDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordEmbedDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Embeds;
 using DiscordBotApi.Utilities;
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
-// https://discord.com/developers/docs/resources/channel#embed-object-embed-structure
-internal record DiscordEmbedDto(
+// https://discord.com/developers/docs/developer-tools/embedded-app-sdk#embed
+internal sealed record DiscordEmbedDto(
 	[property: JsonPropertyName(name: "title")]
 	string? Title,
 	[property: JsonPropertyName(name: "description")]
 	string? Description,
 	[property: JsonPropertyName(name: "url")]
 	string? Url,
+	[property: JsonPropertyName(name: "timestamp")]
+	string? Timestamp,
 	[property: JsonPropertyName(name: "color")]
 	int? Color,
 	[property: JsonPropertyName(name: "footer")]
@@ -34,28 +37,34 @@ internal record DiscordEmbedDto(
 	DiscordFieldDto[]? Fields
 )
 {
-	internal DiscordEmbedDto(DiscordEmbed model) : this(
-		Title: model.Title,
-		Description: model.Description,
-		Url: model.Url,
-		Color: ColorUtils.ColorToInt(color: model.Color),
-		Footer: model.Footer != null
-			? new DiscordFooterDto(model: model.Footer)
-			: null,
-		Image: model.Image != null
-			? new DiscordImageDto(model: model.Image)
-			: null,
-		Thumbnail: model.Thumbnail != null
-			? new DiscordThumbnailDto(model: model.Thumbnail)
-			: null,
-		Video: model.Video != null
-			? new DiscordVideoDto(model: model.Video)
-			: null,
-		Author: model.Author != null
-			? new DiscordAuthorDto(model: model.Author)
-			: null,
-		Fields: model.Fields?.Select(selector: f => new DiscordFieldDto(model: f))
-			.ToArray())
-	{
-	}
+	public static DiscordEmbedDto FromModel(DiscordEmbed model) =>
+		new(
+			Title: model.Title,
+			Description: model.Description,
+			Url: model.Url,
+			Timestamp: model.Timestamp?.ToString(format: "O"),
+			Color: ColorUtils.ColorToInt(color: model.Color),
+			Footer: model.Footer != null ? DiscordFooterDto.FromModel(model: model.Footer) : null,
+			Image: model.Image != null ? DiscordImageDto.FromModel(model: model.Image) : null,
+			Thumbnail: model.Thumbnail != null ? DiscordThumbnailDto.FromModel(model: model.Thumbnail) : null,
+			Video: model.Video != null ? DiscordVideoDto.FromModel(model: model.Video) : null,
+			Author: model.Author != null ? DiscordAuthorDto.FromModel(model: model.Author) : null,
+			Fields: model.Fields?.Select(selector: DiscordFieldDto.FromModel).ToArray()
+		);
+
+	public DiscordEmbed ToModel() =>
+		new()
+		{
+			Title = Title,
+			Description = Description,
+			Url = Url,
+			Timestamp = Timestamp != null ? DateTimeOffset.Parse(input: Timestamp) : null,
+			Color = ColorUtils.IntToColor(colorInt: Color),
+			Footer = Footer?.ToModel(),
+			Image = Image?.ToModel(),
+			Thumbnail = Thumbnail?.ToModel(),
+			Video = Video?.ToModel(),
+			Author = Author?.ToModel(),
+			Fields = Fields?.Select(selector: f => f.ToModel()).ToArray()
+		};
 }

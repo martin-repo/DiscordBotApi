@@ -1,14 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordCreateGlobalApplicationCommandArgsDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordCreateGlobalApplicationCommandArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Applications;
+
 namespace DiscordBotApi.Models.Applications;
 
-internal record DiscordCreateGlobalApplicationCommandArgsDto(
+internal sealed record DiscordCreateGlobalApplicationCommandArgsDto(
 	[property: JsonPropertyName(name: "name")]
 	string Name,
 	[property: JsonPropertyName(name: "description")]
@@ -23,18 +25,16 @@ internal record DiscordCreateGlobalApplicationCommandArgsDto(
 	int? Type
 )
 {
-	internal DiscordCreateGlobalApplicationCommandArgsDto(DiscordCreateGlobalApplicationCommandArgs model) : this(
-		Name: model.Name,
-		Description: model.Description,
-		Options: model.Options?.Select(selector: o => new DiscordApplicationCommandOptionDto(model: o))
-			.ToArray(),
-		DefaultMemberPermissions: model.DefaultMemberPermissions is not null
-			? ((ulong)model.DefaultMemberPermissions).ToString()
-			: null,
-		DmPermission: model.DmPermission,
-		Type: model.Type != null
-			? (int)model.Type
-			: null)
-	{
-	}
+	public static DiscordCreateGlobalApplicationCommandArgsDto
+		FromModel(DiscordCreateGlobalApplicationCommandArgs model) =>
+		new(
+			Name: model.Name,
+			Description: model.Description,
+			Options: model.Options?.Select(selector: DiscordApplicationCommandOptionDto.FromModel).ToArray(),
+			DefaultMemberPermissions: model.DefaultMemberPermissions is not null
+				? ((ulong)model.DefaultMemberPermissions).ToString()
+				: null,
+			DmPermission: model.DmPermission,
+			Type: model.Type != null ? (int)model.Type : null
+		);
 }
