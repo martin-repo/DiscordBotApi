@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="RateLimitTests.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="RateLimitTests.cs" company="kpop.fan">
+//   Copyright (c) 2023 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 using AutoFixture.Xunit2;
 
-using DiscordBotApi.Models.Gateway.Events;
-using DiscordBotApi.Models.Guilds;
-using DiscordBotApi.Models.Guilds.Channels;
-using DiscordBotApi.Models.Guilds.Channels.Messages;
-using DiscordBotApi.Models.Guilds.Emojis;
+using DiscordBotApi.Interface.Models.Gateway.Events;
+using DiscordBotApi.Interface.Models.Guilds;
+using DiscordBotApi.Interface.Models.Guilds.Channels;
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
+using DiscordBotApi.Interface.Models.Guilds.Emojis;
 using DiscordBotApi.Rest;
 
 using FluentAssertions;

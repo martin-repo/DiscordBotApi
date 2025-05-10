@@ -1,13 +1,13 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordBotClientFixture.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordBotClientFixture.cs" company="kpop.fan">
+//   Copyright (c) 2023 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System;
 using System.Threading.Tasks;
 
-using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Interface.Models.Gateway;
 
 using Microsoft.Extensions.Configuration;
 
