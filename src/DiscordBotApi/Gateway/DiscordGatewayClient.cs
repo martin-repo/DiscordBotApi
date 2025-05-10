@@ -17,39 +17,27 @@ using Serilog;
 
 namespace DiscordBotApi.Gateway;
 
-internal partial class DiscordGatewayClient : IAsyncDisposable
+internal partial class DiscordGatewayClient(
+	ILogger? logger,
+	Func<IBinaryWebSocket> webSocketActivator,
+	Func<IZlibContext> zlibContextActivator,
+	string botToken
+) : IAsyncDisposable
 {
 	// https://discord.com/developers/docs/topics/gateway#sending-payloads
 	private const int OutgoingWebSocketChunkLength = 4096;
 
 	private static readonly TextInfo EnglishTextInfo = new CultureInfo(name: "en-US", useUserOverride: false).TextInfo;
 
-	private readonly string _botToken;
-	private readonly ILogger? _logger;
-	private readonly Func<IBinaryWebSocket> _webSocketActivator;
-	private readonly Func<IZlibContext> _zlibContextActivator;
+	private readonly ILogger? _logger = logger?.ForContext<DiscordGatewayClient>();
 
 	private bool _isDisposed;
-	private DiscordGatewaySession _session;
-
-	public DiscordGatewayClient(
-		ILogger? logger,
-		Func<IBinaryWebSocket> webSocketActivator,
-		Func<IZlibContext> zlibContextActivator,
-		string botToken
-	)
-	{
-		_logger = logger?.ForContext<DiscordGatewayClient>();
-		_webSocketActivator = webSocketActivator;
-		_zlibContextActivator = zlibContextActivator;
-		_botToken = botToken;
-		_session = new DiscordGatewaySession(
-			webSocket: default!,
-			zlibContext: default!,
-			gatewayUrl: "",
-			intents: DiscordGatewayIntent.None,
-			shard: null) { Status = DiscordGatewaySessionStatus.Disconnected };
-	}
+	private DiscordGatewaySession _session = new(
+		webSocket: default!,
+		zlibContext: default!,
+		gatewayUrl: "",
+		intents: DiscordGatewayIntent.None,
+		shard: null) { Status = DiscordGatewaySessionStatus.Disconnected };
 
 	public event EventHandler<DiscordGatewayDispatch>? GatewayDispatchReceived;
 
@@ -155,8 +143,8 @@ internal partial class DiscordGatewayClient : IAsyncDisposable
 		}
 
 		_session = new DiscordGatewaySession(
-			webSocket: _webSocketActivator(),
-			zlibContext: _zlibContextActivator(),
+			webSocket: webSocketActivator(),
+			zlibContext: zlibContextActivator(),
 			gatewayUrl: gatewayUrl,
 			intents: intents,
 			shard: shard)
@@ -204,14 +192,14 @@ internal partial class DiscordGatewayClient : IAsyncDisposable
 
 		// Cancel heartbeat loop to ensure nothing is written to the socket while
 		// disconnect is in progress.
-		_session.HeartbeatCancellationSource.Cancel();
+		await _session.HeartbeatCancellationSource.CancelAsync().ConfigureAwait(continueOnCapturedContext: false);
 
 		// Close socket before cancelling payload loop to ensure that closeType
 		// is properly transmitted to Discord.
 		await _session.WebSocket.DisconnectAsync(closeType: closeType)
 			.ConfigureAwait(continueOnCapturedContext: false);
 
-		_session.PayloadCancellationSource.Cancel();
+		await _session.PayloadCancellationSource.CancelAsync().ConfigureAwait(continueOnCapturedContext: false);
 
 		await JoinWithTaskAsync(task: _session.HeartbeatLoopTask)
 			.ConfigureAwait(continueOnCapturedContext: false);

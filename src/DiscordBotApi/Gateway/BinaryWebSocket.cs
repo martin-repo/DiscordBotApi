@@ -13,15 +13,10 @@ namespace DiscordBotApi.Gateway;
 internal class BinaryWebSocket : IBinaryWebSocket
 {
 	private readonly SemaphoreSlim _sendAccess = new(initialCount: 1, maxCount: 1);
-	private readonly ClientWebSocket _webSocket;
+	private readonly ClientWebSocket _webSocket = new();
 
 	private bool _isDisconnecting;
 	private bool _isDisposed;
-
-	public BinaryWebSocket()
-	{
-		_webSocket = new ClientWebSocket();
-	}
 
 	public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
 	{

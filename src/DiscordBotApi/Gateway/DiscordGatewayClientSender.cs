@@ -55,7 +55,7 @@ internal partial class DiscordGatewayClient
 			BrowserName: nameof(DiscordBotApi),
 			DeviceName: nameof(DiscordBotApi));
 		var identify = new DiscordIdentify(
-			Token: _botToken,
+			Token: botToken,
 			Properties: properties,
 			Shard: _session.Shard,
 			Intents: (int)_session.Intents);
@@ -99,7 +99,7 @@ internal partial class DiscordGatewayClient
 
 	private async Task SendResumeAsync(CancellationToken cancellationToken)
 	{
-		var resumeDto = new DiscordResumeDto(Token: _botToken, SessionId: _session.Id, SequenceNumber: _session.SequenceNumber);
+		var resumeDto = new DiscordResumeDto(Token: botToken, SessionId: _session.Id, SequenceNumber: _session.SequenceNumber);
 		var resumeJson = JsonSerializer.Serialize(value: resumeDto);
 
 		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Resume");
