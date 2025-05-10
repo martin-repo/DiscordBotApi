@@ -1,16 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="Samples.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="Samples.cs" company="kpop.fan">
+//   Copyright (c) 2023 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Drawing;
 
-using DiscordBotApi.Models.Gateway;
-using DiscordBotApi.Models.Guilds.Channels;
-using DiscordBotApi.Models.Guilds.Channels.Messages;
-using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
-using DiscordBotApi.Models.Rest;
+using DiscordBotApi.Interface.Models.Gateway;
+using DiscordBotApi.Interface.Models.Guilds.Channels;
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Embeds;
+using DiscordBotApi.Interface.Models.Rest;
 using DiscordBotApi.Rest;
 
 namespace DiscordBotApi.Samples;

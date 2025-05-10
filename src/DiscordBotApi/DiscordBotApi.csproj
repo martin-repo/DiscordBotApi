@@ -30,7 +30,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Serilog" Version="3.0.1"/>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.13.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Serilog" Version="4.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DiscordBotApi.Interface\DiscordBotApi.Interface.csproj"/>
     </ItemGroup>
 
 </Project>

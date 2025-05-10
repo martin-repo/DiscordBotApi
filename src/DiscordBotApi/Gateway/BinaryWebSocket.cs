@@ -1,12 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="BinaryWebSocket.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="BinaryWebSocket.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Net.WebSockets;
 
-using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Interface.Models.Gateway;
 
 namespace DiscordBotApi.Gateway;
 
@@ -30,7 +30,8 @@ internal class BinaryWebSocket : IBinaryWebSocket
 			throw new InvalidOperationException(message: "Can only connect once per instance.");
 		}
 
-		await _webSocket.ConnectAsync(uri: uri, cancellationToken: cancellationToken)
+		await _webSocket
+			.ConnectAsync(uri: uri, cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
@@ -47,10 +48,12 @@ internal class BinaryWebSocket : IBinaryWebSocket
 		}
 
 		_isDisconnecting = true;
-		await _webSocket.CloseAsync(
+		await _webSocket
+			.CloseAsync(
 				closeStatus: (WebSocketCloseStatus)closeType,
 				statusDescription: null,
-				cancellationToken: CancellationToken.None)
+				cancellationToken: CancellationToken.None
+			)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
@@ -75,24 +78,26 @@ internal class BinaryWebSocket : IBinaryWebSocket
 		WebSocketReceiveResult result;
 		do
 		{
-			result = await _webSocket.ReceiveAsync(
-					buffer: new ArraySegment<byte>(array: buffer),
-					cancellationToken: cancellationToken)
+			result = await _webSocket
+				.ReceiveAsync(buffer: new ArraySegment<byte>(array: buffer), cancellationToken: cancellationToken)
 				.ConfigureAwait(continueOnCapturedContext: false);
 			if (result.MessageType == WebSocketMessageType.Binary)
 			{
-				await byteStream.WriteAsync(
+				await byteStream
+					.WriteAsync(
 						buffer: buffer,
 						offset: 0,
 						count: result.Count,
-						cancellationToken: cancellationToken)
+						cancellationToken: cancellationToken
+					)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 			else
 			{
 				break;
 			}
-		} while (!result.EndOfMessage);
+		}
+		while (!result.EndOfMessage);
 
 		if (_isDisconnecting)
 		{
@@ -103,20 +108,23 @@ internal class BinaryWebSocket : IBinaryWebSocket
 		{
 			case WebSocketMessageType.Text:
 				throw new InvalidOperationException(message: "WebSocket contained non-binary data.");
-			case WebSocketMessageType.Binary:
-				return byteStream.ToArray();
+			case WebSocketMessageType.Binary: return byteStream.ToArray();
 			case WebSocketMessageType.Close:
 				throw new DiscordGatewayClosedException(
 					closeType: (DiscordGatewayCloseType?)(int?)result.CloseStatus,
-					closeStatusDescription: result.CloseStatusDescription);
+					closeStatusDescription: result.CloseStatusDescription
+				);
 			default:
-				throw new NotSupportedException(message: $"{typeof(WebSocketMessageType)} {result.MessageType} is not supported");
+				throw new NotSupportedException(
+					message: $"{typeof(WebSocketMessageType)} {result.MessageType} is not supported"
+				);
 		}
 	}
 
 	public async Task SendAsync(byte[] bytes, int chunkLength, CancellationToken cancellationToken)
 	{
-		await _sendAccess.WaitAsync(cancellationToken: cancellationToken)
+		await _sendAccess
+			.WaitAsync(cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 		try
 		{
@@ -127,17 +135,18 @@ internal class BinaryWebSocket : IBinaryWebSocket
 				var segment = new ArraySegment<byte>(
 					array: bytes,
 					offset: offset,
-					count: count > chunkLength
-						? chunkLength
-						: count);
+					count: count > chunkLength ? chunkLength : count
+				);
 				offset += chunkLength;
 				var endOfMessage = offset >= bytes.Length;
 
-				await _webSocket.SendAsync(
+				await _webSocket
+					.SendAsync(
 						buffer: segment,
 						messageType: WebSocketMessageType.Binary,
 						endOfMessage: endOfMessage,
-						cancellationToken: cancellationToken)
+						cancellationToken: cancellationToken
+					)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}

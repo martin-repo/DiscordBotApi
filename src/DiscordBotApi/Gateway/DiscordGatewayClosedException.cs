@@ -1,10 +1,10 @@
 ﻿// -------------------------------------------------------------------------------------------------
 // <copyright file="DiscordGatewayClosedException.cs" company="kpop.fan">
-//   Copyright (c) kpop.fan. All rights reserved.
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-using DiscordBotApi.Models.Gateway;
+using DiscordBotApi.Interface.Models.Gateway;
 
 namespace DiscordBotApi.Gateway;
 
