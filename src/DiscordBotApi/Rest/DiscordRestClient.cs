@@ -334,7 +334,7 @@ internal class DiscordRestClient : IDisposable
 				.GetReservationAsync(resourceId: resource, requestIndex: requestIndex, cancellationToken: requestToken)
 				.ConfigureAwait(continueOnCapturedContext: false);
 			await _globalManager
-				.GetReservationAsync(resourceId: resource, cancellationToken: cancellationToken)
+				.GetReservationAsync(resourceId: resource, cancellationToken: requestToken)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			await _httpClientAccess
