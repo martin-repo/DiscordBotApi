@@ -10,18 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 7.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
 
-    - name: Build
-      run: dotnet build src/DiscordBotApi/DiscordBotApi.csproj --configuration Release /p:BuildId=${{ github.run_number }}
+      - name: Build
+        run: dotnet build src/DiscordBotApi/DiscordBotApi.csproj --configuration Release /p:BuildId=${{ github.run_number }}
 
-    - name: Pack
-      run: dotnet pack src/DiscordBotApi/DiscordBotApi.csproj --configuration Release --no-build /p:BuildId=${{ github.run_number }}
+      - name: Pack
+        run: dotnet pack src/DiscordBotApi/DiscordBotApi.csproj --configuration Release --no-build /p:BuildId=${{ github.run_number }}
 
-    - name: Push
-      run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+      - name: Push
+        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
