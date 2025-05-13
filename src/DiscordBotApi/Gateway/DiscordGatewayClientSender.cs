@@ -41,7 +41,7 @@ internal partial class DiscordGatewayClient
 	{
 		_session.HeartbeatAckReceived = false;
 
-		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Heartbeat");
+		_logger?.Debug(messageTemplate: "Client >> Gateway -- {Name}", propertyValue: "Heartbeat");
 
 		var payload = new DiscordGatewayPayload
 		{
@@ -71,7 +71,7 @@ internal partial class DiscordGatewayClient
 			options: new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }
 		);
 
-		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Identify");
+		_logger?.Debug(messageTemplate: "Client >> Gateway -- {Name}", propertyValue: "Identify");
 
 		var payload = new DiscordGatewayPayload
 		{
@@ -102,7 +102,7 @@ internal partial class DiscordGatewayClient
 		var presenceUpdateDto = DiscordPresenceUpdateDto.FromModel(model: presenceUpdate);
 		var presenceUpdateJson = JsonSerializer.Serialize(value: presenceUpdateDto);
 
-		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "PresenceUpdate");
+		_logger?.Debug(messageTemplate: "Client >> Gateway -- {Name}", propertyValue: "PresenceUpdate");
 
 		var payload = new DiscordGatewayPayload
 		{
@@ -122,7 +122,7 @@ internal partial class DiscordGatewayClient
 		);
 		var resumeJson = JsonSerializer.Serialize(value: resumeDto);
 
-		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Resume");
+		_logger?.Debug(messageTemplate: "Client >> Gateway -- {Name}", propertyValue: "Resume");
 
 		var payload = new DiscordGatewayPayload
 		{

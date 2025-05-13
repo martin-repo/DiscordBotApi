@@ -4,7 +4,7 @@
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-namespace DiscordBotApi.Gateway;
+namespace DiscordBotApi.Interface.Gateway;
 
 public class DiscordGatewayException : ApplicationException
 {

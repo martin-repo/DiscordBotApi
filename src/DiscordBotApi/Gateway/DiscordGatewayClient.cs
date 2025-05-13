@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 
+using DiscordBotApi.Interface.Gateway;
 using DiscordBotApi.Interface.Models.Gateway;
 using DiscordBotApi.Interface.Models.Gateway.Commands;
 using DiscordBotApi.Interface.Models.Gateway.Events;
