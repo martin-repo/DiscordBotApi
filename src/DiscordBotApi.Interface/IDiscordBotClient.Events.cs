@@ -15,37 +15,37 @@ namespace DiscordBotApi.Interface;
 
 public partial interface IDiscordBotClient
 {
-	public event EventHandler<DiscordGuildApplicationCommandPermissions>? ApplicationCommandPermissionsUpdate;
+	event EventHandler<DiscordGuildApplicationCommandPermissions>? ApplicationCommandPermissionsUpdate;
 
-	public event EventHandler<DiscordChannel>? ChannelCreate;
+	event EventHandler<DiscordChannel>? ChannelCreate;
 
-	public event EventHandler<DiscordChannel>? ChannelDelete;
+	event EventHandler<DiscordChannel>? ChannelDelete;
 
-	public event EventHandler<DiscordChannel>? ChannelUpdate;
+	event EventHandler<DiscordChannel>? ChannelUpdate;
 
-	public event EventHandler<DiscordGuild>? GuildCreate;
+	event EventHandler<DiscordGuild>? GuildCreate;
 
-	public event EventHandler<DiscordGuildMemberAdd>? GuildMemberAdd;
+	event EventHandler<DiscordGuildMemberAdd>? GuildMemberAdd;
 
-	public event EventHandler<DiscordGuildMemberRemove>? GuildMemberRemove;
+	event EventHandler<DiscordGuildMemberRemove>? GuildMemberRemove;
 
-	public event EventHandler<DiscordGuildMemberUpdate>? GuildMemberUpdate;
+	event EventHandler<DiscordGuildMemberUpdate>? GuildMemberUpdate;
 
-	public event EventHandler<DiscordGuildRoleCreate>? GuildRoleCreate;
+	event EventHandler<DiscordGuildRoleCreate>? GuildRoleCreate;
 
-	public event EventHandler<DiscordGuildRoleDelete>? GuildRoleDelete;
+	event EventHandler<DiscordGuildRoleDelete>? GuildRoleDelete;
 
-	public event EventHandler<DiscordGuildRoleUpdate>? GuildRoleUpdate;
+	event EventHandler<DiscordGuildRoleUpdate>? GuildRoleUpdate;
 
-	public event EventHandler<DiscordInteraction>? InteractionCreate;
+	event EventHandler<DiscordInteraction>? InteractionCreate;
 
-	public event EventHandler<DiscordMessage>? MessageCreate;
+	event EventHandler<DiscordMessage>? MessageCreate;
 
-	public event EventHandler<DiscordMessageDelete>? MessageDelete;
+	event EventHandler<DiscordMessageDelete>? MessageDelete;
 
-	public event EventHandler<DiscordMessageReactionAdd>? MessageReactionAdd;
+	event EventHandler<DiscordMessageReactionAdd>? MessageReactionAdd;
 
-	public event EventHandler<DiscordMessageReactionRemove>? MessageReactionRemove;
+	event EventHandler<DiscordMessageReactionRemove>? MessageReactionRemove;
 
-	public event EventHandler<DiscordUpdatedMessage>? MessageUpdate;
+	event EventHandler<DiscordUpdatedMessage>? MessageUpdate;
 }

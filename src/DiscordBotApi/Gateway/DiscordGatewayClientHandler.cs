@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text.Json;
 
+using DiscordBotApi.Interface.Gateway;
 using DiscordBotApi.Interface.Models.Gateway;
 using DiscordBotApi.Interface.Models.Gateway.Commands;
 using DiscordBotApi.Interface.Models.Gateway.Events;
@@ -258,7 +259,7 @@ internal partial class DiscordGatewayClient
 	{
 		if (payload.Opcode != DiscordGatewayPayloadOpcode.Dispatch)
 		{
-			_logger?.Debug(messageTemplate: "Gateway << {Type}", propertyValue: payload.Opcode);
+			_logger?.Debug(messageTemplate: "Client << Gateway -- {Type}", propertyValue: payload.Opcode);
 		}
 
 		switch (payload.Opcode)
@@ -379,11 +380,11 @@ internal partial class DiscordGatewayClient
 
 		if (Enum.TryParse<DiscordEventType>(value: eventTypeValue, ignoreCase: true, result: out var eventType))
 		{
-			_logger?.Debug(messageTemplate: "Gateway << {Type}", propertyValue: eventType);
+			_logger?.Debug(messageTemplate: "Client << Gateway -- {Type}", propertyValue: eventType);
 			return eventType;
 		}
 
-		_logger?.Debug(messageTemplate: "Gateway << {Type}", propertyValue: eventTypeValue);
+		_logger?.Debug(messageTemplate: "Client << Gateway -- {Type}", propertyValue: eventTypeValue);
 		_logger?.Error(messageTemplate: $"{typeof(DiscordEventType)} {eventTypeValue} is not defined");
 		return null;
 	}
