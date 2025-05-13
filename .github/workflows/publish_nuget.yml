@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -16,12 +15,28 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
-
-      - name: Build
+      
+      # DiscordBotApi
+      - name: Build DiscordBotApi
         run: dotnet build src/DiscordBotApi/DiscordBotApi.csproj --configuration Release /p:BuildId=${{ github.run_number }}
 
-      - name: Pack
+      - name: Pack DiscordBotApi
         run: dotnet pack src/DiscordBotApi/DiscordBotApi.csproj --configuration Release --no-build /p:BuildId=${{ github.run_number }}
+      
+      # DiscordBotApi.Builders
+      - name: Build DiscordBotApi.Builders
+        run: dotnet build src/DiscordBotApi.Builders/DiscordBotApi.Builders.csproj --configuration Release /p:BuildId=${{ github.run_number }}
 
+      - name: Pack DiscordBotApi.Builders
+        run: dotnet pack src/DiscordBotApi.Builders/DiscordBotApi.Builders.csproj --configuration Release --no-build /p:BuildId=${{ github.run_number }}
+      
+      # DiscordBotApi.Interface
+      - name: Build DiscordBotApi.Interface
+        run: dotnet build src/DiscordBotApi.Interface/DiscordBotApi.Interface.csproj --configuration Release /p:BuildId=${{ github.run_number }}
+
+      - name: Pack DiscordBotApi.Interface
+        run: dotnet pack src/DiscordBotApi.Interface/DiscordBotApi.Interface.csproj --configuration Release --no-build /p:BuildId=${{ github.run_number }}
+      
+      # Push all packages
       - name: Push
         run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
