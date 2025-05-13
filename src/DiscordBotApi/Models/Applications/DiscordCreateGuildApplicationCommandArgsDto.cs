@@ -1,14 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordCreateGuildApplicationCommandArgsDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordCreateGuildApplicationCommandArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Applications;
+
 namespace DiscordBotApi.Models.Applications;
 
-internal record DiscordCreateGuildApplicationCommandArgsDto(
+internal sealed record DiscordCreateGuildApplicationCommandArgsDto(
 	[property: JsonPropertyName(name: "name")]
 	string Name,
 	[property: JsonPropertyName(name: "description")]
@@ -21,17 +23,15 @@ internal record DiscordCreateGuildApplicationCommandArgsDto(
 	int? Type
 )
 {
-	internal DiscordCreateGuildApplicationCommandArgsDto(DiscordCreateGuildApplicationCommandArgs model) : this(
-		Name: model.Name,
-		Description: model.Description,
-		Options: model.Options?.Select(selector: o => new DiscordApplicationCommandOptionDto(model: o))
-			.ToArray(),
-		DefaultMemberPermissions: model.DefaultMemberPermissions is not null
-			? ((ulong)model.DefaultMemberPermissions).ToString()
-			: null,
-		Type: model.Type is not null
-			? (int)model.Type
-			: null)
-	{
-	}
+	public static DiscordCreateGuildApplicationCommandArgsDto
+		FromModel(DiscordCreateGuildApplicationCommandArgs model) =>
+		new(
+			Name: model.Name,
+			Description: model.Description,
+			Options: model.Options?.Select(selector: DiscordApplicationCommandOptionDto.FromModel).ToArray(),
+			DefaultMemberPermissions: model.DefaultMemberPermissions is not null
+				? ((ulong)model.DefaultMemberPermissions).ToString()
+				: null,
+			Type: model.Type is not null ? (int)model.Type : null
+		);
 }

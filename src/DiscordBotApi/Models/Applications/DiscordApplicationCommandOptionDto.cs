@@ -1,15 +1,19 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordApplicationCommandOptionDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordApplicationCommandOptionDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Applications;
+using DiscordBotApi.Interface.Models.Guilds.Channels;
+using DiscordBotApi.Utilities;
+
 namespace DiscordBotApi.Models.Applications;
 
 // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
-internal record DiscordApplicationCommandOptionDto(
+internal sealed record DiscordApplicationCommandOptionDto(
 	[property: JsonPropertyName(name: "type")]
 	int Type,
 	[property: JsonPropertyName(name: "name")]
@@ -36,22 +40,43 @@ internal record DiscordApplicationCommandOptionDto(
 	bool? Autocomplete
 )
 {
-	internal DiscordApplicationCommandOptionDto(DiscordApplicationCommandOption model) : this(
-		Type: (int)model.Type,
-		Name: model.Name,
-		Description: model.Description,
-		Required: model.Required,
-		Choices: model.Choices?.Select(selector: c => new DiscordApplicationCommandOptionChoiceDto(model: c))
-			.ToArray(),
-		Options: model.Options?.Select(selector: o => new DiscordApplicationCommandOptionDto(model: o))
-			.ToArray(),
-		ChannelTypes: model.ChannelTypes?.Select(selector: t => (int)t)
-			.ToArray(),
-		MinValue: model.MinValue,
-		MaxValue: model.MaxValue,
-		MinLength: model.MinLength,
-		MaxLength: model.MaxLength,
-		Autocomplete: model.Autocomplete)
-	{
-	}
+	public static DiscordApplicationCommandOptionDto FromModel(DiscordApplicationCommandOption model) =>
+		new(
+			Type: (int)model.Type,
+			Name: model.Name,
+			Description: model.Description,
+			Required: model.Required,
+			Choices: model.Choices?.Select(selector: DiscordApplicationCommandOptionChoiceDto.FromModel).ToArray(),
+			Options: model.Options?.Select(selector: FromModel).ToArray(),
+			ChannelTypes: model.ChannelTypes?.Select(selector: t => (int)t).ToArray(),
+			MinValue: model.MinValue,
+			MaxValue: model.MaxValue,
+			MinLength: model.MinLength,
+			MaxLength: model.MaxLength,
+			Autocomplete: model.Autocomplete
+		);
+
+	public DiscordApplicationCommandOption ToModel() =>
+		new()
+		{
+			Type = (DiscordApplicationCommandOptionType)Type,
+			Name = Name,
+			Description = Description,
+			Required = Required,
+			Choices =
+				Choices?.Select(selector: c => c.ToModel(type: (DiscordApplicationCommandOptionType)Type)).ToArray(),
+			Options = Options?.Select(selector: o => o.ToModel()).ToArray(),
+			ChannelTypes = ChannelTypes?.Select(selector: t => (DiscordChannelType)t).ToArray(),
+			MinValue =
+				MinValue != null
+					? JsonParseUtils.ToObject(type: (DiscordApplicationCommandOptionType)Type, jsonValue: MinValue)
+					: null,
+			MaxValue =
+				MaxValue != null
+					? JsonParseUtils.ToObject(type: (DiscordApplicationCommandOptionType)Type, jsonValue: MaxValue)
+					: null,
+			MinLength = MinLength,
+			MaxLength = MaxLength,
+			Autocomplete = Autocomplete
+		};
 }

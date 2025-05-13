@@ -1,14 +1,13 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordResourceManager.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordResourceManager.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-
+using DiscordBotApi.Interface.Models.Rest;
 using DiscordBotApi.Models.Rest;
-
 using Serilog;
 
 namespace DiscordBotApi.Rest;
@@ -26,7 +25,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 
 	private readonly Regex _encodedEmojiRegex = new(
 		pattern: @"(?<=reactions\/)([^%\/]*%[^%\/]*)+(?=\/|\?|$)",
-		options: RegexOptions.Compiled);
+		options: RegexOptions.Compiled
+	);
 
 	private readonly Regex _endpointNumberRegex = new(pattern: @"(?<=\/)\d+(?=\/|\?|$)", options: RegexOptions.Compiled);
 	private readonly ILogger? _logger;
@@ -63,10 +63,19 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			valueFactory: _ =>
 			{
 				// Unknown rate limits (first resource access)
-				var resource = new DiscordResource(id: resourceId, rateLimit: new DiscordRateLimit(Bucket: UnknownBucket));
+				var resource = new DiscordResource
+				{
+					Id = resourceId,
+					RateLimit = new DiscordRateLimit
+					{
+						Bucket = UnknownBucket
+					},
+					ReservationRequests = new SortedDictionary<long, DiscordReservationRequest>()
+				};
 				reservation = CreateReservationWithUpdate(resource: resource);
 				return resource;
-			});
+			}
+		);
 		if (reservation != null)
 		{
 			return reservation;
@@ -74,7 +83,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 
 		var reservationRequest = new DiscordReservationRequest(
 			ReservationReady: new TaskCompletionSource<IDisposable>(),
-			CancellationToken: cancellationToken);
+			CancellationToken: cancellationToken
+		);
 		lock (resource)
 		{
 			resource.ReservationRequests.Add(key: requestIndex, value: reservationRequest);
@@ -82,7 +92,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 
 		_reservationQueue.Add(item: resource, cancellationToken: cancellationToken);
 
-		return await reservationRequest.ReservationReady.Task.WaitAsync(cancellationToken: cancellationToken)
+		return await reservationRequest
+			.ReservationReady.Task.WaitAsync(cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
@@ -97,14 +108,10 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 		var topLevelResourceName = endpoint[..slashIndex];
 		switch (topLevelResourceName)
 		{
-			case ChannelsName:
-				return GetResourceIdFromChannelsEndpoint(httpMethod: httpMethod, endpoint: endpoint);
-			case GuildsName:
-				return GetResourceIdFromGuildsEndpoint(httpMethod: httpMethod, endpoint: endpoint);
-			case InteractionsName:
-				return new DiscordResourceId(HttpMethod: httpMethod, Path: "interactions///callback");
-			case WebhooksName:
-				return GetResourceIdFromWebhooksEndpoint(httpMethod: httpMethod, endpoint: endpoint);
+			case ChannelsName: return GetResourceIdFromChannelsEndpoint(httpMethod: httpMethod, endpoint: endpoint);
+			case GuildsName: return GetResourceIdFromGuildsEndpoint(httpMethod: httpMethod, endpoint: endpoint);
+			case InteractionsName: return new DiscordResourceId(HttpMethod: httpMethod, Path: "interactions///callback");
+			case WebhooksName: return GetResourceIdFromWebhooksEndpoint(httpMethod: httpMethod, endpoint: endpoint);
 			case ApplicationsName:
 			case UsersName:
 				return GetResourceIdFromUnsupportedEndpoint(httpMethod: httpMethod, endpoint: endpoint);
@@ -123,7 +130,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 		_cancellationTokenSource = new CancellationTokenSource();
 		new TaskFactory().StartNew(
 			action: () => ReservationProcessing(cancellationToken: _cancellationTokenSource.Token),
-			creationOptions: TaskCreationOptions.LongRunning);
+			creationOptions: TaskCreationOptions.LongRunning
+		);
 	}
 
 	public void Stop()
@@ -169,9 +177,7 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 	private static string RemoveQueryFromEndpoint(string endpoint)
 	{
 		var querySeparatorIndex = endpoint.IndexOf(value: '?');
-		return querySeparatorIndex != -1
-			? endpoint[..querySeparatorIndex]
-			: endpoint;
+		return querySeparatorIndex != -1 ? endpoint[..querySeparatorIndex] : endpoint;
 	}
 
 	private ResourceReservation CreateReservationWithUpdate(DiscordResource resource)
@@ -197,7 +203,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			_logger?.Debug(
 				messageTemplate: "Sharing RateLimitBucket ({Id}) for {Resource}",
 				propertyValue0: bucket,
-				propertyValue1: resource.Id);
+				propertyValue1: resource.Id
+			);
 			resource.RateLimit = rateLimit;
 		}
 		else
@@ -205,8 +212,12 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			_logger?.Debug(
 				messageTemplate: "Creating RateLimitBucket ({Id}) for {Resource}",
 				propertyValue0: bucket,
-				propertyValue1: resource.Id);
-			resource.RateLimit = new DiscordRateLimit(Bucket: bucket);
+				propertyValue1: resource.Id
+			);
+			resource.RateLimit = new DiscordRateLimit
+			{
+				Bucket = bucket
+			};
 			_sharedLimits.Add(key: bucket, value: resource.RateLimit);
 		}
 	}
@@ -226,12 +237,14 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			input: resourcePath,
 			replacement: "",
 			count: int.MaxValue,
-			startat: secondSlashIndex);
+			startat: secondSlashIndex
+		);
 		resourcePath = _encodedEmojiRegex.Replace(
 			input: resourcePath,
 			replacement: "",
 			count: int.MaxValue,
-			startat: secondSlashIndex);
+			startat: secondSlashIndex
+		);
 
 		return new DiscordResourceId(HttpMethod: httpMethod, Path: resourcePath);
 	}
@@ -251,7 +264,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			input: resourcePath,
 			replacement: "",
 			count: int.MaxValue,
-			startat: secondSlashIndex);
+			startat: secondSlashIndex
+		);
 
 		return new DiscordResourceId(HttpMethod: httpMethod, Path: resourcePath);
 	}
@@ -280,12 +294,14 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 				input: resourcePath,
 				replacement: "",
 				count: int.MaxValue,
-				startat: webhookTokenMatch.Index + webhookTokenMatch.Length)
+				startat: webhookTokenMatch.Index + webhookTokenMatch.Length
+			)
 			: _endpointNumberRegex.Replace(
 				input: resourcePath,
 				replacement: "",
 				count: int.MaxValue,
-				startat: secondSlashIndex);
+				startat: secondSlashIndex
+			);
 
 		return new DiscordResourceId(HttpMethod: httpMethod, Path: resourcePath);
 	}
@@ -307,7 +323,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 				{
 					isAdded = true;
 					return taskFactory();
-				});
+				}
+			);
 
 			if (isAdded)
 			{
@@ -327,7 +344,7 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 				continue;
 			}
 
-			if (!resource.ReservationRequests.Any())
+			if (resource.ReservationRequests.Count == 0)
 			{
 				// Resource was added multiple times
 				// All requests has already been processed
@@ -337,8 +354,7 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			lock (resource)
 			{
 				var utcNow = DateTime.UtcNow;
-				if (resource.RateLimit.Retry != null &&
-					resource.RateLimit.Retry > utcNow)
+				if (resource.RateLimit.Retry != null && resource.RateLimit.Retry > utcNow)
 				{
 					// Resource is rate limited due to shared/global limit
 					var retryAfter = (resource.RateLimit.Retry.Value - utcNow).Add(ts: systemClockResolution);
@@ -347,17 +363,19 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 						messageTemplate: "Resource shared rate limit; waiting {Count:F3} seconds -- {Id}/{Resource}",
 						propertyValue0: retryAfter.TotalSeconds,
 						propertyValue1: resource.RateLimit.Bucket,
-						propertyValue2: resource.Id);
+						propertyValue2: resource.Id
+					);
 					_ = DelayResourceAsync(
 						resource: resource,
-						taskFactory: () => Task.Delay(delay: retryAfter, cancellationToken: cancellationToken));
+						taskFactory: () => Task.Delay(delay: retryAfter, cancellationToken: cancellationToken)
+					);
 					continue;
 				}
 
 				if (resource.RateLimit.Bucket == UnlimitedBucket)
 				{
 					// Resource has no bucket limit
-					while (resource.ReservationRequests.Any())
+					while (resource.ReservationRequests.Count > 0)
 					{
 						var (requestIndex, reservationRequest) = resource.ReservationRequests.First();
 						resource.ReservationRequests.Remove(key: requestIndex);
@@ -373,33 +391,37 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 					_logger?.Debug(
 						messageTemplate: "Resoure is updating; {Id}/{Resource}",
 						propertyValue0: resource.RateLimit.Bucket,
-						propertyValue1: resource.Id);
+						propertyValue1: resource.Id
+					);
 					_ = DelayResourceAsync(
 						resource: resource,
-						taskFactory: () => resource.RateLimit.UpdateTask.WaitAsync(cancellationToken: cancellationToken));
+						taskFactory: () => resource.RateLimit.UpdateTask.WaitAsync(cancellationToken: cancellationToken)
+					);
 					continue;
 				}
 
 				if (resource.RateLimit.Reset <= utcNow)
 				{
 					// Current rate limits are outdated
-					if (resource.ReservationRequests.Any())
+					if (resource.ReservationRequests.Count > 0)
 					{
 						var (requestIndex, reservationRequest) = resource.ReservationRequests.First();
 						resource.ReservationRequests.Remove(key: requestIndex);
-						reservationRequest.ReservationReady.SetResult(result: CreateReservationWithUpdate(resource: resource));
+						reservationRequest.ReservationReady.SetResult(
+							result: CreateReservationWithUpdate(resource: resource)
+						);
 					}
 
 					_ = DelayResourceAsync(
 						resource: resource,
-						taskFactory: () => resource.RateLimit.UpdateTask.WaitAsync(cancellationToken: cancellationToken));
+						taskFactory: () => resource.RateLimit.UpdateTask.WaitAsync(cancellationToken: cancellationToken)
+					);
 					continue;
 				}
 
 				if (resource.RateLimit.Remaining > 0)
 				{
-					while (resource.RateLimit.Remaining > 0 &&
-						resource.ReservationRequests.Any())
+					while (resource.RateLimit.Remaining > 0 && resource.ReservationRequests.Count > 0)
 					{
 						var (requestIndex, reservationRequest) = resource.ReservationRequests.First();
 						resource.ReservationRequests.Remove(key: requestIndex);
@@ -409,7 +431,7 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 						reservationRequest.ReservationReady.SetResult(result: new ResourceReservation());
 					}
 
-					if (!resource.ReservationRequests.Any())
+					if (resource.ReservationRequests.Count == 0)
 					{
 						continue;
 					}
@@ -422,10 +444,12 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 					messageTemplate: "Resource endpoint rate limit; waiting {Count:F3} seconds -- {Id}/{Resource}",
 					propertyValue0: resetAfter.TotalSeconds,
 					propertyValue1: resource.RateLimit.Bucket,
-					propertyValue2: resource.Id);
+					propertyValue2: resource.Id
+				);
 				_ = DelayResourceAsync(
 					resource: resource,
-					taskFactory: () => Task.Delay(delay: resetAfter, cancellationToken: cancellationToken));
+					taskFactory: () => Task.Delay(delay: resetAfter, cancellationToken: cancellationToken)
+				);
 			}
 		}
 	}
@@ -447,8 +471,12 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 			messageTemplate: "Resource {Resource} has changed bucket from {OldBucket} to {NewBucket}",
 			propertyValue0: resource.Id,
 			propertyValue1: resource.RateLimit.Bucket,
-			propertyValue2: UnlimitedBucket);
-		resource.RateLimit = new DiscordRateLimit(Bucket: UnlimitedBucket);
+			propertyValue2: UnlimitedBucket
+		);
+		resource.RateLimit = new DiscordRateLimit
+		{
+			Bucket = UnlimitedBucket
+		};
 	}
 
 	private void UpdateRateLimit(DiscordRateLimit rateLimit, DiscordBucketResponse bucketResponse)
@@ -486,7 +514,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 				messageTemplate: "Resource {Resource} has changed bucket from {OldBucket} to {NewBucket}",
 				propertyValue0: resource.Id,
 				propertyValue1: UnknownBucket,
-				propertyValue2: bucketResponse.Bucket);
+				propertyValue2: bucketResponse.Bucket
+			);
 			GetOrCreateSharedLimit(resource: resource, bucket: bucketResponse.Bucket);
 		}
 		else if (bucketResponse.Bucket != resource.RateLimit.Bucket)
@@ -495,7 +524,8 @@ internal class DiscordResourceManager : IDiscordResourceManager, IDisposable
 				messageTemplate: "Resource {Resource} has changed bucket from {OldBucket} to {NewBucket}",
 				propertyValue0: resource.Id,
 				propertyValue1: resource.RateLimit.Bucket,
-				propertyValue2: bucketResponse.Bucket);
+				propertyValue2: bucketResponse.Bucket
+			);
 			ResetSharedLimit(resource: resource, bucket: bucketResponse.Bucket);
 		}
 	}

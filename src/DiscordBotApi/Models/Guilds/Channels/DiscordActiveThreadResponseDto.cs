@@ -1,15 +1,21 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordActiveThreadResponseDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordActiveThreadResponseDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels;
+
 namespace DiscordBotApi.Models.Guilds.Channels;
 
 // https://discord.com/developers/docs/resources/guild#list-active-guild-threads-response-body
-internal record DiscordActiveThreadResponseDto(
+internal sealed record DiscordActiveThreadResponseDto(
 	[property: JsonPropertyName(name: "threads")]
 	DiscordChannelDto[] Threads
-);
+)
+{
+	public DiscordActiveThreadResponse ToModel() =>
+		new() { Threads = Threads.Select(selector: t => t.ToModel()).ToArray() };
+}

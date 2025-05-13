@@ -1,24 +1,43 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordUserDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordUserDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Users;
+
 namespace DiscordBotApi.Models.Users;
 
-internal record DiscordUserDto(
-	[property: JsonPropertyName(name: "id")]
-	string Id,
-	[property: JsonPropertyName(name: "username")]
-	string Username,
-	[property: JsonPropertyName(name: "discriminator")]
-	string Discriminator,
-	[property: JsonPropertyName(name: "global_name")]
-	string? GlobalName,
-	[property: JsonPropertyName(name: "avatar")]
-	string? Avatar,
-	[property: JsonPropertyName(name: "bot")]
-	bool? Bot
-);
+internal sealed class DiscordUserDto
+{
+	[JsonPropertyName(name: "avatar")]
+	public string? Avatar { get; init; }
+
+	[JsonPropertyName(name: "bot")]
+	public bool? Bot { get; init; }
+
+	[JsonPropertyName(name: "discriminator")]
+	public required string Discriminator { get; init; }
+
+	[JsonPropertyName(name: "global_name")]
+	public string? GlobalName { get; init; }
+
+	[JsonPropertyName(name: "id")]
+	public required string Id { get; init; }
+
+	[JsonPropertyName(name: "username")]
+	public required string Username { get; init; }
+
+	internal DiscordUser ToModel() =>
+		new()
+		{
+			Id = ulong.Parse(s: Id),
+			Username = Username,
+			Discriminator = Discriminator,
+			GlobalName = GlobalName,
+			Avatar = Avatar,
+			Bot = Bot
+		};
+}

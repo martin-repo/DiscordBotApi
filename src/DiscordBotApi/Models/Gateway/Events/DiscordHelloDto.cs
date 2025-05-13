@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordHelloDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordHelloDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace DiscordBotApi.Models.Gateway.Events;
 
-internal record DiscordHelloDto(
+internal sealed record DiscordHelloDto(
 	[property: JsonPropertyName(name: "heartbeat_interval")]
 	int HeartbeatInterval
 );

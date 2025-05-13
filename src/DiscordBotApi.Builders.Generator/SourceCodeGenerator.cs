@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="SourceCodeGenerator.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="SourceCodeGenerator.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -9,24 +9,27 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Text;
 
-using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
+using DiscordBotApi.Interface;
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Components;
 
 namespace DiscordBotApi.Builders.Generator;
 
 public class SourceCodeGenerator
 {
-	private const string TargetNamespace = "DiscordBotApi.Models";
+	private const string TargetNamespace = "DiscordBotApi.Interface.Models";
 
 	public void Main()
 	{
-		var assembly = typeof(DiscordBotClient).Assembly;
+		var assembly = typeof(IDiscordBotClient).Assembly;
 
-		var modelTypes = assembly.GetTypes()
+		var modelTypes = assembly
+			.GetTypes()
 			.Where(
 				predicate: v =>
 					v is { IsPublic: true, Namespace: not null } &&
 					v.Namespace.StartsWith(value: TargetNamespace, comparisonType: StringComparison.Ordinal) &&
-					HasPublicConstructor(type: v))
+					HasPublicConstructor(type: v)
+			)
 			.ToImmutableArray();
 
 		var globalUsingsBuilder = new StringBuilder();
@@ -34,48 +37,55 @@ public class SourceCodeGenerator
 			value: """
 			global using System.Collections.Immutable;
 			global using System.Drawing;
-			""");
+			"""
+		);
 		globalUsingsBuilder.AppendLine();
-		var modelNamespaceNames = assembly.GetTypes()
+		var modelNamespaceNames = assembly
+			.GetTypes()
 			.Where(
 				predicate: v =>
 					v.Namespace is not null &&
-					v.Namespace.StartsWith(value: TargetNamespace, comparisonType: StringComparison.Ordinal))
+					v.Namespace.StartsWith(value: TargetNamespace, comparisonType: StringComparison.Ordinal)
+			)
 			.Select(selector: v => v.Namespace)
 			.Distinct()
-			.OrderBy(keySelector: v => v)
+			.Order()
 			.ToImmutableArray();
 		globalUsingsBuilder.AppendLine(
 			value: string.Join(
 				separator: Environment.NewLine,
-				values: modelNamespaceNames.Select(selector: v => $"global using {v};")));
+				values: modelNamespaceNames.Select(selector: v => $"global using {v};")
+			)
+		);
 		globalUsingsBuilder.AppendLine();
 		globalUsingsBuilder.Append(
 			value: string.Join(
 				separator: Environment.NewLine,
-				values: modelTypes.Select(
-						selector: v => $"global using DiscordBotApi.Builders{v.Namespace![TargetNamespace.Length..]};")
+				values: modelTypes
+					.Select(selector: v => $"global using DiscordBotApi.Builders{v.Namespace![TargetNamespace.Length..]};")
 					.Distinct()
-					.OrderBy(keySelector: v => v)));
+					.Order()
+			)
+		);
 
-		var assemblyLocation = Assembly.GetExecutingAssembly()
-			.Location;
+		var assemblyLocation = Assembly.GetExecutingAssembly().Location;
 		var assemblyDirectory = new DirectoryInfo(
-			path: Path.GetDirectoryName(path: assemblyLocation) ?? throw new InvalidOperationException(message: "Invalid location"));
+			path: Path.GetDirectoryName(path: assemblyLocation) ??
+			throw new InvalidOperationException(message: "Invalid location")
+		);
 		var baseFolder = assemblyDirectory.Parent?.Parent?.Parent?.Parent?.FullName ??
 			throw new InvalidOperationException(message: "Invalid location");
 		var rootFolder = Path.Combine(path1: baseFolder, path2: "DiscordBotApi.Builders");
 
 		File.WriteAllText(
 			path: Path.Combine(path1: rootFolder, path2: "GlobalUsings.cs"),
-			contents: globalUsingsBuilder.ToString());
+			contents: globalUsingsBuilder.ToString()
+		);
 
 		foreach (var type in modelTypes)
 		{
-			var subNamespace = type.Namespace![TargetNamespace.Length..]
-				.Trim(trimChar: '.');
-			var folders = subNamespace.Split(separator: '.')
-				.ToImmutableArray();
+			var subNamespace = type.Namespace![TargetNamespace.Length..].Trim(trimChar: '.');
+			var folders = subNamespace.Split(separator: '.').ToImmutableArray();
 			if (folders.IsEmpty)
 			{
 				throw new InvalidOperationException();
@@ -94,28 +104,31 @@ public class SourceCodeGenerator
 			codeBuilder.AppendLine(
 				handler: $$"""
 				// -------------------------------------------------------------------------------------------------
-				// <copyright file="{{filename}}" company="Martin Karlsson">
-				//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+				// <copyright file="{{filename}}" company="kpop.fan">
+				//   Copyright (c) 2025 kpop.fan. All rights reserved.
 				// </copyright>
 				// -------------------------------------------------------------------------------------------------
 
 				namespace DiscordBotApi.Builders.{{subNamespace}};
 
+				// WARNING! This file was generated by a tool.
+				//          Any changes made to this file will be lost if the code is regenerated.
 				public class {{type.Name}}Builder
 				{
-				""");
+				"""
+			);
 
 			var properties = type.GetProperties(bindingAttr: BindingFlags.Public | BindingFlags.Instance);
-			var propertyDatas = properties.Select(selector: GetPropertyData)
-				.ToImmutableArray();
+			var propertyDatas = properties.Select(selector: GetPropertyData).ToImmutableArray();
 
 			foreach (var data in propertyDatas)
 			{
-				var readOnly = data is { IsNullable: false, IsEnumerable: true }
-					? " readonly"
-					: null;
-				var defaultValue = data.IsNullable ? null :
-					data.IsEnumerable ? " = new()" : " = default!";
+				var readOnly = data is { IsNullable: false, IsEnumerable: true } ? " readonly" : null;
+				var defaultValue = data.IsNullable
+					? null
+					: data.IsEnumerable
+						? " = new()"
+						: " = default!";
 				codeBuilder.AppendLine(handler: $"	private{readOnly} {data.TypeName} {data.FieldName}{defaultValue};");
 			}
 
@@ -130,7 +143,7 @@ public class SourceCodeGenerator
 					{
 						codeBuilder.AppendLine(
 							handler: $$"""
-							
+
 								public {{type.Name}}Builder AddActionRow(Action<DiscordMessageActionRowBuilder> builderAction)
 								{
 									var builder = new DiscordMessageActionRowBuilder();
@@ -138,12 +151,13 @@ public class SourceCodeGenerator
 									{{data.FieldName}}.Add(item: builder.Build());
 									return this;
 								}
-							""");
+							"""
+						);
 						if (type == typeof(DiscordMessageActionRow))
 						{
 							codeBuilder.AppendLine(
 								handler: $$"""
-								
+
 									public DiscordMessageActionRowBuilder AddButton(Action<DiscordMessageButtonBuilder> builderAction)
 									{
 										var builder = new DiscordMessageButtonBuilder();
@@ -151,13 +165,13 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
-								
+
 									public DiscordMessageActionRowBuilder AddButton(DiscordMessageButton button)
 									{
 										{{data.FieldName}}.Add(item: button);
 										return this;
 									}
-								
+
 									public DiscordMessageActionRowBuilder AddSelectMenu(Action<DiscordMessageSelectMenuBuilder> builderAction)
 									{
 										var builder = new DiscordMessageSelectMenuBuilder();
@@ -165,13 +179,13 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
-								
+
 									public DiscordMessageActionRowBuilder AddSelectMenu(DiscordMessageSelectMenu selectMenu)
 									{
 										{{data.FieldName}}.Add(item: selectMenu);
 										return this;
 									}
-								
+
 									public DiscordMessageActionRowBuilder AddTextInput(Action<DiscordMessageTextInputBuilder> builderAction)
 									{
 										var builder = new DiscordMessageTextInputBuilder();
@@ -179,34 +193,35 @@ public class SourceCodeGenerator
 										{{data.FieldName}}.Add(item: builder.Build());
 										return this;
 									}
-								
+
 									public DiscordMessageActionRowBuilder AddButton(DiscordMessageTextInput textInput)
 									{
 										{{data.FieldName}}.Add(item: textInput);
 										return this;
 									}
-								""");
+								"""
+							);
 						}
 					}
-					else if (data.GenericType?.IsValueType == true ||
-						data.GenericType == typeof(string))
+					else if (data.GenericType?.IsValueType == true || data.GenericType == typeof(string))
 					{
 						var argumentName = GetSingularName(pluralName: data.ArgumentName);
 						codeBuilder.AppendLine(
 							handler: $$"""
-							
+
 								public {{type.Name}}Builder Add{{GetSingularName(pluralName: data.PropertyName)}}({{data.GenericTypeName}} {{argumentName}})
 								{{{listConstruction}}
 									{{data.FieldName}}.Add(item: {{argumentName}});
 									return this;
 								}
-							""");
+							"""
+						);
 					}
 					else
 					{
 						codeBuilder.AppendLine(
 							handler: $$"""
-							
+
 								public {{type.Name}}Builder Add{{GetSingularName(pluralName: data.PropertyName)}}(Action<{{data.GenericTypeName}}Builder> builderAction)
 								{
 									var builder = new {{data.GenericTypeName!}}Builder();
@@ -214,13 +229,14 @@ public class SourceCodeGenerator
 									{{data.FieldName}}.Add(item: builder.Build());
 									return this;
 								}
-							
+
 								public {{type.Name}}Builder Add{{GetSingularName(pluralName: data.PropertyName)}}({{data.GenericTypeName}} item)
 								{{{listConstruction}}
 									{{data.FieldName}}.Add(item: item);
 									return this;
 								}
-							""");
+							"""
+						);
 					}
 				}
 				else
@@ -232,27 +248,32 @@ public class SourceCodeGenerator
 					};
 					codeBuilder.AppendLine(
 						handler: $$"""
-						
+
 							public {{type.Name}}Builder With{{data.PropertyName}}({{data.TypeName}} {{argumentName}})
 							{
 								{{data.FieldName}} = {{argumentName}};
 								return this;
 							}
-						""");
+						"""
+					);
 				}
 			}
 
 			codeBuilder.AppendLine(
 				handler: $$"""
-				
+
 					public {{type.Name}} Build() =>
 						new()
 						{
-				""");
+				"""
+			);
 			foreach (var data in propertyDatas)
 			{
-				var conversion = !data.IsEnumerable ? null :
-					data.IsNullable ? "?.ToImmutableArray()" : ".ToImmutableArray()";
+				var conversion = !data.IsEnumerable
+					? null
+					: data.IsNullable
+						? "?.ToImmutableArray()"
+						: ".ToImmutableArray()";
 				codeBuilder.AppendLine(handler: $"			{data.PropertyName} = {data.FieldName}{conversion},");
 			}
 
@@ -271,20 +292,19 @@ public class SourceCodeGenerator
 		static bool HasPublicConstructor(Type type)
 		{
 			var constructors = type.GetConstructors(bindingAttr: BindingFlags.Public | BindingFlags.Instance);
-			return constructors.Any();
+			return constructors.Length > 0;
 		}
 	}
 
 	private static PropertyData GetPropertyData(PropertyInfo property)
 	{
-		var (nullableType, isNullable) = GetTypeInfo(property: property);
+		var (propertyType, isNullable) = GetTypeInfo(property: property);
 
-		var genericType = nullableType.GetGenericArguments()
-			.SingleOrDefault();
+		var genericType = propertyType.GetGenericArguments().SingleOrDefault();
 
-		var type = genericType ?? nullableType;
+		var type = genericType ?? propertyType;
 
-		var isEnumerable = type != typeof(string) && typeof(IEnumerable).IsAssignableFrom(c: nullableType);
+		var isEnumerable = propertyType != typeof(string) && typeof(IEnumerable).IsAssignableFrom(c: propertyType);
 
 		var argumentName = $"{char.ToLower(c: property.Name[index: 0])}{property.Name[1..]}";
 		var fieldName = $"_{argumentName}";
@@ -303,7 +323,8 @@ public class SourceCodeGenerator
 			FieldName: fieldName,
 			ArgumentName: argumentName,
 			IsNullable: isNullable,
-			IsEnumerable: isEnumerable);
+			IsEnumerable: isEnumerable
+		);
 
 		static (Type Type, bool IsNullable) GetTypeInfo(PropertyInfo property)
 		{
@@ -327,9 +348,11 @@ public class SourceCodeGenerator
 			var typeName = type.FullName switch
 			{
 				"System.Boolean" => "bool",
+				"System.Double" => "double",
+				"System.Int32" => "int",
+				"System.Object" => "object",
 				"System.String" => "string",
 				"System.UInt64" => "ulong",
-				"System.Int32" => "int",
 				_ => type.Name
 			};
 			if (isEnumerable)

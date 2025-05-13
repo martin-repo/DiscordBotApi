@@ -1,17 +1,18 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordEditMessageArgsDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordEditMessageArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages;
 
-internal record DiscordEditMessageArgsDto(
+internal sealed record DiscordEditMessageArgsDto(
 	[property: JsonPropertyName(name: "content")]
 	string? Content,
 	[property: JsonPropertyName(name: "embeds")]
@@ -22,14 +23,11 @@ internal record DiscordEditMessageArgsDto(
 	DiscordMessageAttachmentDto[]? Attachments
 )
 {
-	internal DiscordEditMessageArgsDto(DiscordEditMessageArgs model) : this(
-		Content: model.Content,
-		Embeds: model.Embeds?.Select(selector: e => new DiscordEmbedDto(model: e))
-			.ToArray(),
-		Components: model.Components?.Select(selector: DiscordMessageComponent.ConvertToDto)
-			.ToArray(),
-		Attachments: model.Attachments?.Select(selector: a => new DiscordMessageAttachmentDto(model: a))
-			.ToArray())
-	{
-	}
+	public static DiscordEditMessageArgsDto FromModel(DiscordEditMessageArgs model) =>
+		new(
+			Content: model.Content,
+			Embeds: model.Embeds?.Select(selector: DiscordEmbedDto.FromModel).ToArray(),
+			Components: model.Components?.Select(selector: DiscordMessageComponentDto.FromModel).ToArray(),
+			Attachments: model.Attachments?.Select(selector: DiscordMessageAttachmentDto.FromModel).ToArray()
+		);
 }

@@ -1,6 +1,6 @@
 // -------------------------------------------------------------------------------------------------
-// <copyright file="RateLimitResourceManagerTests.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="RateLimitResourceManagerTests.cs" company="kpop.fan">
+//   Copyright (c) 2023 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -8,6 +8,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using DiscordBotApi.Interface.Models.Rest;
+using DiscordBotApi.Interface.Utilities;
 using DiscordBotApi.Models.Rest;
 using DiscordBotApi.Rest;
 using DiscordBotApi.Utilities;

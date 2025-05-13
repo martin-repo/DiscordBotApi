@@ -1,44 +1,36 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionResponseArgsDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordInteractionResponseArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Interactions;
+
 namespace DiscordBotApi.Models.Interactions;
 
-internal record DiscordInteractionResponseArgsDto(
+internal sealed record DiscordInteractionResponseArgsDto(
 	[property: JsonPropertyName(name: "type")]
 	int Type,
 	[property: JsonPropertyName(name: "data")]
 	DiscordInteractionCallbackDataDto? Data
 )
 {
-	internal DiscordInteractionResponseArgsDto(DiscordInteractionResponseArgs model) : this(
-		Type: (int)model.Type,
-		Data: ConvertToDto(model: model.Data))
-	{
-	}
+	public static DiscordInteractionResponseArgsDto FromModel(DiscordInteractionResponseArgs model) =>
+		new(Type: (int)model.Type, Data: FromModel(model: model.Data));
 
-	private static DiscordInteractionCallbackDataDto? ConvertToDto(DiscordInteractionCallbackData? model)
-	{
-		if (model == null)
+	private static DiscordInteractionCallbackDataDto? FromModel(DiscordInteractionCallbackData? model) =>
+		model switch
 		{
-			return null;
-		}
-
-		switch (model)
-		{
-			case DiscordInteractionCallbackMessage message:
-				return new DiscordInteractionCallbackMessageDto(model: message);
-			case DiscordInteractionCallbackAutocomplete autocomplete:
-				return new DiscordInteractionCallbackAutocompleteDto(model: autocomplete);
-			case DiscordInteractionCallbackModal modal:
-				return new DiscordInteractionCallbackModalDto(model: modal);
-			default:
-				throw new NotSupportedException(
-					message: $"{typeof(DiscordInteractionCallbackData)} {model.GetType().Name} is not supported");
-		}
-	}
+			DiscordInteractionCallbackMessage message => DiscordInteractionCallbackMessageDto.FromModel(model: message),
+			DiscordInteractionCallbackAutocomplete autocomplete => DiscordInteractionCallbackAutocompleteDto.FromModel(
+				model: autocomplete
+			),
+			DiscordInteractionCallbackModal modal => DiscordInteractionCallbackModalDto.FromModel(model: modal),
+			null => null,
+			_ => throw new NotSupportedException(
+				message: $"{typeof(DiscordInteractionCallbackData)} {model.GetType().Name} is not supported"
+			)
+		};
 }

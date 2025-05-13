@@ -1,6 +1,6 @@
 // -------------------------------------------------------------------------------------------------
-// <copyright file="MessageTests.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="MessageTests.cs" company="kpop.fan">
+//   Copyright (c) 2023 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 using AutoFixture.Xunit2;
 
-using DiscordBotApi.Models.Guilds;
-using DiscordBotApi.Models.Guilds.Channels;
-using DiscordBotApi.Models.Guilds.Channels.Messages;
-using DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
+using DiscordBotApi.Interface.Models.Guilds;
+using DiscordBotApi.Interface.Models.Guilds.Channels;
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Embeds;
 
 using FluentAssertions;
 

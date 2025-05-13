@@ -1,15 +1,18 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordApplicationCommandDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordApplicationCommandDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Applications;
+using DiscordBotApi.Interface.Models.Guilds;
+
 namespace DiscordBotApi.Models.Applications;
 
 // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-structure
-internal record DiscordApplicationCommandDto(
+internal sealed record DiscordApplicationCommandDto(
 	[property: JsonPropertyName(name: "id")]
 	string Id,
 	[property: JsonPropertyName(name: "type")]
@@ -30,4 +33,21 @@ internal record DiscordApplicationCommandDto(
 	bool? DmPermission,
 	[property: JsonPropertyName(name: "version")]
 	string Version
-);
+)
+{
+	public DiscordApplicationCommand ToModel() =>
+		new()
+		{
+			Id = ulong.Parse(s: Id),
+			Type = Type != null ? (DiscordApplicationCommandType)Type : null,
+			ApplicationId = ulong.Parse(s: ApplicationId),
+			GuildId = GuildId != null ? ulong.Parse(s: GuildId) : null,
+			Name = Name,
+			Description = Description,
+			Options = Options?.Select(selector: o => o.ToModel()).ToArray(),
+			DefaultMemberPermissions =
+				DefaultMemberPermissions != null ? (DiscordPermissions)ulong.Parse(s: DefaultMemberPermissions) : null,
+			DmPermission = DmPermission,
+			Version = ulong.Parse(s: Version)
+		};
+}

@@ -1,11 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordInteractionDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Interactions;
 using DiscordBotApi.Models.Guilds;
 using DiscordBotApi.Models.Guilds.Channels.Messages;
 using DiscordBotApi.Models.Users;
@@ -13,25 +14,50 @@ using DiscordBotApi.Models.Users;
 namespace DiscordBotApi.Models.Interactions;
 
 // https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-interaction-structure
-internal record DiscordInteractionDto(
-	[property: JsonPropertyName(name: "id")]
-	string Id,
-	[property: JsonPropertyName(name: "application_id")]
-	string ApplicationId,
-	[property: JsonPropertyName(name: "type")]
-	int Type,
-	[property: JsonPropertyName(name: "data")]
-	DiscordInteractionDataDto? Data,
-	[property: JsonPropertyName(name: "guild_id")]
-	string? GuildId,
-	[property: JsonPropertyName(name: "channel_id")]
-	string? ChannelId,
-	[property: JsonPropertyName(name: "member")]
-	DiscordGuildMemberDto? Member,
-	[property: JsonPropertyName(name: "user")]
-	DiscordUserDto? User,
-	[property: JsonPropertyName(name: "token")]
-	string Token,
-	[property: JsonPropertyName(name: "message")]
-	DiscordMessageDto? Message
-);
+internal sealed class DiscordInteractionDto
+{
+	[JsonPropertyName(name: "application_id")]
+	public required string ApplicationId { get; init; }
+
+	[JsonPropertyName(name: "channel_id")]
+	public string? ChannelId { get; init; }
+
+	[JsonPropertyName(name: "data")]
+	public DiscordInteractionDataDto? Data { get; init; }
+
+	[JsonPropertyName(name: "guild_id")]
+	public string? GuildId { get; init; }
+
+	[JsonPropertyName(name: "id")]
+	public required string Id { get; init; }
+
+	[JsonPropertyName(name: "member")]
+	public DiscordGuildMemberDto? Member { get; init; }
+
+	[JsonPropertyName(name: "message")]
+	public DiscordMessageDto? Message { get; init; }
+
+	[JsonPropertyName(name: "token")]
+	public required string Token { get; init; }
+
+	[JsonPropertyName(name: "type")]
+	public required int Type { get; init; }
+
+	[JsonPropertyName(name: "user")]
+	public DiscordUserDto? User { get; init; }
+
+	public DiscordInteraction ToModel() =>
+		new()
+		{
+			Id = ulong.Parse(s: Id),
+			ApplicationId = ulong.Parse(s: ApplicationId),
+			Type = (DiscordInteractionType)Type,
+			Data = Data?.ToModel(),
+			GuildId = GuildId != null ? ulong.Parse(s: GuildId) : null,
+			ChannelId = ChannelId != null ? ulong.Parse(s: ChannelId) : null,
+			Member = Member?.ToModel(),
+			User = User?.ToModel(),
+			Token = Token,
+			Message = Message?.ToModel()
+		};
+}

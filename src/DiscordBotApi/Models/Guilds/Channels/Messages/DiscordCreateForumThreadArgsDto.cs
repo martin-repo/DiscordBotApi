@@ -1,15 +1,17 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordCreateForumThreadArgsDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordCreateForumThreadArgsDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
+
 namespace DiscordBotApi.Models.Guilds.Channels.Messages;
 
 // https://discord.com/developers/docs/resources/channel#start-thread-in-forum-channel
-internal record DiscordCreateForumThreadArgsDto(
+internal sealed record DiscordCreateForumThreadArgsDto(
 	[property: JsonPropertyName(name: "name")]
 	string Name,
 	[property: JsonPropertyName(name: "auto_archive_duration")]
@@ -22,13 +24,12 @@ internal record DiscordCreateForumThreadArgsDto(
 	string[]? AppliedTags
 )
 {
-	internal DiscordCreateForumThreadArgsDto(DiscordCreateForumThreadArgs model) : this(
-		Name: model.Name,
-		AutoArchiveDuration: model.AutoArchiveDuration,
-		RateLimitPerUser: model.RateLimitPerUser,
-		Message: new DiscordForumMessageArgsDto(model: model.Message),
-		AppliedTags: model.AppliedTags?.Select(selector: t => t.ToString())
-			.ToArray())
-	{
-	}
+	public static DiscordCreateForumThreadArgsDto FromModel(DiscordCreateForumThreadArgs model) =>
+		new(
+			Name: model.Name,
+			AutoArchiveDuration: model.AutoArchiveDuration,
+			RateLimitPerUser: model.RateLimitPerUser,
+			Message: DiscordForumMessageArgsDto.FromModel(model: model.Message),
+			AppliedTags: model.AppliedTags?.Select(selector: t => t.ToString()).ToArray()
+		);
 }

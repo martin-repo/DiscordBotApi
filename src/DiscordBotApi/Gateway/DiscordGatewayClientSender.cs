@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayClientSender.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordGatewayClientSender.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Gateway.Commands;
 using DiscordBotApi.Models.Gateway;
 using DiscordBotApi.Models.Gateway.Commands;
 
@@ -42,8 +43,11 @@ internal partial class DiscordGatewayClient
 
 		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Heartbeat");
 
-		var payload =
-			new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.Heartbeat) { SequenceNumber = _session.SequenceNumber };
+		var payload = new DiscordGatewayPayload
+		{
+			Opcode = DiscordGatewayPayloadOpcode.Heartbeat,
+			SequenceNumber = _session.SequenceNumber
+		};
 		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
@@ -53,58 +57,78 @@ internal partial class DiscordGatewayClient
 		var properties = new DiscordGatewayConnectionProperties(
 			OperatingSystem: GetOperatingSystemName(),
 			BrowserName: nameof(DiscordBotApi),
-			DeviceName: nameof(DiscordBotApi));
+			DeviceName: nameof(DiscordBotApi)
+		);
 		var identify = new DiscordIdentify(
-			Token: _botToken,
+			Token: botToken,
 			Properties: properties,
 			Shard: _session.Shard,
-			Intents: (int)_session.Intents);
-		var identifyDto = new DiscordIdentifyDto(model: identify);
+			Intents: (int)_session.Intents
+		);
+		var identifyDto = DiscordIdentifyDto.FromModel(model: identify);
 		var identifyJson = JsonSerializer.Serialize(
 			value: identifyDto,
-			options: new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+			options: new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }
+		);
 
 		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Identify");
 
-		var payload = new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.Identify) { EventData = identifyJson };
+		var payload = new DiscordGatewayPayload
+		{
+			Opcode = DiscordGatewayPayloadOpcode.Identify,
+			EventData = identifyJson
+		};
 		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
 	private async Task SendPayloadAsync(DiscordGatewayPayload payload, CancellationToken cancellationToken)
 	{
-		var payloadDto = new DiscordGatewayPayloadDto(model: payload);
+		var payloadDto = DiscordGatewayPayloadDto.FromModel(model: payload);
 		var payloadJson = JsonSerializer.Serialize(value: payloadDto);
 		var payloadBytes = Encoding.UTF8.GetBytes(s: payloadJson);
 
-		await _session.WebSocket.SendAsync(
+		await _session
+			.WebSocket.SendAsync(
 				bytes: payloadBytes,
 				chunkLength: OutgoingWebSocketChunkLength,
-				cancellationToken: cancellationToken)
+				cancellationToken: cancellationToken
+			)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
 	private async Task SendPresenceUpdateAsync(DiscordPresenceUpdate presenceUpdate, CancellationToken cancellationToken)
 	{
-		var presenceUpdateDto = new DiscordPresenceUpdateDto(model: presenceUpdate);
+		var presenceUpdateDto = DiscordPresenceUpdateDto.FromModel(model: presenceUpdate);
 		var presenceUpdateJson = JsonSerializer.Serialize(value: presenceUpdateDto);
 
 		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "PresenceUpdate");
 
-		var payload =
-			new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.PresenceUpdate) { EventData = presenceUpdateJson };
+		var payload = new DiscordGatewayPayload
+		{
+			Opcode = DiscordGatewayPayloadOpcode.PresenceUpdate,
+			EventData = presenceUpdateJson
+		};
 		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}
 
 	private async Task SendResumeAsync(CancellationToken cancellationToken)
 	{
-		var resumeDto = new DiscordResumeDto(Token: _botToken, SessionId: _session.Id, SequenceNumber: _session.SequenceNumber);
+		var resumeDto = new DiscordResumeDto(
+			Token: botToken,
+			SessionId: _session.Id,
+			SequenceNumber: _session.SequenceNumber
+		);
 		var resumeJson = JsonSerializer.Serialize(value: resumeDto);
 
 		_logger?.Debug(messageTemplate: "Gateway >> {Name}", propertyValue: "Resume");
 
-		var payload = new DiscordGatewayPayload(opcode: DiscordGatewayPayloadOpcode.Resume) { EventData = resumeJson };
+		var payload = new DiscordGatewayPayload
+		{
+			Opcode = DiscordGatewayPayloadOpcode.Resume,
+			EventData = resumeJson
+		};
 		await SendPayloadAsync(payload: payload, cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 	}

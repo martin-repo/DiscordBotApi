@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="Utf8JsonReaderExtensions.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="Utf8JsonReaderExtensions.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -37,8 +37,7 @@ internal static class Utf8JsonReaderExtensions
 				case JsonTokenType.StartObject:
 					switch (lastTokenType)
 					{
-						case JsonTokenType.EndObject when depthItems.Peek()
-							.IsArray:
+						case JsonTokenType.EndObject when depthItems.Peek().IsArray:
 							jsonBuilder.Append(value: ',');
 							break;
 					}
@@ -78,8 +77,7 @@ internal static class Utf8JsonReaderExtensions
 
 				case JsonTokenType.String:
 					var depthItem = depthItems.Peek();
-					if (depthItem.IsArray &&
-						depthItem.IsValueAdded)
+					if (depthItem.IsArray && depthItem.IsValueAdded)
 					{
 						jsonBuilder.Append(value: ',');
 					}
@@ -124,17 +122,11 @@ internal static class Utf8JsonReaderExtensions
 				var stringValue = reader.GetString()!;
 				var encodedString = JsonSerializer.Serialize(value: stringValue);
 				return encodedString;
-			case JsonTokenType.Number:
-				return reader.GetInt64()
-					.ToString(provider: CultureInfo.InvariantCulture);
-			case JsonTokenType.True:
-				return "true";
-			case JsonTokenType.False:
-				return "false";
-			case JsonTokenType.Null:
-				return "null";
-			default:
-				return "";
+			case JsonTokenType.Number: return reader.GetInt64().ToString(provider: CultureInfo.InvariantCulture);
+			case JsonTokenType.True: return "true";
+			case JsonTokenType.False: return "false";
+			case JsonTokenType.Null: return "null";
+			default: return "";
 		}
 	}
 

@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordIdentifyDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordIdentifyDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace DiscordBotApi.Models.Gateway.Commands;
 
-internal record DiscordIdentifyDto(
+internal sealed record DiscordIdentifyDto(
 	[property: JsonPropertyName(name: "token")]
 	string Token,
 	[property: JsonPropertyName(name: "properties")]
@@ -19,17 +19,11 @@ internal record DiscordIdentifyDto(
 	int Intents
 )
 {
-	internal DiscordIdentifyDto(DiscordIdentify model) : this(
-		Token: model.Token,
-		Properties: new DiscordGatewayConnectionPropertiesDto(model: model.Properties),
-		Shard: model.Shard != null
-			? new[]
-			{
-				model.Shard.ShardId,
-				model.Shard.NumShards
-			}
-			: null,
-		Intents: model.Intents)
-	{
-	}
+	public static DiscordIdentifyDto FromModel(DiscordIdentify model) =>
+		new(
+			Token: model.Token,
+			Properties: DiscordGatewayConnectionPropertiesDto.FromModel(model: model.Properties),
+			Shard: model.Shard != null ? [model.Shard.ShardId, model.Shard.NumShards] : null,
+			Intents: model.Intents
+		);
 }

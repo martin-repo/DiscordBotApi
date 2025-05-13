@@ -1,17 +1,18 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordApplicationDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordApplicationDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Applications;
 using DiscordBotApi.Models.Users;
 
 namespace DiscordBotApi.Models.Applications;
 
 // https://discord.com/developers/docs/resources/application#application-object-application-structure
-internal record DiscordApplicationDto(
+internal sealed record DiscordApplicationDto(
 	[property: JsonPropertyName(name: "id")]
 	string Id,
 	[property: JsonPropertyName(name: "name")]
@@ -29,5 +30,20 @@ internal record DiscordApplicationDto(
 	[property: JsonPropertyName(name: "install_params")]
 	DiscordInstallParamsDto? InstallParams,
 	[property: JsonPropertyName(name: "custom_install_url")]
-	string[]? CustomInstallUrl
-);
+	string? CustomInstallUrl
+)
+{
+	public DiscordApplication ToModel() =>
+		new()
+		{
+			Id = ulong.Parse(s: Id),
+			Name = Name,
+			BotPublic = BotPublic,
+			BotRequireCodeGrant = BotRequireCodeGrant,
+			Owner = Owner?.ToModel(),
+			Flags = Flags != null ? (DiscordApplicationFlags)Flags : null,
+			Tags = Tags,
+			InstallParams = InstallParams?.ToModel(),
+			CustomInstallUrl = CustomInstallUrl
+		};
+}

@@ -1,23 +1,16 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordResource.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordResource.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 namespace DiscordBotApi.Models.Rest;
 
-internal record DiscordResource
+internal sealed class DiscordResource
 {
-	public DiscordResource(DiscordResourceId id, DiscordRateLimit rateLimit)
-	{
-		Id = id;
-		RateLimit = rateLimit;
-		ReservationRequests = new SortedDictionary<long, DiscordReservationRequest>();
-	}
+	public required DiscordResourceId Id { get; init; }
 
-	public DiscordResourceId Id { get; set; }
+	public required DiscordRateLimit RateLimit { get; set; }
 
-	public DiscordRateLimit RateLimit { get; set; }
-
-	public SortedDictionary<long, DiscordReservationRequest> ReservationRequests { get; }
+	public required SortedDictionary<long, DiscordReservationRequest> ReservationRequests { get; init; }
 }

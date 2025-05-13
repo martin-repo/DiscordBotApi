@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotApi.Builders", "D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotApi.Builders.Generator", "DiscordBotApi.Builders.Generator\DiscordBotApi.Builders.Generator.csproj", "{B3002519-5891-477C-95B8-0E5ADABD87DE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotApi.Interface", "DiscordBotApi.Interface\DiscordBotApi.Interface.csproj", "{C110A6B1-77EC-4E91-B2F1-078A5E90BD15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{B3002519-5891-477C-95B8-0E5ADABD87DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3002519-5891-477C-95B8-0E5ADABD87DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3002519-5891-477C-95B8-0E5ADABD87DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C110A6B1-77EC-4E91-B2F1-078A5E90BD15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C110A6B1-77EC-4E91-B2F1-078A5E90BD15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C110A6B1-77EC-4E91-B2F1-078A5E90BD15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C110A6B1-77EC-4E91-B2F1-078A5E90BD15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

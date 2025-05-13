@@ -1,15 +1,17 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageAttachmentDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordMessageAttachmentDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
+
 namespace DiscordBotApi.Models.Guilds.Channels.Messages;
 
 // https://discord.com/developers/docs/resources/channel#attachment-object-attachment-structure
-internal record DiscordMessageAttachmentDto(
+internal sealed record DiscordMessageAttachmentDto(
 	[property: JsonPropertyName(name: "id")]
 	string Id,
 	[property: JsonPropertyName(name: "filename")]
@@ -31,19 +33,33 @@ internal record DiscordMessageAttachmentDto(
 	[property: JsonPropertyName(name: "ephemeral")]
 	bool? Ephemeral
 )
-
 {
-	internal DiscordMessageAttachmentDto(DiscordMessageAttachment model) : this(
-		Id: model.Id.ToString(),
-		Filename: model.Filename,
-		Description: model.Description,
-		ContentType: model.ContentType,
-		Size: model.Size,
-		Url: model.Url,
-		ProxyUrl: model.ProxyUrl,
-		Height: model.Height,
-		Width: model.Width,
-		Ephemeral: model.Ephemeral)
-	{
-	}
+	public static DiscordMessageAttachmentDto FromModel(DiscordMessageAttachment model) =>
+		new(
+			Id: model.Id.ToString(),
+			Filename: model.Filename,
+			Description: model.Description,
+			ContentType: model.ContentType,
+			Size: model.Size,
+			Url: model.Url,
+			ProxyUrl: model.ProxyUrl,
+			Height: model.Height,
+			Width: model.Width,
+			Ephemeral: model.Ephemeral
+		);
+
+	public DiscordMessageAttachment ToModel() =>
+		new()
+		{
+			Id = ulong.Parse(s: Id),
+			Filename = Filename,
+			Description = Description,
+			ContentType = ContentType,
+			Size = Size,
+			Url = Url,
+			ProxyUrl = ProxyUrl,
+			Height = Height,
+			Width = Width,
+			Ephemeral = Ephemeral
+		};
 }

@@ -1,16 +1,18 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageSelectMenuDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordMessageSelectMenuDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Components;
+
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 
 // https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-menu-structure
-internal record DiscordMessageSelectMenuDto(
+internal sealed record DiscordMessageSelectMenuDto(
 	[property: JsonPropertyName(name: "custom_id")]
 	string CustomId,
 	[property: JsonPropertyName(name: "options")]
@@ -25,14 +27,24 @@ internal record DiscordMessageSelectMenuDto(
 	bool? Disabled
 ) : DiscordMessageComponentDto(Type: (int)DiscordMessageComponentType.SelectMenu)
 {
-	internal DiscordMessageSelectMenuDto(DiscordMessageSelectMenu model) : this(
-		CustomId: model.CustomId,
-		Options: model.Options?.Select(selector: o => new DiscordMessageSelectMenuOptionDto(model: o))
-			.ToImmutableArray(),
-		Placeholder: model.Placeholder,
-		MinValues: model.MinValues,
-		MaxValues: model.MaxValues,
-		Disabled: model.Disabled)
-	{
-	}
+	public static DiscordMessageSelectMenuDto FromModel(DiscordMessageSelectMenu model) =>
+		new(
+			CustomId: model.CustomId,
+			Options: model.Options?.Select(selector: DiscordMessageSelectMenuOptionDto.FromModel).ToImmutableArray(),
+			Placeholder: model.Placeholder,
+			MinValues: model.MinValues,
+			MaxValues: model.MaxValues,
+			Disabled: model.Disabled
+		);
+
+	public override DiscordMessageSelectMenu ToModel() =>
+		new()
+		{
+			CustomId = CustomId,
+			Options = Options?.Select(selector: o => o.ToModel()).ToImmutableArray(),
+			Placeholder = Placeholder,
+			MinValues = MinValues,
+			MaxValues = MaxValues,
+			Disabled = Disabled
+		};
 }

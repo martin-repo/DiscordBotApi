@@ -1,13 +1,15 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordRateLimit.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordRateLimit.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 namespace DiscordBotApi.Models.Rest;
 
-internal record DiscordRateLimit(string Bucket)
+internal sealed class DiscordRateLimit
 {
+	public required string Bucket { get; init; }
+
 	public double DiscordReset { get; set; }
 
 	public int Remaining { get; set; }

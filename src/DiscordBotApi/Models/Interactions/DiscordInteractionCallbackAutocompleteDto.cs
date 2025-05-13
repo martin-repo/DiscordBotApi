@@ -1,23 +1,27 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordInteractionCallbackAutocompleteDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordInteractionCallbackAutocompleteDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Interactions;
 using DiscordBotApi.Models.Applications;
 
 namespace DiscordBotApi.Models.Interactions;
 
-internal record DiscordInteractionCallbackAutocompleteDto(
-	[property: JsonPropertyName(name: "choices")]
-	DiscordApplicationCommandOptionChoiceDto[]? Choices
-) : DiscordInteractionCallbackDataDto
+internal sealed class DiscordInteractionCallbackAutocompleteDto : DiscordInteractionCallbackDataDto
 {
-	internal DiscordInteractionCallbackAutocompleteDto(DiscordInteractionCallbackAutocomplete model) : this(
-		Choices: model.Choices.Select(selector: c => new DiscordApplicationCommandOptionChoiceDto(model: c))
-			.ToArray())
-	{
-	}
+	[JsonPropertyName(name: "choices")]
+	public ImmutableArray<DiscordApplicationCommandOptionChoiceDto>? Choices { get; init; }
+
+	public static DiscordInteractionCallbackAutocompleteDto FromModel(DiscordInteractionCallbackAutocomplete model) =>
+		new()
+		{
+			Choices = model
+				.Choices.Select(selector: DiscordApplicationCommandOptionChoiceDto.FromModel)
+				.ToImmutableArray()
+		};
 }

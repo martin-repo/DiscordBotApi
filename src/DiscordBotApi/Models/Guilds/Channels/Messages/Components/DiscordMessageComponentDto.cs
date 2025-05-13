@@ -1,10 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordMessageComponentDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordMessageComponentDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
+
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Components;
 
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Components;
 
@@ -14,20 +16,27 @@ internal abstract record DiscordMessageComponentDto(
 	int Type
 )
 {
-	internal static DiscordMessageComponent ConvertToModel(DiscordMessageComponentDto dto)
-	{
-		switch (dto)
+	public virtual DiscordMessageComponent ToModel() =>
+		this switch
 		{
-			case DiscordMessageActionRowDto actionRowDto:
-				return new DiscordMessageActionRow(dto: actionRowDto);
-			case DiscordMessageButtonDto buttonDto:
-				return new DiscordMessageButton(dto: buttonDto);
-			case DiscordMessageSelectMenuDto menu:
-				return new DiscordMessageSelectMenu(dto: menu);
-			case DiscordMessageTextInputDto textInput:
-				return new DiscordMessageTextInput(dto: textInput);
-			default:
-				throw new NotSupportedException(message: $"{typeof(DiscordMessageComponent)} {dto.GetType().Name} is not supported");
-		}
-	}
+			DiscordMessageActionRowDto actionRowDto => actionRowDto.ToModel(),
+			DiscordMessageButtonDto buttonDto => buttonDto.ToModel(),
+			DiscordMessageSelectMenuDto menu => menu.ToModel(),
+			DiscordMessageTextInputDto textInput => textInput.ToModel(),
+			_ => throw new NotSupportedException(
+				message: $"{typeof(DiscordMessageComponent)} {GetType().Name} is not supported"
+			)
+		};
+
+	public static DiscordMessageComponentDto FromModel(DiscordMessageComponent model) =>
+		model switch
+		{
+			DiscordMessageActionRow actionRow => DiscordMessageActionRowDto.FromModel(model: actionRow),
+			DiscordMessageButton button => DiscordMessageButtonDto.FromModel(model: button),
+			DiscordMessageSelectMenu menu => DiscordMessageSelectMenuDto.FromModel(model: menu),
+			DiscordMessageTextInput textInput => DiscordMessageTextInputDto.FromModel(model: textInput),
+			_ => throw new NotSupportedException(
+				message: $"{typeof(DiscordMessageComponent)} {model.GetType().Name} is not supported"
+			)
+		};
 }

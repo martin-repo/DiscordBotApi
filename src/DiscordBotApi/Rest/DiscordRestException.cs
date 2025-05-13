@@ -1,19 +1,20 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordRestException.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordRestException.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Net;
 
-using DiscordBotApi.Models.Rest;
+using DiscordBotApi.Interface.Models.Rest;
 
 namespace DiscordBotApi.Rest;
 
 public class DiscordRestException : ApplicationException
 {
 	public DiscordRestException(HttpStatusCode statusCode, DiscordErrorResponse errorResponse) : base(
-		message: CreateMessage(errorResponse: errorResponse))
+		message: CreateMessage(errorResponse: errorResponse)
+	)
 	{
 		StatusCode = statusCode;
 		ErrorResponse = errorResponse;

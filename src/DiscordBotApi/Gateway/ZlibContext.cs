@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="ZlibContext.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="ZlibContext.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -13,12 +13,12 @@ internal class ZlibContext : IZlibContext, IDisposable
 	private const byte ZlibHeaderByte = 0x78;
 
 	private static readonly byte[] ZlibSuffixBytes =
-	{
+	[
 		0x00,
 		0x00,
 		0xFF,
 		0xFF
-	};
+	];
 
 	private readonly DeflateStream _decompressor;
 	private readonly MemoryStream _decompressorStream;
@@ -38,8 +38,7 @@ internal class ZlibContext : IZlibContext, IDisposable
 			throw new ArgumentException(message: "At least 4 bytes are required.", paramName: nameof(compressedBytes));
 		}
 
-		if (!compressedBytes[^4..]
-			.SequenceEqual(second: ZlibSuffixBytes))
+		if (!compressedBytes[^4..].SequenceEqual(second: ZlibSuffixBytes))
 		{
 			throw new ArgumentException(message: "zlib suffix not found.", paramName: nameof(compressedBytes));
 		}
@@ -64,7 +63,8 @@ internal class ZlibContext : IZlibContext, IDisposable
 		_decompressorStream.Position = 0;
 
 		await using var decompressedStream = new MemoryStream();
-		await _decompressor.CopyToAsync(destination: decompressedStream, cancellationToken: cancellationToken)
+		await _decompressor
+			.CopyToAsync(destination: decompressedStream, cancellationToken: cancellationToken)
 			.ConfigureAwait(continueOnCapturedContext: false);
 
 		return decompressedStream.ToArray();

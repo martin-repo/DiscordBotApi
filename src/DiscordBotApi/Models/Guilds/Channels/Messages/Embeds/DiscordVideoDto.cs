@@ -1,19 +1,21 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordVideoDto.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordVideoDto.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
 using System.Text.Json.Serialization;
 
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages.Embeds;
+
 namespace DiscordBotApi.Models.Guilds.Channels.Messages.Embeds;
 
-internal record DiscordVideoDto(
+internal sealed record DiscordVideoDto(
 	[property: JsonPropertyName(name: "url")]
 	string? Url
 )
 {
-	internal DiscordVideoDto(DiscordVideo model) : this(Url: model.Url)
-	{
-	}
+	public static DiscordVideoDto FromModel(DiscordVideo model) => new(Url: model.Url);
+
+	public DiscordVideo ToModel() => new() { Url = Url };
 }

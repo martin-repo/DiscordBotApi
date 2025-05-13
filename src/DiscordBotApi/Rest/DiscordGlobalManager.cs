@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGlobalManager.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordGlobalManager.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -47,8 +47,7 @@ internal class DiscordGlobalManager : IDiscordGlobalManager
 		var ready = new TaskCompletionSource(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 		_globalQueue.Add(item: ready, cancellationToken: cancellationToken);
 
-		await ready.Task.WaitAsync(cancellationToken: cancellationToken)
-			.ConfigureAwait(continueOnCapturedContext: false);
+		await ready.Task.WaitAsync(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 	}
 
 	public void Start()
@@ -58,12 +57,15 @@ internal class DiscordGlobalManager : IDiscordGlobalManager
 			throw new InvalidOperationException(message: "Already started");
 		}
 
-		var queue = _globalQueue =
+		_globalQueue =
 			new BlockingCollection<TaskCompletionSource>(collection: new ConcurrentQueue<TaskCompletionSource>());
+		var queue = _globalQueue;
+
 		new TaskFactory().StartNew(
 			function: async () => await GlobalProcessingAsync(queue: queue)
 				.ConfigureAwait(continueOnCapturedContext: false),
-			creationOptions: TaskCreationOptions.LongRunning);
+			creationOptions: TaskCreationOptions.LongRunning
+		);
 	}
 
 	public void Stop()
@@ -108,9 +110,9 @@ internal class DiscordGlobalManager : IDiscordGlobalManager
 			var retryAfter = globalEnding - utcNow;
 			_logger?.Debug(
 				messageTemplate: "Discord preemptive rate limit; waiting {Count:F2} seconds",
-				propertyValue: retryAfter.TotalSeconds);
-			await Task.Delay(delay: retryAfter)
-				.ConfigureAwait(continueOnCapturedContext: false);
+				propertyValue: retryAfter.TotalSeconds
+			);
+			await Task.Delay(delay: retryAfter).ConfigureAwait(continueOnCapturedContext: false);
 
 			globalEnding = utcNow.AddSeconds(value: 1);
 			globalCount = _globalLimit - 1;

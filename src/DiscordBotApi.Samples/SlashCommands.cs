@@ -1,12 +1,12 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="SlashCommands.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="SlashCommands.cs" company="kpop.fan">
+//   Copyright (c) 2023 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
-using DiscordBotApi.Models.Applications;
-using DiscordBotApi.Models.Guilds.Channels.Messages;
-using DiscordBotApi.Models.Interactions;
+using DiscordBotApi.Interface.Models.Applications;
+using DiscordBotApi.Interface.Models.Guilds.Channels.Messages;
+using DiscordBotApi.Interface.Models.Interactions;
 
 namespace DiscordBotApi.Samples;
 

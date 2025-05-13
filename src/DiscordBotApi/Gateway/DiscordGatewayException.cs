@@ -1,6 +1,6 @@
 ﻿// -------------------------------------------------------------------------------------------------
-// <copyright file="DiscordGatewayException.cs" company="Martin Karlsson">
-//   Copyright (c) 2023 Martin Karlsson. All rights reserved.
+// <copyright file="DiscordGatewayException.cs" company="kpop.fan">
+//   Copyright (c) 2025 kpop.fan. All rights reserved.
 // </copyright>
 // -------------------------------------------------------------------------------------------------
 
@@ -15,7 +15,8 @@ public class DiscordGatewayException : ApplicationException
 
 	public DiscordGatewayException(string message, bool isDisconnected, Exception innerException) : base(
 		message: message,
-		innerException: innerException)
+		innerException: innerException
+	)
 	{
 		IsDisconnected = isDisconnected;
 	}
